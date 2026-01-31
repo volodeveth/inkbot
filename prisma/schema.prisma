@@ -1,0 +1,151 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Shopify Session (required for @shopify/shopify-app-session-storage-prisma)
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+}
+
+// Shop settings and subscription
+model Shop {
+  id               String   @id @default(cuid())
+  shopDomain       String   @unique
+  accessToken      String
+
+  // Subscription
+  plan             Plan     @default(FREE)
+  subscriptionId   String?
+  subscriptionStatus String?
+
+  // Usage
+  generationsUsed  Int      @default(0)
+  generationsLimit Int      @default(10)
+  resetDate        DateTime @default(now())
+
+  // Settings
+  defaultNiche     String?
+  defaultTone      String?
+  defaultLanguage  String   @default("en")
+
+  // Relations
+  brandVoice       BrandVoice?
+  generations      Generation[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+enum Plan {
+  FREE
+  STARTER
+  PRO
+  UNLIMITED
+}
+
+// Brand voice configuration
+model BrandVoice {
+  id             String   @id @default(cuid())
+  shopId         String   @unique
+  shop           Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  // Analyzed from existing descriptions
+  tone           String?
+  style          String?
+  keywords       String[]
+  avoidWords     String[]
+  sampleTexts    String[]
+
+  // Custom instructions
+  customPrompt   String?
+  targetAudience String?
+  brandValues    String[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// Generation history
+model Generation {
+  id              String           @id @default(cuid())
+  shopId          String
+  shop            Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  // Product info
+  productId       String?
+  productTitle    String
+  productType     String?
+
+  // Input
+  niche           String
+  tone            String
+  keywords        String[]
+  competitorUrls  String[]
+
+  // Output
+  title           String?
+  description     String
+  metaTitle       String?
+  metaDescription String?
+  seoScore        Int?
+
+  // Status
+  status          GenerationStatus @default(COMPLETED)
+  appliedAt       DateTime?
+
+  // Metrics
+  tokensUsed      Int              @default(0)
+  generationTime  Int              @default(0)
+
+  createdAt       DateTime         @default(now())
+}
+
+enum GenerationStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  APPLIED
+}
+
+// Niche templates
+model NicheTemplate {
+  id             String   @id @default(cuid())
+
+  niche          String   @unique
+  displayName    String
+  icon           String?
+
+  // Prompt components
+  systemPrompt   String
+  exampleInputs  Json
+  exampleOutputs Json
+
+  // SEO settings
+  keywordPatterns String[]
+  structureGuide  String
+
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

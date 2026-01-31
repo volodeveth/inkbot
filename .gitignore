@@ -1,0 +1,12 @@
+node_modules/
+.cache/
+build/
+public/build/
+.env
+.env.local
+prisma/migrations/
+*.log
+.DS_Store
+dist/
+.vercel/
+nul

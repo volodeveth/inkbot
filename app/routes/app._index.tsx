@@ -1,0 +1,197 @@
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+import {
+  Page,
+  Layout,
+  Card,
+  Text,
+  BlockStack,
+  InlineStack,
+  Button,
+  ProgressBar,
+  Badge,
+  Box,
+  Divider,
+  InlineGrid,
+} from "@shopify/polaris";
+import { authenticate } from "../shopify.server";
+import { checkUsageLimit } from "~/services/billing.server";
+import { getGenerationsByShop, getGenerationStats } from "~/models/generation.server";
+import { getOrCreateShop } from "~/models/shop.server";
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const { session } = await authenticate.admin(request);
+
+  // Ensure shop exists in our DB
+  await getOrCreateShop(session.shop, session.accessToken ?? "");
+
+  const usage = await checkUsageLimit(session.shop);
+  const recentGenerations = await getGenerationsByShop(session.shop, { take: 5 });
+  const stats = await getGenerationStats(session.shop);
+
+  return json({
+    shop: session.shop,
+    usage,
+    recentGenerations,
+    stats,
+  });
+}
+
+export default function Dashboard() {
+  const { usage, recentGenerations, stats } = useLoaderData<typeof loader>();
+
+  const usagePercent = usage.limit > 0 ? (usage.used / usage.limit) * 100 : 0;
+
+  return (
+    <Page title="Describely Dashboard">
+      <BlockStack gap="500">
+        {/* Stats Row */}
+        <InlineGrid columns={3} gap="400">
+          {/* Usage Card */}
+          <Card>
+            <BlockStack gap="300">
+              <Text as="h2" variant="headingMd">
+                Monthly Usage
+              </Text>
+              <InlineStack align="space-between">
+                <Text as="span" variant="bodyMd">
+                  {usage.used} / {usage.limit} descriptions
+                </Text>
+                <Badge tone={usage.plan === "FREE" ? "info" : "success"}>
+                  {usage.plan}
+                </Badge>
+              </InlineStack>
+              <ProgressBar
+                progress={usagePercent}
+                tone={usagePercent > 80 ? "critical" : "primary"}
+                size="small"
+              />
+              {usage.plan === "FREE" && (
+                <Button variant="plain" url="/app/billing">
+                  Upgrade for more
+                </Button>
+              )}
+            </BlockStack>
+          </Card>
+
+          {/* Total Generated */}
+          <Card>
+            <BlockStack gap="300">
+              <Text as="h2" variant="headingMd">
+                Total Generated
+              </Text>
+              <Text as="p" variant="headingXl">
+                {stats.totalGenerations}
+              </Text>
+              <Text as="p" variant="bodySm" tone="subdued">
+                {stats.appliedCount} applied to products
+              </Text>
+            </BlockStack>
+          </Card>
+
+          {/* Avg SEO Score */}
+          <Card>
+            <BlockStack gap="300">
+              <Text as="h2" variant="headingMd">
+                Avg SEO Score
+              </Text>
+              <Text as="p" variant="headingXl">
+                {stats.avgSeoScore}/100
+              </Text>
+              <Text as="p" variant="bodySm" tone="subdued">
+                across all descriptions
+              </Text>
+            </BlockStack>
+          </Card>
+        </InlineGrid>
+
+        {/* Quick Actions */}
+        <Card>
+          <BlockStack gap="400">
+            <Text as="h2" variant="headingMd">
+              Quick Actions
+            </Text>
+            <InlineStack gap="300" wrap={false}>
+              <Button variant="primary" url="/app/generate">
+                Generate Description
+              </Button>
+              <Button url="/app/bulk">
+                Bulk Generate
+              </Button>
+              <Button url="/app/settings">
+                Brand Voice Settings
+              </Button>
+            </InlineStack>
+          </BlockStack>
+        </Card>
+
+        {/* Recent Generations */}
+        <Card>
+          <BlockStack gap="400">
+            <InlineStack align="space-between">
+              <Text as="h2" variant="headingMd">
+                Recent Generations
+              </Text>
+              <Button variant="plain" url="/app/history">
+                View all
+              </Button>
+            </InlineStack>
+
+            {recentGenerations.length === 0 ? (
+              <Box padding="400">
+                <BlockStack gap="200" inlineAlign="center">
+                  <Text as="p" tone="subdued" alignment="center">
+                    No descriptions generated yet.
+                  </Text>
+                  <Button url="/app/generate">Create your first one</Button>
+                </BlockStack>
+              </Box>
+            ) : (
+              <BlockStack gap="200">
+                {recentGenerations.map((gen: any) => (
+                  <Box
+                    key={gen.id}
+                    padding="300"
+                    borderWidth="025"
+                    borderColor="border"
+                    borderRadius="200"
+                  >
+                    <InlineStack align="space-between" blockAlign="center">
+                      <BlockStack gap="100">
+                        <Text as="span" variant="bodyMd" fontWeight="semibold">
+                          {gen.productTitle}
+                        </Text>
+                        <Text as="span" variant="bodySm" tone="subdued">
+                          {new Date(gen.createdAt).toLocaleDateString()}
+                        </Text>
+                      </BlockStack>
+                      <InlineStack gap="200">
+                        <Badge>{gen.niche}</Badge>
+                        {gen.seoScore && (
+                          <Badge
+                            tone={
+                              gen.seoScore >= 80
+                                ? "success"
+                                : gen.seoScore >= 60
+                                  ? "warning"
+                                  : "critical"
+                            }
+                          >
+                            {`SEO: ${gen.seoScore}`}
+                          </Badge>
+                        )}
+                        {gen.status === "APPLIED" && (
+                          <Badge tone="success">Applied</Badge>
+                        )}
+                      </InlineStack>
+                    </InlineStack>
+                  </Box>
+                ))}
+              </BlockStack>
+            )}
+          </BlockStack>
+        </Card>
+      </BlockStack>
+    </Page>
+  );
+}

@@ -1,0 +1,9 @@
+{
+  "buildCommand": "prisma generate && remix vite:build",
+  "installCommand": "npm install",
+  "framework": "remix",
+  "regions": ["fra1"],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
