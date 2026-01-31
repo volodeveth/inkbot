@@ -3,7 +3,8 @@
 ## Що це за проект
 
 **Describely** — Shopify App для AI-генерації описів товарів з SEO-оптимізацією.
-Домен: `describely.app`
+Vercel URL: `https://describely-steel.vercel.app`
+GitHub: `https://github.com/volodeveth/describely` (private)
 
 Користувач обирає товар зі свого Shopify-магазину (або вводить вручну), вибирає нішу, тон та мову — і отримує готовий опис з SEO meta-тегами, оцінкою SEO та рекомендованими ключовими словами. Опис можна одразу застосувати до товару в Shopify.
 
@@ -30,6 +31,7 @@
 D:\Myapps\describely\
 ├── app/
 │   ├── routes/
+│   │   ├── _index.tsx                   ✅ Root redirect → /auth/login (або /app з ?shop=)
 │   │   ├── app.tsx                    ✅ Layout з навігацією (Polaris + NavMenu)
 │   │   ├── app._index.tsx             ✅ Dashboard: usage, stats, quick actions, recent generations
 │   │   ├── app.generate.tsx           ✅ Генерація: product input, niche/tone/language, result display, apply/copy
@@ -55,7 +57,7 @@ D:\Myapps\describely\
 │   ├── services/
 │   │   ├── claude.server.ts           ✅ Claude API: generateProductDescription(), generateBulkDescriptions()
 │   │   ├── prompts.server.ts          ✅ 9 ніш: NICHE_CONFIGS, getPromptForNiche(), getAllNiches()
-│   │   └── billing.server.ts          ✅ PLAN_LIMITS/PRICES/FEATURES, checkUsageLimit(), incrementUsage(), createSubscription(), cancelSubscription()
+│   │   └── billing.server.ts          ✅ checkUsageLimit(), incrementUsage(), createSubscription(), cancelSubscription()
 │   │
 │   ├── models/
 │   │   ├── shop.server.ts             ✅ getShop(), getOrCreateShop(), updateShopSettings(), updateShopPlan()
@@ -64,6 +66,7 @@ D:\Myapps\describely\
 │   │   └── template.server.ts         ✅ getNicheTemplate(), getAllNicheTemplates(), seedNicheTemplates()
 │   │
 │   ├── utils/
+│   │   ├── plans.ts                   ✅ PLAN_LIMITS, PLAN_PRICES, PLAN_FEATURES (shared client+server)
 │   │   ├── validation.ts              ✅ Zod-схеми: generateDescriptionSchema, brandVoiceSchema, parseFormData()
 │   │   └── seo.ts                     ✅ calculateSeoScore(), stripHtml(), wordCount(), truncateForMeta()
 │   │
@@ -88,13 +91,14 @@ D:\Myapps\describely\
 ├── tsconfig.json                      ✅
 ├── vite.config.ts                     ✅ Remix + Vite, HMR config
 ├── shopify.app.toml                   ✅ scopes: read_products, write_products
-├── vercel.json                        ✅ region: fra1, build command з prisma generate
-├── .env                               ✅ Шаблон (потребує реальних ключів)
+├── vercel.json                        ✅ region: fra1, build command з npx prisma generate
+├── .env                               ✅ Реальні ключі налаштовані (локально)
 ├── .gitignore                         ✅
 └── CLAUDE.md                          ← Цей файл
 ```
 
 **TypeScript: 0 помилок** (перевірено `npx tsc --noEmit`)
+**Build: ✅** (client + server bundles збираються успішно)
 
 ---
 
@@ -129,20 +133,44 @@ D:\Myapps\describely\
 - `POST /api/bulk-generate` — batch processing (3 concurrent), rate limiting
 - `POST /api/analyze-voice` — Claude-powered brand voice analysis з auto-save
 
-### Фаза 5: Deployment & Integration ❌ (наступний крок)
-Потрібно зробити:
-1. **Shopify Partners підключення**: `shopify app config link` (інтерактивна команда — запускати в терміналі користувача)
-2. **Neon Database**: створити БД на neon.tech, скопіювати connection strings
-3. **Заповнити .env реальними ключами**:
-   - `SHOPIFY_API_KEY` / `SHOPIFY_API_SECRET` (з Shopify Partners)
-   - `DATABASE_URL` / `DIRECT_URL` (з Neon dashboard)
-   - `ANTHROPIC_API_KEY` (з console.anthropic.com)
-4. **Prisma push**: `npx prisma db push` — створити таблиці
-5. **Seed niche templates**: викликати `seedNicheTemplates()` з `models/template.server.ts`
-6. **Vercel deploy**: `npx vercel --prod`
-7. **Custom domain**: налаштувати describely.app → Vercel
-8. **Тестування**: embedded app в Shopify Admin
-9. **App Store submission**: screenshots, description, privacy policy
+### Фаза 5: Deployment & Integration ✅ (частково)
+**Зроблено:**
+- ✅ GitHub repo створено (private): `https://github.com/volodeveth/describely`
+- ✅ Vercel deployment працює: `https://describely-steel.vercel.app`
+- ✅ Neon PostgreSQL database створена, таблиці синхронізовані (`prisma db push`)
+- ✅ Shopify Partners app створено (назва: `describely`)
+- ✅ App URLs налаштовані (redirect URLs, app URL → Vercel)
+- ✅ Environment variables налаштовані в Vercel (SHOPIFY_API_KEY, SHOPIFY_API_SECRET, SHOPIFY_APP_URL, DATABASE_URL, DIRECT_URL, SCOPES, ANTHROPIC_API_KEY)
+- ✅ Dev store створено і додаток встановлено — працює!
+
+**Потрібно зробити:**
+1. **Тестування в dev store**: перевірити генерацію описів, bulk, settings, billing flow
+2. **Додати ANTHROPIC_API_KEY** з реальним ключем (якщо ще не додано)
+3. **Seed niche templates**: викликати `seedNicheTemplates()` з `models/template.server.ts`
+4. **Custom domain**: налаштувати describely.app → Vercel (опціонально)
+5. **UI polish**: перевірити відповідність мокапам з папки інструкцій
+6. **App Store submission**: screenshots, description, privacy policy
+
+---
+
+## Вирішені проблеми (для контексту)
+
+### Build помилки на Vercel
+- `prisma: command not found` → додано `npx` prefix до всіх prisma/remix команд в package.json та vercel.json
+- `Server-only module referenced by client` → план-константи (PLAN_LIMITS/PRICES/FEATURES) винесені з `billing.server.ts` у `utils/plans.ts` (без `.server` суфіксу)
+- `ShopifyError: Detected an empty appUrl` → потрібно додати env vars у Vercel + redeploy після змін
+
+### TypeScript помилки (всі вирішені)
+- Badge children type → template literals замість JSX масивів
+- ProgressBar tone → тільки `"primary" | "success" | "critical"`
+- useActionData union type → cast `as any`
+- CSS `?url` imports → `env.d.ts` declaration
+- LoginErrorType → `type LoginError` import
+
+### Prisma
+- Prisma v5.22 (не v6!) через peer dependency від `@shopify/shopify-app-session-storage-prisma`
+- `previewFeatures = ["driverAdapters"]` для Neon serverless
+- Потрібні обидва: `DATABASE_URL` (pooler) та `DIRECT_URL` (direct) для Neon
 
 ---
 
@@ -164,6 +192,7 @@ import {
 - `useLoaderData`, `useActionData` (cast as `any` для union types), `useSubmit`, `useNavigation`
 - Navigation state: `navigation.state === "submitting"` для loading
 - `useSearchParams` для фільтрів та пагінації
+- **ВАЖЛИВО**: `.server.ts` модулі НЕ можна імпортувати в component code (тільки в loader/action). Для shared констант використовуй файли без `.server` суфікса (як `utils/plans.ts`).
 
 ### Shopify Auth Pattern
 ```typescript
@@ -208,7 +237,9 @@ Product Title | Product Type | Feature1, Feature2, Feature3
 ## Як продовжити роботу
 
 1. Прочитай цей файл для контексту
-2. Фази 1-4 повністю завершені, TypeScript чистий (0 помилок)
-3. Наступний крок — Фаза 5: Deployment (потребує дій від користувача: Shopify Partners, Neon, Anthropic ключі)
-4. Подивись мокапи в `інструкції, дизайн, лого, файли/` для візуального дизайну
-5. Детальний план є в `інструкції, дизайн, лого, файли/describely_implementation_plan.md`
+2. Фази 1-4 повністю завершені, TypeScript чистий (0 помилок), build працює
+3. Deployment працює: Vercel + Neon + Shopify Partners
+4. Додаток встановлено на dev store
+5. **Наступні кроки**: тестування функціоналу в dev store, UI polish, підготовка до App Store
+6. Подивись мокапи в `інструкції, дизайн, лого, файли/` для візуального дизайну
+7. Детальний план є в `інструкції, дизайн, лого, файли/describely_implementation_plan.md`
