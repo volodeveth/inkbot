@@ -22,14 +22,11 @@ import {
 import { authenticate } from "../shopify.server";
 import {
   checkUsageLimit,
-  PLAN_PRICES,
-  PLAN_LIMITS,
-  PLAN_FEATURES,
   createSubscription,
   cancelSubscription,
 } from "~/services/billing.server";
+import { PLAN_PRICES, PLAN_LIMITS, PLAN_FEATURES, type PlanKey } from "~/utils/plans";
 import { getShop } from "~/models/shop.server";
-import { type Plan } from "@prisma/client";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
@@ -47,7 +44,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const { session, admin } = await authenticate.admin(request);
   const formData = await request.formData();
-  const plan = formData.get("plan") as Plan;
+  const plan = formData.get("plan") as PlanKey;
   const actionType = formData.get("_action") as string;
 
   if (actionType === "subscribe") {
@@ -80,7 +77,7 @@ export async function action({ request }: ActionFunctionArgs) {
   return json({ success: false });
 }
 
-const PLANS: { key: Plan; name: string; popular?: boolean }[] = [
+const PLANS: { key: PlanKey; name: string; popular?: boolean }[] = [
   { key: "FREE", name: "Free" },
   { key: "STARTER", name: "Starter" },
   { key: "PRO", name: "Pro", popular: true },
@@ -95,7 +92,7 @@ export default function BillingPage() {
 
   const isSubmitting = navigation.state === "submitting";
 
-  const handleSubscribe = (plan: Plan) => {
+  const handleSubscribe = (plan: PlanKey) => {
     const formData = new FormData();
     formData.append("_action", "subscribe");
     formData.append("plan", plan);

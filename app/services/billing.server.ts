@@ -1,57 +1,8 @@
 import db from "~/db.server";
 import { type Plan } from "@prisma/client";
+import { PLAN_LIMITS, PLAN_PRICES } from "~/utils/plans";
 
-export const PLAN_LIMITS: Record<Plan, number> = {
-  FREE: 10,
-  STARTER: 100,
-  PRO: 500,
-  UNLIMITED: 999999,
-};
-
-export const PLAN_PRICES: Record<Plan, number> = {
-  FREE: 0,
-  STARTER: 19,
-  PRO: 49,
-  UNLIMITED: 99,
-};
-
-export const PLAN_FEATURES: Record<Plan, string[]> = {
-  FREE: [
-    "10 descriptions/month",
-    "All 9 niches",
-    "SEO optimization",
-    "Basic brand voice",
-  ],
-  STARTER: [
-    "100 descriptions/month",
-    "All 9 niches",
-    "SEO optimization",
-    "Full brand voice",
-    "Bulk generation",
-    "Generation history",
-  ],
-  PRO: [
-    "500 descriptions/month",
-    "All 9 niches",
-    "SEO optimization",
-    "Full brand voice",
-    "Bulk generation",
-    "Generation history",
-    "Competitor analysis",
-    "Priority support",
-  ],
-  UNLIMITED: [
-    "Unlimited descriptions",
-    "All 9 niches",
-    "SEO optimization",
-    "Full brand voice",
-    "Bulk generation",
-    "Generation history",
-    "Competitor analysis",
-    "Priority support",
-    "API access",
-  ],
-};
+export { PLAN_LIMITS, PLAN_PRICES, PLAN_FEATURES } from "~/utils/plans";
 
 export interface UsageInfo {
   allowed: boolean;
