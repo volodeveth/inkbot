@@ -25,6 +25,8 @@ import {
   Badge,
   Box,
   Divider,
+  Checkbox,
+  Tag,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { generateProductDescription } from "~/services/ai.server";
@@ -34,74 +36,243 @@ import {
 } from "~/services/billing.server";
 import { getAllNiches } from "~/services/prompts.server";
 import { getShop } from "~/models/shop.server";
-import { createGeneration } from "~/models/generation.server";
+import { createGeneration, markGenerationApplied } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
+import { PRODUCTS_QUERY, parseProductsResponse } from "~/utils/shopify.server";
+import { BulkProductPicker } from "~/components/BulkProductPicker";
+import type { ShopifyProduct } from "~/types/shopify";
+
+interface BulkResult {
+  index: number;
+  productId: string;
+  productTitle: string;
+  generationId: string;
+  title: string;
+  description: string;
+  metaTitle: string;
+  metaDescription: string;
+  seoScore: number;
+  suggestedKeywords: string[];
+  applied: boolean;
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const { session } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
 
   const usage = await checkUsageLimit(session.shop);
   const niches = getAllNiches();
+  const brandVoice = await getBrandVoice(session.shop);
 
-  return json({ usage, niches, shop: session.shop });
+  let products: ShopifyProduct[] = [];
+  try {
+    const response = await admin.graphql(PRODUCTS_QUERY, {
+      variables: { first: 25 },
+    });
+    const responseJson = await response.json();
+    products = parseProductsResponse(responseJson);
+  } catch (error) {
+    console.error("Failed to fetch products:", error);
+  }
+
+  return json({ usage, niches, products, brandVoice, shop: session.shop });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { session } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
   const formData = await request.formData();
+  const actionType = formData.get("_action");
 
+  // --- Search products ---
+  if (actionType === "searchProducts") {
+    const query = (formData.get("query") as string) || "";
+    try {
+      const response = await admin.graphql(PRODUCTS_QUERY, {
+        variables: {
+          first: 25,
+          query: query ? `title:*${query}*` : null,
+        },
+      });
+      const responseJson = await response.json();
+      const products = parseProductsResponse(responseJson);
+      return json({ products });
+    } catch (error) {
+      console.error("Product search error:", error);
+      return json({ products: [] });
+    }
+  }
+
+  // --- Apply selected results to Shopify ---
+  if (actionType === "applySelected") {
+    const itemsRaw = formData.get("items") as string;
+    if (!itemsRaw) {
+      return json({ error: "No items to apply.", success: false, applyResult: true });
+    }
+
+    let items: Array<{
+      productId: string;
+      title: string;
+      description: string;
+      metaTitle: string;
+      metaDescription: string;
+      generationId: string;
+    }>;
+    try {
+      items = JSON.parse(itemsRaw);
+    } catch {
+      return json({ error: "Invalid items data.", success: false, applyResult: true });
+    }
+
+    const appliedIds: string[] = [];
+    const errors: string[] = [];
+
+    for (const item of items) {
+      try {
+        const response = await admin.graphql(
+          `
+          mutation updateProduct($input: ProductInput!) {
+            productUpdate(input: $input) {
+              product {
+                id
+              }
+              userErrors {
+                field
+                message
+              }
+            }
+          }
+        `,
+          {
+            variables: {
+              input: {
+                id: item.productId,
+                title: item.title,
+                descriptionHtml: item.description,
+                seo: {
+                  title: item.metaTitle || item.title,
+                  description: item.metaDescription || "",
+                },
+              },
+            },
+          }
+        );
+
+        const responseJson = await response.json();
+        const userErrors = responseJson?.data?.productUpdate?.userErrors;
+        if (userErrors && userErrors.length > 0) {
+          errors.push(
+            `${item.title}: ${userErrors.map((e: any) => e.message).join(", ")}`
+          );
+          continue;
+        }
+
+        if (item.generationId) {
+          try {
+            await markGenerationApplied(item.generationId);
+          } catch {
+            // Non-fatal
+          }
+        }
+
+        appliedIds.push(item.productId);
+      } catch (error) {
+        errors.push(`${item.title}: Failed to update`);
+      }
+    }
+
+    return json({
+      success: true,
+      applyResult: true,
+      appliedCount: appliedIds.length,
+      appliedIds,
+      errors,
+    });
+  }
+
+  // --- Generate descriptions (default) ---
   const usage = await checkUsageLimit(session.shop);
   const shop = await getShop(session.shop);
   const brandVoice = await getBrandVoice(session.shop);
 
-  const productsRaw = formData.get("products") as string;
   const niche = formData.get("niche") as string;
   const tone = formData.get("tone") as string;
   const language = formData.get("language") as string;
 
-  if (!productsRaw?.trim()) {
-    return json({ error: "Please enter at least one product.", success: false });
+  // Try Shopify product selection first, then fall back to textarea
+  const selectedProductsRaw = formData.get("selectedProducts") as string;
+  const productsTextRaw = formData.get("products") as string;
+
+  interface ProductInput {
+    productId: string;
+    productTitle: string;
+    productType?: string;
+    features?: string[];
+    existingDescription?: string;
+    tags?: string[];
   }
 
-  // Parse products: each line = "Product Title | Product Type | Key Features"
-  const lines = productsRaw
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
+  let productInputs: ProductInput[] = [];
 
-  if (lines.length === 0) {
-    return json({ error: "No valid products found.", success: false });
+  if (selectedProductsRaw) {
+    try {
+      const parsed: ShopifyProduct[] = JSON.parse(selectedProductsRaw);
+      productInputs = parsed.map((p) => ({
+        productId: p.id,
+        productTitle: p.title,
+        productType: p.productType || undefined,
+        features: p.tags.length > 0 ? p.tags : undefined,
+        existingDescription: p.descriptionHtml || undefined,
+        tags: p.tags,
+      }));
+    } catch {
+      return json({ error: "Invalid product selection data.", success: false });
+    }
+  } else if (productsTextRaw?.trim()) {
+    const lines = productsTextRaw
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    productInputs = lines.map((line) => {
+      const parts = line.split("|").map((p) => p.trim());
+      return {
+        productId: "",
+        productTitle: parts[0],
+        productType: parts[1] || undefined,
+        features: parts[2]
+          ? parts[2].split(",").map((f) => f.trim())
+          : undefined,
+      };
+    });
+  }
+
+  if (productInputs.length === 0) {
+    return json({ error: "Please select or enter at least one product.", success: false });
   }
 
   const remaining = usage.limit - usage.used;
-  if (lines.length > remaining) {
+  if (productInputs.length > remaining) {
     return json({
-      error: `You can only generate ${remaining} more descriptions this month. You entered ${lines.length} products.`,
+      error: `You can only generate ${remaining} more descriptions this month. You selected ${productInputs.length} products.`,
       success: false,
     });
   }
 
-  const results: any[] = [];
+  const results: BulkResult[] = [];
   const errors: string[] = [];
 
-  for (const line of lines) {
-    const parts = line.split("|").map((p) => p.trim());
-    const productTitle = parts[0];
-    const productType = parts[1] || undefined;
-    const features = parts[2]
-      ? parts[2].split(",").map((f) => f.trim())
-      : undefined;
+  for (let i = 0; i < productInputs.length; i++) {
+    const input = productInputs[i];
 
-    if (!productTitle) {
-      errors.push(`Skipped empty line`);
+    if (!input.productTitle) {
+      errors.push("Skipped empty product");
       continue;
     }
 
     try {
       const result = await generateProductDescription({
-        productTitle,
-        productType,
-        features,
+        productTitle: input.productTitle,
+        productType: input.productType,
+        features: input.features,
+        existingDescription: input.existingDescription,
         niche,
         tone,
         language,
@@ -117,11 +288,13 @@ export async function action({ request }: ActionFunctionArgs) {
           : undefined,
       });
 
+      let generationId = "";
       if (shop) {
-        await createGeneration({
+        const generation = await createGeneration({
           shopId: shop.id,
-          productTitle,
-          productType,
+          productId: input.productId || undefined,
+          productTitle: input.productTitle,
+          productType: input.productType,
           niche,
           tone,
           keywords: [],
@@ -133,20 +306,30 @@ export async function action({ request }: ActionFunctionArgs) {
           tokensUsed: result.tokensUsed,
           generationTime: result.generationTime,
         });
+        generationId = generation.id;
       }
 
       await incrementUsage(session.shop);
 
       results.push({
-        productTitle,
-        ...result,
+        index: i,
+        productId: input.productId,
+        productTitle: input.productTitle,
+        generationId,
+        title: result.title,
+        description: result.description,
+        metaTitle: result.metaTitle,
+        metaDescription: result.metaDescription,
+        seoScore: result.seoScore,
+        suggestedKeywords: result.suggestedKeywords || [],
+        applied: false,
       });
     } catch (error) {
-      errors.push(`Failed: ${productTitle}`);
+      errors.push(`Failed: ${input.productTitle}`);
     }
 
     // Small delay between requests
-    if (lines.indexOf(line) < lines.length - 1) {
+    if (i < productInputs.length - 1) {
       await new Promise((r) => setTimeout(r, 500));
     }
   }
@@ -155,54 +338,188 @@ export async function action({ request }: ActionFunctionArgs) {
     success: true,
     results,
     errors,
-    total: lines.length,
+    total: productInputs.length,
     completed: results.length,
   });
 }
 
 export default function BulkPage() {
-  const { usage, niches } = useLoaderData<typeof loader>();
+  const { usage, niches, products, brandVoice } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
   const navigation = useNavigation();
 
-  const isProcessing = navigation.state === "submitting";
+  const isProcessing =
+    navigation.state === "submitting" &&
+    navigation.formData?.get("_action") !== "searchProducts" &&
+    navigation.formData?.get("_action") !== "applySelected";
 
-  const [products, setProducts] = useState("");
+  const isApplying =
+    navigation.state === "submitting" &&
+    navigation.formData?.get("_action") === "applySelected";
+
+  // Input mode toggle
+  const [inputMode, setInputMode] = useState<"picker" | "manual">("picker");
+
+  // Picker state
+  const [selectedProducts, setSelectedProducts] = useState<ShopifyProduct[]>([]);
+
+  // Manual textarea state
+  const [productsText, setProductsText] = useState("");
+
+  // Settings
   const [niche, setNiche] = useState("general");
   const [tone, setTone] = useState("professional");
   const [language, setLanguage] = useState("en");
 
-  const productCount = products
-    .split("\n")
-    .filter((l) => l.trim()).length;
+  // Results state
+  const [checkedResults, setCheckedResults] = useState<Set<number>>(new Set());
+  const [appliedResults, setAppliedResults] = useState<Set<number>>(new Set());
+  const [showApplyConfirm, setShowApplyConfirm] = useState(false);
+
+  // When results arrive, check all by default
+  const results: BulkResult[] = actionData?.results || [];
+  const hasResults = actionData?.success && results.length > 0 && !actionData?.applyResult;
+
+  // Initialize checked set when results change
+  const [lastResultsKey, setLastResultsKey] = useState("");
+  const resultsKey = results.map((r: BulkResult) => r.generationId).join(",");
+  if (hasResults && resultsKey !== lastResultsKey) {
+    const allIndices = new Set(results.map((_: BulkResult, i: number) => i));
+    setCheckedResults(allIndices);
+    setAppliedResults(new Set());
+    setLastResultsKey(resultsKey);
+    setShowApplyConfirm(false);
+  }
+
+  // Handle apply result
+  if (actionData?.applyResult && actionData?.success && actionData?.appliedIds) {
+    const newApplied = new Set(appliedResults);
+    for (const result of results) {
+      if (actionData.appliedIds.includes(result.productId)) {
+        newApplied.add(result.index);
+      }
+    }
+    if (newApplied.size !== appliedResults.size) {
+      setAppliedResults(newApplied);
+      setShowApplyConfirm(false);
+    }
+  }
 
   const remaining = usage.limit - usage.used;
 
-  const handleSubmit = useCallback(() => {
+  const productCount =
+    inputMode === "picker"
+      ? selectedProducts.length
+      : productsText.split("\n").filter((l) => l.trim()).length;
+
+  const handleToggleProduct = useCallback((product: ShopifyProduct) => {
+    setSelectedProducts((prev) => {
+      const exists = prev.find((p) => p.id === product.id);
+      if (exists) {
+        return prev.filter((p) => p.id !== product.id);
+      }
+      return [...prev, product];
+    });
+  }, []);
+
+  const handleClearAll = useCallback(() => {
+    setSelectedProducts([]);
+  }, []);
+
+  const handleGenerate = useCallback(() => {
     const formData = new FormData();
-    formData.append("products", products);
+    formData.append("_action", "generate");
     formData.append("niche", niche);
     formData.append("tone", tone);
     formData.append("language", language);
+
+    if (inputMode === "picker") {
+      formData.append("selectedProducts", JSON.stringify(selectedProducts));
+    } else {
+      formData.append("products", productsText);
+    }
+
     submit(formData, { method: "post" });
-  }, [products, niche, tone, language, submit]);
+  }, [inputMode, selectedProducts, productsText, niche, tone, language, submit]);
+
+  const handleToggleCheck = useCallback((index: number) => {
+    setCheckedResults((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    if (!hasResults) return;
+    const unapplied = results
+      .map((_: BulkResult, i: number) => i)
+      .filter((i: number) => !appliedResults.has(i));
+    setCheckedResults(new Set(unapplied));
+  }, [hasResults, results, appliedResults]);
+
+  const handleDeselectAll = useCallback(() => {
+    setCheckedResults(new Set());
+  }, []);
+
+  const checkedCount = [...checkedResults].filter(
+    (i) => !appliedResults.has(i)
+  ).length;
+
+  const handleApplyClick = useCallback(() => {
+    setShowApplyConfirm(true);
+  }, []);
+
+  const handleApplyConfirm = useCallback(() => {
+    const itemsToApply = results
+      .filter(
+        (_: BulkResult, i: number) => checkedResults.has(i) && !appliedResults.has(i)
+      )
+      .filter((r: BulkResult) => r.productId)
+      .map((r: BulkResult) => ({
+        productId: r.productId,
+        title: r.title,
+        description: r.description,
+        metaTitle: r.metaTitle,
+        metaDescription: r.metaDescription,
+        generationId: r.generationId,
+      }));
+
+    if (itemsToApply.length === 0) return;
+
+    const formData = new FormData();
+    formData.append("_action", "applySelected");
+    formData.append("items", JSON.stringify(itemsToApply));
+    submit(formData, { method: "post" });
+  }, [results, checkedResults, appliedResults, submit]);
 
   const handleCopyAll = useCallback(() => {
-    if (!actionData?.results) return;
-    const text = actionData.results
+    if (!results.length) return;
+    const text = results
       .map(
-        (r: any) =>
+        (r: BulkResult) =>
           `## ${r.productTitle}\n\nTitle: ${r.title}\n\n${r.description}\n\nMeta Title: ${r.metaTitle}\nMeta Description: ${r.metaDescription}\nSEO Score: ${r.seoScore}/100`
       )
       .join("\n\n---\n\n");
     navigator.clipboard.writeText(text);
-  }, [actionData]);
+  }, [results]);
 
   const nicheOptions = niches.map((n: any) => ({
     label: `${n.icon} ${n.displayName}`,
     value: n.name,
   }));
+
+  // Check if any checked results lack a productId (manual input)
+  const hasManualResults =
+    hasResults &&
+    results.some(
+      (r: BulkResult, i: number) => checkedResults.has(i) && !r.productId
+    );
 
   return (
     <Page
@@ -225,38 +542,88 @@ export default function BulkPage() {
             )}
 
             {/* Error */}
-            {actionData && !actionData.success && actionData.error && (
+            {actionData && !actionData.success && actionData.error && !actionData.applyResult && (
               <Banner tone="critical">
                 <p>{actionData.error}</p>
               </Banner>
             )}
 
-            {/* Input */}
+            {/* Apply errors */}
+            {actionData?.applyResult && actionData?.errors?.length > 0 && (
+              <Banner tone="warning" title="Some products failed to update">
+                <p>{actionData.errors.join("; ")}</p>
+              </Banner>
+            )}
+
+            {/* Apply success */}
+            {actionData?.applyResult && actionData?.success && actionData?.appliedCount > 0 && (
+              <Banner tone="success" title="Products Updated">
+                <p>
+                  Successfully applied descriptions to {actionData.appliedCount} product
+                  {actionData.appliedCount !== 1 ? "s" : ""} in your Shopify store.
+                </p>
+              </Banner>
+            )}
+
+            {/* Step 1: Select Products */}
             <Card>
               <BlockStack gap="400">
-                <Text as="h2" variant="headingMd">
-                  Products
-                </Text>
-                <Text as="p" variant="bodySm" tone="subdued">
-                  Enter one product per line. Format:{" "}
-                  <strong>Product Title | Product Type | Features (comma-separated)</strong>
-                </Text>
+                <InlineStack align="space-between" blockAlign="center">
+                  <Text as="h2" variant="headingMd">
+                    1. Select Products
+                  </Text>
+                  <InlineStack gap="200">
+                    <Button
+                      variant={inputMode === "picker" ? "primary" : "tertiary"}
+                      size="slim"
+                      onClick={() => setInputMode("picker")}
+                    >
+                      From Store
+                    </Button>
+                    <Button
+                      variant={inputMode === "manual" ? "primary" : "tertiary"}
+                      size="slim"
+                      onClick={() => setInputMode("manual")}
+                    >
+                      Enter Manually
+                    </Button>
+                  </InlineStack>
+                </InlineStack>
 
-                <TextField
-                  label="Product List"
-                  value={products}
-                  onChange={setProducts}
-                  multiline={10}
-                  autoComplete="off"
-                  placeholder={
-                    "Premium Wireless Headphones | Headphones | Noise cancellation, 40h battery, Bluetooth 5.3\nOrganic Cotton T-Shirt | T-Shirt | 100% organic, breathable, unisex\nVitamin C Serum | Skincare | 20% vitamin C, hyaluronic acid, anti-aging"
-                  }
-                />
+                {inputMode === "picker" ? (
+                  <BulkProductPicker
+                    products={products}
+                    selectedProducts={selectedProducts}
+                    onToggle={handleToggleProduct}
+                    onClearAll={handleClearAll}
+                  />
+                ) : (
+                  <BlockStack gap="300">
+                    <Text as="p" variant="bodySm" tone="subdued">
+                      Enter one product per line. Format:{" "}
+                      <strong>
+                        Product Title | Product Type | Features (comma-separated)
+                      </strong>
+                    </Text>
+                    <TextField
+                      label="Product List"
+                      value={productsText}
+                      onChange={setProductsText}
+                      multiline={10}
+                      autoComplete="off"
+                      placeholder={
+                        "Premium Wireless Headphones | Headphones | Noise cancellation, 40h battery, Bluetooth 5.3\nOrganic Cotton T-Shirt | T-Shirt | 100% organic, breathable, unisex\nVitamin C Serum | Skincare | 20% vitamin C, hyaluronic acid, anti-aging"
+                      }
+                    />
+                  </BlockStack>
+                )}
 
                 <InlineStack align="space-between">
                   <Text as="span" variant="bodySm" tone="subdued">
-                    {productCount} product{productCount !== 1 ? "s" : ""} entered
-                    &middot; {remaining} generations remaining
+                    {productCount} product{productCount !== 1 ? "s" : ""}{" "}
+                    {inputMode === "picker" ? "selected" : "entered"}
+                    {" \u00B7 "}
+                    {remaining} generations remaining
                   </Text>
                   {productCount > remaining && remaining > 0 && (
                     <Badge tone="warning">
@@ -267,11 +634,11 @@ export default function BulkPage() {
               </BlockStack>
             </Card>
 
-            {/* Settings */}
+            {/* Step 2: Settings */}
             <Card>
               <BlockStack gap="400">
                 <Text as="h2" variant="headingMd">
-                  Settings (applied to all)
+                  2. Generation Settings (applied to all)
                 </Text>
                 <InlineStack gap="400" wrap>
                   <Box minWidth="180px">
@@ -312,15 +679,28 @@ export default function BulkPage() {
                     />
                   </Box>
                 </InlineStack>
+
+                {brandVoice && (
+                  <Banner tone="info">
+                    <p>
+                      Brand voice is configured. Tone:{" "}
+                      <strong>{brandVoice.tone}</strong>, Style:{" "}
+                      <strong>{brandVoice.style}</strong>.{" "}
+                      <Button variant="plain" url="/app/settings">
+                        Edit
+                      </Button>
+                    </p>
+                  </Banner>
+                )}
               </BlockStack>
             </Card>
 
-            {/* Submit */}
+            {/* Generate Button */}
             <InlineStack align="end">
               <Button
                 variant="primary"
                 size="large"
-                onClick={handleSubmit}
+                onClick={handleGenerate}
                 disabled={productCount === 0 || isProcessing || remaining <= 0}
                 loading={isProcessing}
               >
@@ -330,7 +710,7 @@ export default function BulkPage() {
               </Button>
             </InlineStack>
 
-            {/* Progress */}
+            {/* Progress indicator while processing */}
             {isProcessing && (
               <Card>
                 <BlockStack gap="300">
@@ -338,90 +718,185 @@ export default function BulkPage() {
                     Processing...
                   </Text>
                   <Text as="p" variant="bodySm" tone="subdued">
-                    Generating descriptions for {productCount} products. This may
-                    take a moment.
+                    Generating descriptions for {productCount} products. This
+                    may take a moment.
                   </Text>
                   <ProgressBar progress={50} tone="primary" />
                 </BlockStack>
               </Card>
             )}
 
-            {/* Results */}
-            {actionData?.success && actionData?.results && (
+            {/* Step 3: Results */}
+            {hasResults && (
               <BlockStack gap="400">
                 <Card>
-                  <InlineStack align="space-between" blockAlign="center">
-                    <BlockStack gap="100">
-                      <Text as="h2" variant="headingMd">
-                        Results
-                      </Text>
-                      <Text as="p" variant="bodySm" tone="subdued">
-                        {actionData.completed} / {actionData.total} completed
-                        {actionData.errors?.length > 0 &&
-                          ` (${actionData.errors.length} failed)`}
-                      </Text>
-                    </BlockStack>
-                    <Button onClick={handleCopyAll}>Copy All</Button>
-                  </InlineStack>
+                  <BlockStack gap="300">
+                    <InlineStack align="space-between" blockAlign="center">
+                      <BlockStack gap="100">
+                        <Text as="h2" variant="headingMd">
+                          3. Results
+                        </Text>
+                        <Text as="p" variant="bodySm" tone="subdued">
+                          {actionData.completed} / {actionData.total} completed
+                          {actionData.errors?.length > 0 &&
+                            ` (${actionData.errors.length} failed)`}
+                        </Text>
+                      </BlockStack>
+                      <InlineStack gap="200">
+                        <Button onClick={handleCopyAll} size="slim">
+                          Copy All
+                        </Button>
+                      </InlineStack>
+                    </InlineStack>
+
+                    {/* Select/Deselect + Apply */}
+                    <Divider />
+                    <InlineStack align="space-between" blockAlign="center">
+                      <InlineStack gap="200">
+                        <Button
+                          variant="plain"
+                          size="slim"
+                          onClick={handleSelectAll}
+                        >
+                          Select All
+                        </Button>
+                        <Button
+                          variant="plain"
+                          size="slim"
+                          onClick={handleDeselectAll}
+                        >
+                          Deselect All
+                        </Button>
+                      </InlineStack>
+                      {checkedCount > 0 && !hasManualResults && (
+                        <Button
+                          variant="primary"
+                          size="slim"
+                          onClick={handleApplyClick}
+                          loading={isApplying}
+                          disabled={showApplyConfirm}
+                        >
+                          {`Apply Selected (${checkedCount})`}
+                        </Button>
+                      )}
+                    </InlineStack>
+                  </BlockStack>
                 </Card>
+
+                {/* Apply confirmation */}
+                {showApplyConfirm && (
+                  <Banner tone="warning" title="Confirm changes">
+                    <BlockStack gap="200">
+                      <p>
+                        This will update {checkedCount} product
+                        {checkedCount !== 1 ? "s" : ""} in your Shopify store
+                        (title, description, and SEO meta).
+                      </p>
+                      <InlineStack gap="200">
+                        <Button
+                          variant="primary"
+                          onClick={handleApplyConfirm}
+                          loading={isApplying}
+                        >
+                          Confirm & Apply
+                        </Button>
+                        <Button
+                          variant="plain"
+                          onClick={() => setShowApplyConfirm(false)}
+                        >
+                          Cancel
+                        </Button>
+                      </InlineStack>
+                    </BlockStack>
+                  </Banner>
+                )}
 
                 {actionData.errors?.length > 0 && (
                   <Banner tone="warning">
                     <p>
-                      Some products failed:{" "}
-                      {actionData.errors.join(", ")}
+                      Some products failed: {actionData.errors.join(", ")}
                     </p>
                   </Banner>
                 )}
 
-                {actionData.results.map((result: any, i: number) => (
-                  <Card key={i}>
-                    <BlockStack gap="300">
-                      <InlineStack
-                        align="space-between"
-                        blockAlign="center"
-                      >
-                        <Text as="h3" variant="headingSm">
-                          {result.productTitle}
-                        </Text>
-                        <Badge
-                          tone={
-                            result.seoScore >= 80
-                              ? "success"
-                              : result.seoScore >= 60
-                                ? "warning"
-                                : "critical"
-                          }
+                {/* Result cards */}
+                {results.map((result: BulkResult, i: number) => {
+                  const isChecked = checkedResults.has(i);
+                  const isApplied = appliedResults.has(i);
+                  return (
+                    <Card key={result.generationId || i}>
+                      <BlockStack gap="300">
+                        <InlineStack
+                          align="space-between"
+                          blockAlign="center"
                         >
-                          {`SEO: ${result.seoScore}/100`}
-                        </Badge>
-                      </InlineStack>
+                          <InlineStack gap="300" blockAlign="center">
+                            {result.productId && !isApplied && (
+                              <Checkbox
+                                label=""
+                                labelHidden
+                                checked={isChecked}
+                                onChange={() => handleToggleCheck(i)}
+                              />
+                            )}
+                            <Text as="h3" variant="headingSm">
+                              {result.productTitle}
+                            </Text>
+                          </InlineStack>
+                          <InlineStack gap="200">
+                            {isApplied && (
+                              <Badge tone="success">Applied</Badge>
+                            )}
+                            <Badge
+                              tone={
+                                result.seoScore >= 80
+                                  ? "success"
+                                  : result.seoScore >= 60
+                                    ? "warning"
+                                    : "critical"
+                              }
+                            >
+                              {`SEO: ${result.seoScore}/100`}
+                            </Badge>
+                          </InlineStack>
+                        </InlineStack>
 
-                      {result.title && (
+                        {result.title && (
+                          <Text as="p" variant="bodySm">
+                            <strong>Title:</strong> {result.title}
+                          </Text>
+                        )}
+
+                        <Box
+                          padding="300"
+                          background="bg-surface-secondary"
+                          borderRadius="200"
+                        >
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: result.description,
+                            }}
+                          />
+                        </Box>
+
                         <Text as="p" variant="bodySm">
-                          <strong>Title:</strong> {result.title}
+                          <strong>Meta:</strong> {result.metaTitle} &mdash;{" "}
+                          {result.metaDescription}
                         </Text>
-                      )}
 
-                      <Box
-                        padding="300"
-                        background="bg-surface-secondary"
-                        borderRadius="200"
-                      >
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: result.description,
-                          }}
-                        />
-                      </Box>
-
-                      <Text as="p" variant="bodySm">
-                        <strong>Meta:</strong> {result.metaTitle} &mdash;{" "}
-                        {result.metaDescription}
-                      </Text>
-                    </BlockStack>
-                  </Card>
-                ))}
+                        {result.suggestedKeywords?.length > 0 && (
+                          <InlineStack gap="200" wrap>
+                            {result.suggestedKeywords.map(
+                              (kw: string, ki: number) => (
+                                <Tag key={ki}>{kw}</Tag>
+                              )
+                            )}
+                          </InlineStack>
+                        )}
+                      </BlockStack>
+                    </Card>
+                  );
+                })}
               </BlockStack>
             )}
           </BlockStack>
