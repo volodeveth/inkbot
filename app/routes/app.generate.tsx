@@ -35,21 +35,87 @@ import {
 } from "~/services/billing.server";
 import { getAllNiches } from "~/services/prompts.server";
 import { getShop } from "~/models/shop.server";
-import { createGeneration } from "~/models/generation.server";
+import { createGeneration, markGenerationApplied } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
 import {
   generateDescriptionSchema,
   parseFormData,
 } from "~/utils/validation";
+import { stripHtml } from "~/utils/seo";
+import { ProductPicker } from "~/components/ProductPicker";
+import type { ShopifyProduct } from "~/types/shopify";
+
+const PRODUCTS_QUERY = `
+  query getProducts($first: Int!, $query: String) {
+    products(first: $first, query: $query, sortKey: UPDATED_AT, reverse: true) {
+      edges {
+        node {
+          id
+          title
+          productType
+          descriptionHtml
+          tags
+          vendor
+          status
+          featuredImage {
+            url
+            altText
+          }
+          variants(first: 1) {
+            edges {
+              node {
+                price
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+function parseProductsResponse(response: any): ShopifyProduct[] {
+  try {
+    const data = typeof response.json === "function" ? null : response;
+    const products = (data?.data?.products?.edges || []).map((edge: any) => {
+      const node = edge.node;
+      return {
+        id: node.id,
+        title: node.title,
+        productType: node.productType || "",
+        descriptionHtml: node.descriptionHtml || "",
+        tags: node.tags || [],
+        vendor: node.vendor || "",
+        status: node.status || "ACTIVE",
+        featuredImage: node.featuredImage || null,
+        price: node.variants?.edges?.[0]?.node?.price || null,
+      };
+    });
+    return products;
+  } catch {
+    return [];
+  }
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const { session } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
 
   const usage = await checkUsageLimit(session.shop);
   const niches = getAllNiches();
   const brandVoice = await getBrandVoice(session.shop);
 
-  return json({ usage, niches, brandVoice, shop: session.shop });
+  let products: ShopifyProduct[] = [];
+  try {
+    const response = await admin.graphql(PRODUCTS_QUERY, {
+      variables: { first: 25 },
+    });
+    const responseJson = await response.json();
+    products = parseProductsResponse(responseJson);
+  } catch (error) {
+    console.error("Failed to fetch products:", error);
+  }
+
+  return json({ usage, niches, brandVoice, shop: session.shop, products });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -57,6 +123,24 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const formData = await request.formData();
   const actionType = formData.get("_action");
+
+  if (actionType === "searchProducts") {
+    const query = (formData.get("query") as string) || "";
+    try {
+      const response = await admin.graphql(PRODUCTS_QUERY, {
+        variables: {
+          first: 25,
+          query: query ? `title:*${query}*` : null,
+        },
+      });
+      const responseJson = await response.json();
+      const products = parseProductsResponse(responseJson);
+      return json({ products });
+    } catch (error) {
+      console.error("Product search error:", error);
+      return json({ products: [] });
+    }
+  }
 
   if (actionType === "generate") {
     // Validate form
@@ -110,8 +194,9 @@ export async function action({ request }: ActionFunctionArgs) {
       const result = await generateProductDescription(input);
 
       // Save to database
+      let generationId: string | undefined;
       if (shop) {
-        await createGeneration({
+        const generation = await createGeneration({
           shopId: shop.id,
           productId: (formData.get("productId") as string) || undefined,
           productTitle: input.productTitle,
@@ -127,6 +212,7 @@ export async function action({ request }: ActionFunctionArgs) {
           tokensUsed: result.tokensUsed,
           generationTime: result.generationTime,
         });
+        generationId = generation.id;
       }
 
       // Increment usage
@@ -135,6 +221,7 @@ export async function action({ request }: ActionFunctionArgs) {
       return json({
         success: true,
         result,
+        generationId,
         newUsage: usage.used + 1,
       });
     } catch (error) {
@@ -150,13 +237,16 @@ export async function action({ request }: ActionFunctionArgs) {
     const productId = formData.get("productId") as string;
     const description = formData.get("description") as string;
     const title = formData.get("title") as string;
+    const metaTitle = formData.get("metaTitle") as string;
+    const metaDescription = formData.get("metaDescription") as string;
+    const generationId = formData.get("generationId") as string;
 
     if (!productId) {
       return json({ error: "No product selected to apply to.", success: false });
     }
 
     try {
-      await admin.graphql(
+      const response = await admin.graphql(
         `
         mutation updateProduct($input: ProductInput!) {
           productUpdate(input: $input) {
@@ -164,6 +254,10 @@ export async function action({ request }: ActionFunctionArgs) {
               id
               title
               descriptionHtml
+              seo {
+                title
+                description
+              }
             }
             userErrors {
               field
@@ -178,13 +272,36 @@ export async function action({ request }: ActionFunctionArgs) {
               id: productId,
               title,
               descriptionHtml: description,
+              seo: {
+                title: metaTitle || title,
+                description: metaDescription || "",
+              },
             },
           },
         }
       );
 
+      const responseJson = await response.json();
+      const userErrors = responseJson?.data?.productUpdate?.userErrors;
+      if (userErrors && userErrors.length > 0) {
+        return json({
+          error: userErrors.map((e: any) => e.message).join(", "),
+          success: false,
+        });
+      }
+
+      // Mark generation as applied
+      if (generationId) {
+        try {
+          await markGenerationApplied(generationId);
+        } catch {
+          // Non-fatal — product was still updated
+        }
+      }
+
       return json({ success: true, applied: true });
     } catch (error) {
+      console.error("Apply error:", error);
       return json({ error: "Failed to update product.", success: false });
     }
   }
@@ -193,7 +310,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function GeneratePage() {
-  const { usage, niches, brandVoice } = useLoaderData<typeof loader>();
+  const { usage, niches, brandVoice, products } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
   const navigation = useNavigation();
@@ -201,6 +318,10 @@ export default function GeneratePage() {
   const isGenerating =
     navigation.state === "submitting" &&
     navigation.formData?.get("_action") === "generate";
+
+  const isApplying =
+    navigation.state === "submitting" &&
+    navigation.formData?.get("_action") === "apply";
 
   const [formState, setFormState] = useState({
     productTitle: "",
@@ -213,10 +334,8 @@ export default function GeneratePage() {
     language: "en",
   });
 
-  const [selectedProduct, setSelectedProduct] = useState<{
-    id: string;
-    title: string;
-  } | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ShopifyProduct | null>(null);
+  const [showApplyConfirm, setShowApplyConfirm] = useState(false);
 
   const updateField = useCallback(
     (field: string) => (value: string) => {
@@ -224,6 +343,34 @@ export default function GeneratePage() {
     },
     []
   );
+
+  const handleProductSelect = useCallback((product: ShopifyProduct) => {
+    setSelectedProduct(product);
+    const strippedDescription = product.descriptionHtml
+      ? stripHtml(product.descriptionHtml)
+      : "";
+    const featuresFromTags = product.tags.length > 0
+      ? product.tags.join("\n")
+      : "";
+    setFormState((prev) => ({
+      ...prev,
+      productTitle: product.title,
+      productType: product.productType || "",
+      existingDescription: strippedDescription,
+      features: featuresFromTags,
+    }));
+  }, []);
+
+  const handleProductClear = useCallback(() => {
+    setSelectedProduct(null);
+    setFormState((prev) => ({
+      ...prev,
+      productTitle: "",
+      productType: "",
+      existingDescription: "",
+      features: "",
+    }));
+  }, []);
 
   const nicheOptions = niches.map((n: any) => ({
     label: `${n.icon} ${n.displayName}`,
@@ -257,16 +404,27 @@ export default function GeneratePage() {
       formData.append("productId", selectedProduct.id);
     }
     submit(formData, { method: "post" });
+    setShowApplyConfirm(false);
   }, [formState, selectedProduct, submit]);
 
-  const handleApply = useCallback(() => {
+  const handleApplyClick = useCallback(() => {
+    setShowApplyConfirm(true);
+  }, []);
+
+  const handleApplyConfirm = useCallback(() => {
     if (!selectedProduct || !actionData?.result) return;
     const formData = new FormData();
     formData.append("_action", "apply");
     formData.append("productId", selectedProduct.id);
     formData.append("title", actionData.result.title);
     formData.append("description", actionData.result.description);
+    formData.append("metaTitle", actionData.result.metaTitle || "");
+    formData.append("metaDescription", actionData.result.metaDescription || "");
+    if (actionData.generationId) {
+      formData.append("generationId", actionData.generationId);
+    }
     submit(formData, { method: "post" });
+    setShowApplyConfirm(false);
   }, [selectedProduct, actionData, submit]);
 
   const handleCopy = useCallback(
@@ -307,16 +465,39 @@ export default function GeneratePage() {
             {/* Success: Applied */}
             {actionData?.applied && (
               <Banner tone="success" title="Description Applied">
-                <p>Product has been updated in your Shopify store.</p>
+                <p>Product has been updated in your Shopify store (title, description, and SEO meta).</p>
               </Banner>
             )}
 
-            {/* Product Details */}
+            {/* Step 1: Select Product */}
             <Card>
               <BlockStack gap="400">
                 <Text as="h2" variant="headingMd">
-                  1. Product Details
+                  1. Select Product
                 </Text>
+                <ProductPicker
+                  products={products}
+                  selectedProduct={selectedProduct}
+                  onSelect={handleProductSelect}
+                  onClear={handleProductClear}
+                />
+              </BlockStack>
+            </Card>
+
+            {/* Step 2: Product Details */}
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingMd">
+                  2. Product Details
+                </Text>
+
+                {selectedProduct && selectedProduct.descriptionHtml && (
+                  <Banner tone="info">
+                    <p>
+                      This product already has a description. The AI will use it as context to generate an improved version.
+                    </p>
+                  </Banner>
+                )}
 
                 <TextField
                   label="Product Title"
@@ -357,11 +538,11 @@ export default function GeneratePage() {
               </BlockStack>
             </Card>
 
-            {/* Generation Settings */}
+            {/* Step 3: Generation Settings */}
             <Card>
               <BlockStack gap="400">
                 <Text as="h2" variant="headingMd">
-                  2. Generation Settings
+                  3. Generation Settings
                 </Text>
 
                 <InlineStack gap="400" wrap>
@@ -555,10 +736,44 @@ export default function GeneratePage() {
 
                   <Divider />
 
+                  {/* Apply confirmation */}
+                  {showApplyConfirm && selectedProduct && (
+                    <Banner tone="warning" title="Confirm changes">
+                      <BlockStack gap="200">
+                        <p>This will update the following on your Shopify product:</p>
+                        <ul style={{ margin: 0, paddingLeft: "20px" }}>
+                          <li>Product title</li>
+                          <li>Product description (HTML)</li>
+                          <li>SEO meta title</li>
+                          <li>SEO meta description</li>
+                        </ul>
+                        <InlineStack gap="200">
+                          <Button
+                            variant="primary"
+                            onClick={handleApplyConfirm}
+                            loading={isApplying}
+                          >
+                            Confirm & Apply
+                          </Button>
+                          <Button
+                            variant="plain"
+                            onClick={() => setShowApplyConfirm(false)}
+                          >
+                            Cancel
+                          </Button>
+                        </InlineStack>
+                      </BlockStack>
+                    </Banner>
+                  )}
+
                   {/* Actions */}
                   <BlockStack gap="200">
-                    {selectedProduct && (
-                      <Button variant="primary" onClick={handleApply}>
+                    {selectedProduct && !showApplyConfirm && !actionData?.applied && (
+                      <Button
+                        variant="primary"
+                        onClick={handleApplyClick}
+                        loading={isApplying}
+                      >
                         Apply to Shopify Product
                       </Button>
                     )}
