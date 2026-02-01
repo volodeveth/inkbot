@@ -17,7 +17,7 @@ GitHub: `https://github.com/volodeveth/describely` (private)
 | Frontend | React + Shopify Polaris | React 18, Polaris 13 |
 | Backend | Remix (Vite) | Remix 2.15 |
 | База даних | Neon PostgreSQL (serverless) | через Prisma 5.22 |
-| AI | Claude API (Anthropic SDK) | claude-sonnet-4 |
+| AI | DeepSeek V3 (via OpenRouter) | deepseek/deepseek-chat-v3-0324 |
 | Хостинг | Vercel (serverless) | region: fra1 |
 | Платежі | Shopify Billing API | 4 плани |
 | Валідація | Zod | 3.24 |
@@ -55,7 +55,7 @@ D:\Myapps\describely\
 │   │   └── GenerationCard.tsx         ✅ Повна картка результату: title, description, meta, keywords, actions
 │   │
 │   ├── services/
-│   │   ├── claude.server.ts           ✅ Claude API: generateProductDescription(), generateBulkDescriptions()
+│   │   ├── ai.server.ts               ✅ DeepSeek API (via OpenRouter): generateProductDescription(), generateBulkDescriptions()
 │   │   ├── prompts.server.ts          ✅ 9 ніш: NICHE_CONFIGS, getPromptForNiche(), getAllNiches()
 │   │   └── billing.server.ts          ✅ checkUsageLimit(), incrementUsage(), createSubscription(), cancelSubscription()
 │   │
@@ -113,7 +113,7 @@ D:\Myapps\describely\
 - npm-залежності встановлені
 
 ### Фаза 2: Backend Services ✅
-- Claude AI сервіс: single + bulk генерація, system/user prompt builder, JSON parsing з fallback
+- DeepSeek AI сервіс (via OpenRouter): single + bulk генерація, system/user prompt builder, JSON mode, fallback parsing
 - 9 ніш: кожна з власним system prompt, keyword patterns, structure guide
 - Billing: 4 плани, місячний ресет лічильника, Shopify Billing API integration
 - Моделі: CRUD для shops, generations, brand voice, niche templates
@@ -140,12 +140,12 @@ D:\Myapps\describely\
 - ✅ Neon PostgreSQL database створена, таблиці синхронізовані (`prisma db push`)
 - ✅ Shopify Partners app створено (назва: `describely`)
 - ✅ App URLs налаштовані (redirect URLs, app URL → Vercel)
-- ✅ Environment variables налаштовані в Vercel (SHOPIFY_API_KEY, SHOPIFY_API_SECRET, SHOPIFY_APP_URL, DATABASE_URL, DIRECT_URL, SCOPES, ANTHROPIC_API_KEY)
+- ✅ Environment variables налаштовані в Vercel (SHOPIFY_API_KEY, SHOPIFY_API_SECRET, SHOPIFY_APP_URL, DATABASE_URL, DIRECT_URL, SCOPES, OPENROUTER_API_KEY)
 - ✅ Dev store створено і додаток встановлено — працює!
 
 **Потрібно зробити:**
 1. **Тестування в dev store**: перевірити генерацію описів, bulk, settings, billing flow
-2. **Додати ANTHROPIC_API_KEY** з реальним ключем (якщо ще не додано)
+2. **Додати OPENROUTER_API_KEY** з реальним ключем в Vercel (якщо ще не додано)
 3. **Seed niche templates**: викликати `seedNicheTemplates()` з `models/template.server.ts`
 4. **Custom domain**: налаштувати describely.app → Vercel (опціонально)
 5. **UI polish**: перевірити відповідність мокапам з папки інструкцій

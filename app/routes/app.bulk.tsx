@@ -27,7 +27,7 @@ import {
   Divider,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
-import { generateProductDescription } from "~/services/claude.server";
+import { generateProductDescription } from "~/services/ai.server";
 import {
   checkUsageLimit,
   incrementUsage,

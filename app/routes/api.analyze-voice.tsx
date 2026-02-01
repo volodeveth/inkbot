@@ -1,11 +1,12 @@
 import { json, type ActionFunctionArgs } from "@remix-run/node";
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { authenticate } from "../shopify.server";
 import { getShop } from "~/models/shop.server";
 import { upsertBrandVoice } from "~/models/brandVoice.server";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const openai = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
 });
 
 /**
@@ -49,11 +50,13 @@ export async function action({ request }: ActionFunctionArgs) {
       .map((text: string, i: number) => `Description ${i + 1}:\n"${text.substring(0, 500)}"`)
       .join("\n\n");
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: `You are a brand voice analyst. Analyze product descriptions and extract the brand's writing characteristics. Respond ONLY with valid JSON, no markdown.`,
+    const response = await openai.chat.completions.create({
+      model: "deepseek/deepseek-chat-v3-0324",
       messages: [
+        {
+          role: "system",
+          content: `You are a brand voice analyst. Analyze product descriptions and extract the brand's writing characteristics. Respond ONLY with valid JSON, no markdown.`,
+        },
         {
           role: "user",
           content: `Analyze these product descriptions and extract the brand voice characteristics:
@@ -72,14 +75,16 @@ Respond with JSON:
 }`,
         },
       ],
+      response_format: { type: "json_object" },
+      max_tokens: 1000,
     });
 
-    const content = response.content[0];
-    if (content.type !== "text") {
-      throw new Error("Unexpected response type");
+    const content = response.choices[0].message.content;
+    if (!content) {
+      throw new Error("Empty response from API");
     }
 
-    const jsonMatch = content.text.match(/\{[\s\S]*\}/);
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error("No JSON in response");
     }

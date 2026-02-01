@@ -1,6 +1,6 @@
 import { json, type ActionFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
-import { generateProductDescription } from "~/services/claude.server";
+import { generateProductDescription } from "~/services/ai.server";
 import { checkUsageLimit, incrementUsage } from "~/services/billing.server";
 import { getShop } from "~/models/shop.server";
 import { createGeneration } from "~/models/generation.server";

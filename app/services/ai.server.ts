@@ -1,8 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { getPromptForNiche } from "./prompts.server";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const openai = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
 });
 
 export interface GenerateDescriptionInput {
@@ -45,30 +46,31 @@ export async function generateProductDescription(
 
   const startTime = Date.now();
 
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 2000,
-    system: systemPrompt,
+  const response = await openai.chat.completions.create({
+    model: "deepseek/deepseek-chat-v3-0324",
     messages: [
-      {
-        role: "user",
-        content: userPrompt,
-      },
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
     ],
+    response_format: { type: "json_object" },
+    temperature: 1.1,
+    max_tokens: 2000,
   });
 
   const generationTime = Date.now() - startTime;
-  const content = response.content[0];
+  const content = response.choices[0].message.content;
 
-  if (content.type !== "text") {
-    throw new Error("Unexpected response type from Claude API");
+  if (!content) {
+    throw new Error("Empty response from DeepSeek API");
   }
 
-  const parsed = parseGeneratedContent(content.text);
+  const parsed = parseGeneratedContent(content);
 
   return {
     ...parsed,
-    tokensUsed: response.usage.input_tokens + response.usage.output_tokens,
+    tokensUsed:
+      (response.usage?.prompt_tokens ?? 0) +
+      (response.usage?.completion_tokens ?? 0),
     generationTime,
   };
 }
@@ -151,7 +153,6 @@ function parseGeneratedContent(
   text: string
 ): Omit<GeneratedDescription, "tokensUsed" | "generationTime"> {
   try {
-    // Extract JSON from response (handle possible markdown wrapping)
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error("No JSON found in response");
@@ -168,7 +169,6 @@ function parseGeneratedContent(
       seoScore: Math.min(100, Math.max(0, parsed.seoScore || 70)),
     };
   } catch {
-    // Fallback if JSON parsing fails
     return {
       title: "",
       description: text,
@@ -180,7 +180,6 @@ function parseGeneratedContent(
   }
 }
 
-// Bulk generation with rate limiting
 export async function generateBulkDescriptions(
   products: GenerateDescriptionInput[],
   onProgress?: (completed: number, total: number) => void
@@ -201,7 +200,6 @@ export async function generateBulkDescriptions(
       onProgress(results.length, products.length);
     }
 
-    // Rate limiting delay between batches
     if (i + batchSize < products.length) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
