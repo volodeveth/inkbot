@@ -30,6 +30,31 @@ export default function App() {
         <Link to="/app/billing">Billing</Link>
       </NavMenu>
       <Outlet />
+      <div style={{
+        textAlign: "center",
+        padding: "24px 16px 16px",
+        borderTop: "1px solid #e1e3e5",
+        marginTop: "32px",
+        fontSize: "13px",
+        color: "#6d7175",
+      }}>
+        Built by{" "}
+        <a
+          href="https://volodeveth.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: "#5c6ac4", textDecoration: "none" }}
+        >
+          VoloDev.eth
+        </a>
+        {" | "}
+        <a
+          href="mailto:starbowshine@gmail.com"
+          style={{ color: "#5c6ac4", textDecoration: "none" }}
+        >
+          Support
+        </a>
+      </div>
     </AppProvider>
   );
 }
