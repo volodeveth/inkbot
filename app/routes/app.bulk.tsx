@@ -259,10 +259,12 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ error: "Please select or enter at least one product.", success: false });
   }
 
-  const remaining = usage.limit - usage.used;
-  if (productInputs.length > remaining) {
+  const remaining = Math.max(0, usage.limit - usage.used);
+  if (remaining === 0 || productInputs.length > remaining) {
     return json({
-      error: `You can only generate ${remaining} more descriptions this month. You selected ${productInputs.length} products.`,
+      error: remaining === 0
+        ? "You've reached your monthly limit. Upgrade your plan for more descriptions."
+        : `You can only generate ${remaining} more descriptions this month. You selected ${productInputs.length} products.`,
       success: false,
     });
   }
@@ -418,7 +420,7 @@ export default function BulkPage() {
     }
   }
 
-  const remaining = usage.limit - usage.used;
+  const remaining = Math.max(0, usage.limit - usage.used);
 
   const productCount =
     inputMode === "picker"
