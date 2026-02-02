@@ -29,7 +29,11 @@ export const generateDescriptionSchema = z.object({
   ]),
   keywords: z.string().max(500).optional(),
   language: z
-    .enum(["en", "uk", "de", "fr", "es"])
+    .enum([
+      "en", "uk", "zh", "es", "hi", "ar", "bn", "pt", "ja", "ko",
+      "fr", "de", "it", "tr", "vi", "th", "pl", "nl", "id", "sv",
+      "cs", "ro", "el", "hu", "da", "fi", "no", "he", "ms", "tl",
+    ])
     .optional()
     .default("en"),
 });
