@@ -4,7 +4,7 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "@remix-run/node";
-import { useLoaderData, useSubmit, useNavigation } from "@remix-run/react";
+import { useLoaderData, useActionData, useSubmit, useNavigation } from "@remix-run/react";
 import {
   Page,
   Layout,
@@ -87,6 +87,7 @@ const PLANS: { key: PlanKey; name: string; popular?: boolean }[] = [
 export default function BillingPage() {
   const { usage, currentPlan, subscriptionStatus } =
     useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
   const navigation = useNavigation();
 
@@ -113,6 +114,18 @@ export default function BillingPage() {
       <Layout>
         <Layout.Section>
           <BlockStack gap="500">
+            {/* Action feedback */}
+            {actionData?.error && (
+              <Banner tone="critical" title="Subscription Error">
+                <p>{actionData.error}</p>
+              </Banner>
+            )}
+            {actionData?.cancelled && (
+              <Banner tone="success" title="Plan Cancelled">
+                <p>Your subscription has been cancelled. You are now on the Free plan.</p>
+              </Banner>
+            )}
+
             {/* Current Usage */}
             <Card>
               <BlockStack gap="300">

@@ -17,11 +17,14 @@ import { useState } from "react";
 import { authenticate } from "../shopify.server";
 import { getShop } from "~/models/shop.server";
 import { upsertBrandVoice } from "~/models/brandVoice.server";
+import { hasPlanFeature, type PlanKey } from "~/utils/plans";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
 
   const shop = await getShop(session.shop);
+
+  const plan = (shop?.plan || "FREE") as PlanKey;
 
   return json({
     brandVoice: shop?.brandVoice || null,
@@ -32,6 +35,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           defaultLanguage: shop.defaultLanguage,
         }
       : null,
+    plan,
   });
 }
 
@@ -75,7 +79,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function SettingsPage() {
-  const { brandVoice } = useLoaderData<typeof loader>();
+  const { brandVoice, plan } = useLoaderData<typeof loader>();
+  const canUseFullBrandVoice = hasPlanFeature(plan as PlanKey, "fullBrandVoice");
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
   const navigation = useNavigation();
@@ -177,84 +182,138 @@ export default function SettingsPage() {
             </Card>
 
             {/* Keywords & Vocabulary */}
-            <Card>
-              <BlockStack gap="400">
-                <Text as="h2" variant="headingMd">
-                  Keywords & Vocabulary
-                </Text>
+            {canUseFullBrandVoice ? (
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h2" variant="headingMd">
+                    Keywords & Vocabulary
+                  </Text>
 
-                <TextField
-                  label="Brand Keywords (always include)"
-                  value={formState.keywords}
-                  onChange={updateField("keywords")}
-                  placeholder="premium, handcrafted, sustainable, innovative"
-                  helpText="Comma-separated words to naturally include in descriptions"
-                  autoComplete="off"
-                />
+                  <TextField
+                    label="Brand Keywords (always include)"
+                    value={formState.keywords}
+                    onChange={updateField("keywords")}
+                    placeholder="premium, handcrafted, sustainable, innovative"
+                    helpText="Comma-separated words to naturally include in descriptions"
+                    autoComplete="off"
+                  />
 
-                <TextField
-                  label="Words to Avoid"
-                  value={formState.avoidWords}
-                  onChange={updateField("avoidWords")}
-                  placeholder="cheap, basic, generic"
-                  helpText="Comma-separated words that don't fit your brand"
-                  autoComplete="off"
-                />
+                  <TextField
+                    label="Words to Avoid"
+                    value={formState.avoidWords}
+                    onChange={updateField("avoidWords")}
+                    placeholder="cheap, basic, generic"
+                    helpText="Comma-separated words that don't fit your brand"
+                    autoComplete="off"
+                  />
 
-                <TextField
-                  label="Brand Values"
-                  value={formState.brandValues}
-                  onChange={updateField("brandValues")}
-                  placeholder="sustainability, quality, innovation, customer-first"
-                  helpText="Core values to subtly weave into descriptions"
-                  autoComplete="off"
-                />
-              </BlockStack>
-            </Card>
+                  <TextField
+                    label="Brand Values"
+                    value={formState.brandValues}
+                    onChange={updateField("brandValues")}
+                    placeholder="sustainability, quality, innovation, customer-first"
+                    helpText="Core values to subtly weave into descriptions"
+                    autoComplete="off"
+                  />
+                </BlockStack>
+              </Card>
+            ) : (
+              <Card>
+                <BlockStack gap="300">
+                  <Text as="h2" variant="headingMd">
+                    Keywords & Vocabulary
+                  </Text>
+                  <Banner tone="warning">
+                    <p>
+                      Keywords, avoid words, and brand values are available on Starter plan and above.{" "}
+                      <Button variant="plain" url="/app/billing">
+                        Upgrade your plan
+                      </Button>
+                    </p>
+                  </Banner>
+                </BlockStack>
+              </Card>
+            )}
 
             {/* Custom Instructions */}
-            <Card>
-              <BlockStack gap="400">
-                <Text as="h2" variant="headingMd">
-                  Custom AI Instructions
-                </Text>
+            {canUseFullBrandVoice ? (
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h2" variant="headingMd">
+                    Custom AI Instructions
+                  </Text>
 
-                <TextField
-                  label="Additional Instructions"
-                  value={formState.customPrompt}
-                  onChange={updateField("customPrompt")}
-                  multiline={4}
-                  placeholder="e.g., Always mention our 30-day return policy. Use British English spelling. Never use exclamation marks."
-                  helpText="These instructions are included in every generation"
-                  autoComplete="off"
-                />
-              </BlockStack>
-            </Card>
+                  <TextField
+                    label="Additional Instructions"
+                    value={formState.customPrompt}
+                    onChange={updateField("customPrompt")}
+                    multiline={4}
+                    placeholder="e.g., Always mention our 30-day return policy. Use British English spelling. Never use exclamation marks."
+                    helpText="These instructions are included in every generation"
+                    autoComplete="off"
+                  />
+                </BlockStack>
+              </Card>
+            ) : (
+              <Card>
+                <BlockStack gap="300">
+                  <Text as="h2" variant="headingMd">
+                    Custom AI Instructions
+                  </Text>
+                  <Banner tone="warning">
+                    <p>
+                      Custom AI instructions are available on Starter plan and above.{" "}
+                      <Button variant="plain" url="/app/billing">
+                        Upgrade your plan
+                      </Button>
+                    </p>
+                  </Banner>
+                </BlockStack>
+              </Card>
+            )}
 
             {/* Sample Descriptions */}
-            <Card>
-              <BlockStack gap="400">
-                <Text as="h2" variant="headingMd">
-                  Sample Descriptions
-                </Text>
-                <Text as="p" variant="bodySm" tone="subdued">
-                  Paste 2-3 of your best product descriptions below. AI will learn
-                  from these examples to match your writing style. Separate each
-                  example with a line containing only <strong>---</strong>
-                </Text>
+            {canUseFullBrandVoice ? (
+              <Card>
+                <BlockStack gap="400">
+                  <Text as="h2" variant="headingMd">
+                    Sample Descriptions
+                  </Text>
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Paste 2-3 of your best product descriptions below. AI will learn
+                    from these examples to match your writing style. Separate each
+                    example with a line containing only <strong>---</strong>
+                  </Text>
 
-                <TextField
-                  label="Example Descriptions"
-                  value={formState.sampleTexts}
-                  onChange={updateField("sampleTexts")}
-                  multiline={10}
-                  placeholder={
-                    "Your first product description here...\n---\nYour second product description here...\n---\nYour third product description here..."
-                  }
-                  autoComplete="off"
-                />
-              </BlockStack>
-            </Card>
+                  <TextField
+                    label="Example Descriptions"
+                    value={formState.sampleTexts}
+                    onChange={updateField("sampleTexts")}
+                    multiline={10}
+                    placeholder={
+                      "Your first product description here...\n---\nYour second product description here...\n---\nYour third product description here..."
+                    }
+                    autoComplete="off"
+                  />
+                </BlockStack>
+              </Card>
+            ) : (
+              <Card>
+                <BlockStack gap="300">
+                  <Text as="h2" variant="headingMd">
+                    Sample Descriptions
+                  </Text>
+                  <Banner tone="warning">
+                    <p>
+                      Sample descriptions are available on Starter plan and above.{" "}
+                      <Button variant="plain" url="/app/billing">
+                        Upgrade your plan
+                      </Button>
+                    </p>
+                  </Banner>
+                </BlockStack>
+              </Card>
+            )}
 
             {/* Save */}
             <InlineStack align="end">

@@ -40,6 +40,7 @@ import { createGeneration, markGenerationApplied } from "~/models/generation.ser
 import { getBrandVoice } from "~/models/brandVoice.server";
 import { PRODUCTS_QUERY, parseProductsResponse } from "~/utils/shopify.server";
 import { BulkProductPicker } from "~/components/BulkProductPicker";
+import { hasPlanFeature, type PlanKey } from "~/utils/plans";
 import type { ShopifyProduct } from "~/types/shopify";
 
 interface BulkResult {
@@ -74,7 +75,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     console.error("Failed to fetch products:", error);
   }
 
-  return json({ usage, niches, products, brandVoice, shop: session.shop });
+  const shop = await getShop(session.shop);
+  const plan = (shop?.plan || "FREE") as PlanKey;
+
+  return json({ usage, niches, products, brandVoice, shop: session.shop, plan });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -344,7 +348,8 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function BulkPage() {
-  const { usage, niches, products, brandVoice } = useLoaderData<typeof loader>();
+  const { usage, niches, products, brandVoice, plan } = useLoaderData<typeof loader>();
+  const canUseBulk = hasPlanFeature(plan as PlanKey, "bulk");
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
   const navigation = useNavigation();
@@ -529,6 +534,18 @@ export default function BulkPage() {
       <Layout>
         <Layout.Section>
           <BlockStack gap="500">
+            {/* Plan gate */}
+            {!canUseBulk && (
+              <Banner tone="warning" title="Upgrade Required">
+                <p>
+                  Bulk generation is available on Starter plan and above.{" "}
+                  <Button variant="plain" url="/app/billing">
+                    Upgrade your plan
+                  </Button>
+                </p>
+              </Banner>
+            )}
+
             {/* Usage warning */}
             {remaining <= 0 && (
               <Banner tone="warning" title="No Generations Remaining">
@@ -701,7 +718,7 @@ export default function BulkPage() {
                 variant="primary"
                 size="large"
                 onClick={handleGenerate}
-                disabled={productCount === 0 || isProcessing || remaining <= 0}
+                disabled={productCount === 0 || isProcessing || remaining <= 0 || !canUseBulk}
                 loading={isProcessing}
               >
                 {isProcessing

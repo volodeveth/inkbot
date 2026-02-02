@@ -14,9 +14,9 @@ export const PLAN_LIMITS: Record<PlanKey, number> = {
 
 export const PLAN_PRICES: Record<PlanKey, number> = {
   FREE: 0,
-  STARTER: 19,
-  PRO: 49,
-  UNLIMITED: 99,
+  STARTER: 9,
+  PRO: 19,
+  UNLIMITED: 49,
 };
 
 export const PLAN_FEATURES: Record<PlanKey, string[]> = {
@@ -41,7 +41,6 @@ export const PLAN_FEATURES: Record<PlanKey, string[]> = {
     "Full brand voice",
     "Bulk generation",
     "Generation history",
-    "Competitor analysis",
     "Priority support",
   ],
   UNLIMITED: [
@@ -51,8 +50,20 @@ export const PLAN_FEATURES: Record<PlanKey, string[]> = {
     "Full brand voice",
     "Bulk generation",
     "Generation history",
-    "Competitor analysis",
     "Priority support",
     "API access",
   ],
 };
+
+type GatedFeature = "bulk" | "history" | "fullBrandVoice" | "api";
+
+const PLAN_GATED_FEATURES: Record<GatedFeature, PlanKey[]> = {
+  bulk: ["STARTER", "PRO", "UNLIMITED"],
+  history: ["STARTER", "PRO", "UNLIMITED"],
+  fullBrandVoice: ["STARTER", "PRO", "UNLIMITED"],
+  api: ["UNLIMITED"],
+};
+
+export function hasPlanFeature(plan: PlanKey, feature: GatedFeature): boolean {
+  return PLAN_GATED_FEATURES[feature].includes(plan);
+}

@@ -13,10 +13,13 @@ import {
   Box,
   EmptyState,
   Pagination,
+  Banner,
 } from "@shopify/polaris";
 import { useState, useCallback } from "react";
 import { authenticate } from "../shopify.server";
 import { getGenerationsByShop } from "~/models/generation.server";
+import { getShop } from "~/models/shop.server";
+import { hasPlanFeature, type PlanKey } from "~/utils/plans";
 
 const PAGE_SIZE = 10;
 
@@ -27,6 +30,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const niche = url.searchParams.get("niche") || undefined;
   const page = parseInt(url.searchParams.get("page") || "1", 10);
   const skip = (page - 1) * PAGE_SIZE;
+
+  const shop = await getShop(session.shop);
+  const plan = (shop?.plan || "FREE") as PlanKey;
 
   const generations = await getGenerationsByShop(session.shop, {
     take: PAGE_SIZE + 1, // fetch one extra to check if there's a next page
@@ -43,12 +49,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     hasNextPage,
     hasPreviousPage: page > 1,
     currentNiche: niche || "all",
+    plan,
   });
 }
 
 export default function HistoryPage() {
-  const { generations, page, hasNextPage, hasPreviousPage, currentNiche } =
+  const { generations, page, hasNextPage, hasPreviousPage, currentNiche, plan } =
     useLoaderData<typeof loader>();
+  const canUseHistory = hasPlanFeature(plan as PlanKey, "history");
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -100,6 +108,18 @@ export default function HistoryPage() {
       <Layout>
         <Layout.Section>
           <BlockStack gap="500">
+            {!canUseHistory && (
+              <Banner tone="warning" title="Upgrade Required">
+                <p>
+                  Generation history is available on Starter plan and above.{" "}
+                  <Button variant="plain" url="/app/billing">
+                    Upgrade your plan
+                  </Button>
+                </p>
+              </Banner>
+            )}
+
+            {canUseHistory && <>
             {/* Filter */}
             <Card>
               <InlineStack gap="400" blockAlign="end">
@@ -254,6 +274,7 @@ export default function HistoryPage() {
                 </InlineStack>
               </BlockStack>
             )}
+            </>}
           </BlockStack>
         </Layout.Section>
       </Layout>

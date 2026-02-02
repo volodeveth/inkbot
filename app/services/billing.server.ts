@@ -104,12 +104,15 @@ export async function createSubscription(
     return "";
   }
 
+  const isTest = process.env.SHOPIFY_BILLING_TEST === "true";
+
   const response = await admin.graphql(
     `
-    mutation createSubscription($name: String!, $price: Decimal!, $returnUrl: URL!) {
+    mutation createSubscription($name: String!, $price: Decimal!, $returnUrl: URL!, $test: Boolean) {
       appSubscriptionCreate(
         name: $name,
         returnUrl: $returnUrl,
+        test: $test,
         lineItems: [
           {
             plan: {
@@ -137,6 +140,7 @@ export async function createSubscription(
         name: `Describely ${plan} Plan`,
         price: PLAN_PRICES[plan],
         returnUrl: `${process.env.SHOPIFY_APP_URL}/app/billing/confirm`,
+        test: isTest ? true : null,
       },
     }
   );

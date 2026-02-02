@@ -49,6 +49,12 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // Check usage
   const usage = await checkUsageLimit(session.shop);
+  if (usage.plan !== "UNLIMITED") {
+    return json(
+      { error: "API access requires Unlimited plan." },
+      { status: 403 }
+    );
+  }
   const remaining = usage.limit - usage.used;
 
   if (remaining <= 0) {
