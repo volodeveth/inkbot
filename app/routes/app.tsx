@@ -27,6 +27,7 @@ export default function App() {
         <Link to="/app/history">History</Link>
         <Link to="/app/settings">Settings</Link>
         <Link to="/app/api-docs">API</Link>
+        <Link to="/app/support">Support</Link>
         <Link to="/app/billing">Billing</Link>
       </NavMenu>
       <Outlet />
@@ -45,14 +46,6 @@ export default function App() {
           style={{ color: "#5c6ac4", textDecoration: "none", cursor: "pointer" }}
         >
           VoloDev.eth
-        </a>
-        {" | "}
-        <a
-          href="#"
-          onClick={(e) => { e.preventDefault(); window.open("mailto:starbowshine@gmail.com", "_blank"); }}
-          style={{ color: "#5c6ac4", textDecoration: "none", cursor: "pointer" }}
-        >
-          Support
         </a>
       </div>
     </AppProvider>
