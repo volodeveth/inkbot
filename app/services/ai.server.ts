@@ -75,8 +75,22 @@ export async function generateProductDescription(
   };
 }
 
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: "English",
+  uk: "Ukrainian",
+  de: "German",
+  fr: "French",
+  es: "Spanish",
+};
+
+function getLanguageName(code?: string): string {
+  if (!code) return "English";
+  return LANGUAGE_NAMES[code] || "English";
+}
+
 function buildSystemPrompt(input: GenerateDescriptionInput): string {
   const nichePrompt = getPromptForNiche(input.niche);
+  const languageName = getLanguageName(input.language);
 
   let systemPrompt = `You are an expert e-commerce copywriter specializing in ${input.niche} products.
 Your task is to create compelling, SEO-optimized product descriptions that convert visitors into buyers.
@@ -85,7 +99,8 @@ ${nichePrompt}
 
 TONE: ${input.tone}
 ${input.targetAudience ? `TARGET AUDIENCE: ${input.targetAudience}` : ""}
-LANGUAGE: ${input.language || "English"}
+
+CRITICAL LANGUAGE REQUIREMENT: You MUST write ALL output content (title, description, metaTitle, metaDescription, suggestedKeywords) in ${languageName}. Every single word of the generated content must be in ${languageName}. Do NOT write in English${languageName !== "English" ? " — use ONLY " + languageName : ""}.
 
 RULES:
 1. Write unique, engaging content - never copy generic supplier descriptions
@@ -94,7 +109,8 @@ RULES:
 4. Include natural keyword placement for SEO
 5. Keep paragraphs short and scannable
 6. Add a compelling hook in the first sentence
-7. End with a subtle call-to-action`;
+7. End with a subtle call-to-action
+8. ALL content MUST be written in ${languageName}`;
 
   if (input.brandVoice?.customPrompt) {
     systemPrompt += `\n\nBRAND VOICE INSTRUCTIONS:\n${input.brandVoice.customPrompt}`;
@@ -134,15 +150,19 @@ ${input.keywords?.length ? `TARGET KEYWORDS: ${input.keywords.join(", ")}` : ""}
     });
   }
 
+  const languageName = getLanguageName(input.language);
+
   prompt += `
+
+IMPORTANT: Write ALL content in ${languageName}.
 
 Please respond ONLY with valid JSON in the following format (no markdown, no code blocks):
 {
-  "title": "Optimized product title (max 70 chars)",
-  "description": "Full HTML product description with <p>, <ul>, <li>, <strong> tags. Multiple paragraphs.",
-  "metaTitle": "SEO meta title (max 60 chars)",
-  "metaDescription": "SEO meta description (max 155 chars)",
-  "suggestedKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
+  "title": "Optimized product title in ${languageName} (max 70 chars)",
+  "description": "Full HTML product description in ${languageName} with <p>, <ul>, <li>, <strong> tags. Multiple paragraphs.",
+  "metaTitle": "SEO meta title in ${languageName} (max 60 chars)",
+  "metaDescription": "SEO meta description in ${languageName} (max 155 chars)",
+  "suggestedKeywords": ["keyword1 in ${languageName}", "keyword2 in ${languageName}", "keyword3", "keyword4", "keyword5"],
   "seoScore": 85
 }`;
 
