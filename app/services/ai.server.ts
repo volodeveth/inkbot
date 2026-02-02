@@ -106,6 +106,18 @@ const LANGUAGE_NAMES: Record<string, string> = {
   he: "Hebrew",
   ms: "Malay",
   tl: "Filipino",
+  "fr-af": "French (African)",
+  "ar-na": "Arabic (North African)",
+  sw: "Swahili",
+  af: "Afrikaans",
+  am: "Amharic",
+  yo: "Yoruba",
+  zu: "Zulu",
+  xh: "Xhosa",
+  ha: "Hausa",
+  ig: "Igbo",
+  om: "Oromo",
+  sn: "Shona",
 };
 
 function getLanguageName(code?: string): string {

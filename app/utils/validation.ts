@@ -33,6 +33,7 @@ export const generateDescriptionSchema = z.object({
       "en", "uk", "zh", "es", "hi", "ar", "bn", "pt", "ja", "ko",
       "fr", "de", "it", "tr", "vi", "th", "pl", "nl", "id", "sv",
       "cs", "ro", "el", "hu", "da", "fi", "no", "he", "ms", "tl",
+      "fr-af", "ar-na", "sw", "af", "am", "yo", "zu", "xh", "ha", "ig", "om", "sn",
     ])
     .optional()
     .default("en"),

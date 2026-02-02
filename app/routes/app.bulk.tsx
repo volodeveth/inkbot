@@ -744,6 +744,18 @@ export default function BulkPage() {
                         { label: "Hebrew", value: "he" },
                         { label: "Malay", value: "ms" },
                         { label: "Filipino", value: "tl" },
+                        { label: "French (African)", value: "fr-af" },
+                        { label: "Arabic (North African)", value: "ar-na" },
+                        { label: "Swahili", value: "sw" },
+                        { label: "Afrikaans", value: "af" },
+                        { label: "Amharic", value: "am" },
+                        { label: "Yoruba", value: "yo" },
+                        { label: "Zulu", value: "zu" },
+                        { label: "Xhosa", value: "xh" },
+                        { label: "Hausa", value: "ha" },
+                        { label: "Igbo", value: "ig" },
+                        { label: "Oromo", value: "om" },
+                        { label: "Shona", value: "sn" },
                       ]}
                       value={language}
                       onChange={setLanguage}
