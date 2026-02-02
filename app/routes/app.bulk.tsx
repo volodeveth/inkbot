@@ -36,7 +36,7 @@ import {
 } from "~/services/billing.server";
 import { getAllNiches } from "~/services/prompts.server";
 import { getShop, markReviewLeft } from "~/models/shop.server";
-import { createGeneration, markGenerationApplied, getGenerationStats } from "~/models/generation.server";
+import { createGeneration, markGenerationApplied } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
 import { PRODUCTS_QUERY, parseProductsResponse } from "~/utils/shopify.server";
 import { BulkProductPicker } from "~/components/BulkProductPicker";
@@ -77,8 +77,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const shop = await getShop(session.shop);
   const plan = (shop?.plan || "FREE") as PlanKey;
+  const reviewLeft = shop?.reviewLeft ?? false;
 
-  return json({ usage, niches, products, brandVoice, shop: session.shop, plan });
+  return json({ usage, niches, products, brandVoice, shop: session.shop, plan, reviewLeft });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -105,10 +106,10 @@ export async function action({ request }: ActionFunctionArgs) {
     }
   }
 
-  // --- Dismiss review banner ---
-  if (actionType === "dismissReview") {
+  // --- Leave review ---
+  if (actionType === "leaveReview") {
     await markReviewLeft(session.shop);
-    return json({ reviewDismissed: true });
+    return json({ reviewLeft: true });
   }
 
   // --- Apply selected results to Shopify ---
@@ -344,29 +345,17 @@ export async function action({ request }: ActionFunctionArgs) {
     }
   }
 
-  // Check if we should show review banner (if a milestone was crossed during this batch)
-  let showReviewBanner = false;
-  if (shop && !shop.reviewLeft && results.length > 0) {
-    const stats = await getGenerationStats(session.shop);
-    const prevTotal = stats.totalGenerations - results.length;
-    const milestones = [1, 5, 10];
-    if (milestones.some(m => prevTotal < m && stats.totalGenerations >= m)) {
-      showReviewBanner = true;
-    }
-  }
-
   return json({
     success: true,
     results,
     errors,
     total: productInputs.length,
     completed: results.length,
-    showReviewBanner,
   });
 }
 
 export default function BulkPage() {
-  const { usage, niches, products, brandVoice, plan } = useLoaderData<typeof loader>();
+  const { usage, niches, products, brandVoice, plan, reviewLeft } = useLoaderData<typeof loader>();
   const canUseBulk = hasPlanFeature(plan as PlanKey, "bulk");
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
@@ -521,9 +510,9 @@ export default function BulkPage() {
     submit(formData, { method: "post" });
   }, [results, checkedResults, appliedResults, submit]);
 
-  const handleDismissReview = useCallback(() => {
+  const handleLeaveReview = useCallback(() => {
     const formData = new FormData();
-    formData.append("_action", "dismissReview");
+    formData.append("_action", "leaveReview");
     submit(formData, { method: "post" });
   }, [submit]);
 
@@ -558,6 +547,22 @@ export default function BulkPage() {
       <Layout>
         <Layout.Section>
           <BlockStack gap="500">
+            {/* Review Banner */}
+            {!reviewLeft && !actionData?.reviewLeft && (
+              <Banner
+                title="Enjoying Describely?"
+                tone="info"
+                action={{
+                  content: "Leave a Review",
+                  url: "https://apps.shopify.com/describely/reviews",
+                  external: true,
+                  onAction: handleLeaveReview,
+                }}
+              >
+                <p>If you're finding Describely helpful, a quick review would mean a lot.</p>
+              </Banner>
+            )}
+
             {/* Plan gate */}
             {!canUseBulk && (
               <Banner tone="warning" title="Upgrade Required">
@@ -765,23 +770,6 @@ export default function BulkPage() {
                   <ProgressBar progress={50} tone="primary" />
                 </BlockStack>
               </Card>
-            )}
-
-            {/* Review Banner */}
-            {actionData?.showReviewBanner && (
-              <Banner
-                title="Enjoying Describely?"
-                tone="info"
-                onDismiss={handleDismissReview}
-                action={{
-                  content: "Leave a Review",
-                  url: "https://apps.shopify.com/describely/reviews",
-                  external: true,
-                  onAction: handleDismissReview,
-                }}
-              >
-                <p>Your descriptions are looking great! If you're finding Describely helpful, a quick review would mean a lot.</p>
-              </Banner>
             )}
 
             {/* Step 3: Results */}

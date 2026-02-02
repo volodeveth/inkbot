@@ -1,5 +1,10 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useCallback } from "react";
+import {
+  json,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from "@remix-run/node";
+import { useLoaderData, useActionData, useSubmit } from "@remix-run/react";
 import {
   Page,
   Layout,
@@ -10,6 +15,7 @@ import {
   Button,
   ProgressBar,
   Badge,
+  Banner,
   Box,
   Divider,
   InlineGrid,
@@ -17,34 +23,72 @@ import {
 import { authenticate } from "../shopify.server";
 import { checkUsageLimit } from "~/services/billing.server";
 import { getGenerationsByShop, getGenerationStats } from "~/models/generation.server";
-import { getOrCreateShop } from "~/models/shop.server";
+import { getOrCreateShop, markReviewLeft } from "~/models/shop.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
 
   // Ensure shop exists in our DB
-  await getOrCreateShop(session.shop, session.accessToken ?? "");
+  const shop = await getOrCreateShop(session.shop, session.accessToken ?? "");
 
   const usage = await checkUsageLimit(session.shop);
   const recentGenerations = await getGenerationsByShop(session.shop, { take: 5 });
   const stats = await getGenerationStats(session.shop);
+  const reviewLeft = shop.reviewLeft;
 
   return json({
     shop: session.shop,
     usage,
     recentGenerations,
     stats,
+    reviewLeft,
   });
 }
 
+export async function action({ request }: ActionFunctionArgs) {
+  const { session } = await authenticate.admin(request);
+  const formData = await request.formData();
+
+  if (formData.get("_action") === "leaveReview") {
+    await markReviewLeft(session.shop);
+    return json({ reviewLeft: true });
+  }
+
+  return json({});
+}
+
 export default function Dashboard() {
-  const { usage, recentGenerations, stats } = useLoaderData<typeof loader>();
+  const { usage, recentGenerations, stats, reviewLeft } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>() as any;
+  const submit = useSubmit();
+
+  const handleLeaveReview = useCallback(() => {
+    const formData = new FormData();
+    formData.append("_action", "leaveReview");
+    submit(formData, { method: "post" });
+  }, [submit]);
 
   const usagePercent = usage.limit > 0 ? (usage.used / usage.limit) * 100 : 0;
 
   return (
     <Page title="Describely Dashboard">
       <BlockStack gap="500">
+        {/* Review Banner */}
+        {!reviewLeft && !actionData?.reviewLeft && (
+          <Banner
+            title="Enjoying Describely?"
+            tone="info"
+            action={{
+              content: "Leave a Review",
+              url: "https://apps.shopify.com/describely/reviews",
+              external: true,
+              onAction: handleLeaveReview,
+            }}
+          >
+            <p>If you're finding Describely helpful, a quick review would mean a lot.</p>
+          </Banner>
+        )}
+
         {/* Stats Row */}
         <InlineGrid columns={3} gap="400">
           {/* Usage Card */}

@@ -35,7 +35,7 @@ import {
 } from "~/services/billing.server";
 import { getAllNiches } from "~/services/prompts.server";
 import { getShop, markReviewLeft } from "~/models/shop.server";
-import { createGeneration, markGenerationApplied, getGenerationStats } from "~/models/generation.server";
+import { createGeneration, markGenerationApplied } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
 import {
   generateDescriptionSchema,
@@ -64,7 +64,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     console.error("Failed to fetch products:", error);
   }
 
-  return json({ usage, niches, brandVoice, shop: session.shop, products });
+  const shop = await getShop(session.shop);
+  const reviewLeft = shop?.reviewLeft ?? false;
+
+  return json({ usage, niches, brandVoice, shop: session.shop, products, reviewLeft });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -91,9 +94,9 @@ export async function action({ request }: ActionFunctionArgs) {
     }
   }
 
-  if (actionType === "dismissReview") {
+  if (actionType === "leaveReview") {
     await markReviewLeft(session.shop);
-    return json({ reviewDismissed: true });
+    return json({ reviewLeft: true });
   }
 
   if (actionType === "generate") {
@@ -172,21 +175,11 @@ export async function action({ request }: ActionFunctionArgs) {
       // Increment usage
       await incrementUsage(session.shop);
 
-      // Check if we should show review banner
-      let showReviewBanner = false;
-      if (shop && !shop.reviewLeft) {
-        const stats = await getGenerationStats(session.shop);
-        if ([1, 5, 10].includes(stats.totalGenerations)) {
-          showReviewBanner = true;
-        }
-      }
-
       return json({
         success: true,
         result,
         generationId,
         newUsage: usage.used + 1,
-        showReviewBanner,
       });
     } catch (error) {
       console.error("Generation error:", error);
@@ -274,7 +267,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function GeneratePage() {
-  const { usage, niches, brandVoice, products } = useLoaderData<typeof loader>();
+  const { usage, niches, brandVoice, products, reviewLeft } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
   const navigation = useNavigation();
@@ -391,9 +384,9 @@ export default function GeneratePage() {
     setShowApplyConfirm(false);
   }, [selectedProduct, actionData, submit]);
 
-  const handleDismissReview = useCallback(() => {
+  const handleLeaveReview = useCallback(() => {
     const formData = new FormData();
-    formData.append("_action", "dismissReview");
+    formData.append("_action", "leaveReview");
     submit(formData, { method: "post" });
   }, [submit]);
 
@@ -413,6 +406,22 @@ export default function GeneratePage() {
         {/* Left: Input Form */}
         <Layout.Section>
           <BlockStack gap="500">
+            {/* Review Banner */}
+            {!reviewLeft && !actionData?.reviewLeft && (
+              <Banner
+                title="Enjoying Describely?"
+                tone="info"
+                action={{
+                  content: "Leave a Review",
+                  url: "https://apps.shopify.com/describely/reviews",
+                  external: true,
+                  onAction: handleLeaveReview,
+                }}
+              >
+                <p>If you're finding Describely helpful, a quick review would mean a lot.</p>
+              </Banner>
+            )}
+
             {/* Usage Warning */}
             {!usage.allowed && (
               <Banner tone="warning" title="Usage Limit Reached">
@@ -590,21 +599,6 @@ export default function GeneratePage() {
         {/* Right: Results */}
         <Layout.Section variant="oneThird">
           <BlockStack gap="500">
-          {actionData?.showReviewBanner && (
-            <Banner
-              title="Enjoying Describely?"
-              tone="info"
-              onDismiss={handleDismissReview}
-              action={{
-                content: "Leave a Review",
-                url: "https://apps.shopify.com/describely/reviews",
-                external: true,
-                onAction: handleDismissReview,
-              }}
-            >
-              <p>Your descriptions are looking great! If you're finding Describely helpful, a quick review would mean a lot.</p>
-            </Banner>
-          )}
           <Card>
             <BlockStack gap="400">
               <Text as="h2" variant="headingMd">
