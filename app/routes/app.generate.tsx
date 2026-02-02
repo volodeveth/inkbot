@@ -34,8 +34,8 @@ import {
   incrementUsage,
 } from "~/services/billing.server";
 import { getAllNiches } from "~/services/prompts.server";
-import { getShop } from "~/models/shop.server";
-import { createGeneration, markGenerationApplied } from "~/models/generation.server";
+import { getShop, markReviewLeft } from "~/models/shop.server";
+import { createGeneration, markGenerationApplied, getGenerationStats } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
 import {
   generateDescriptionSchema,
@@ -89,6 +89,11 @@ export async function action({ request }: ActionFunctionArgs) {
       console.error("Product search error:", error);
       return json({ products: [] });
     }
+  }
+
+  if (actionType === "dismissReview") {
+    await markReviewLeft(session.shop);
+    return json({ reviewDismissed: true });
   }
 
   if (actionType === "generate") {
@@ -167,11 +172,21 @@ export async function action({ request }: ActionFunctionArgs) {
       // Increment usage
       await incrementUsage(session.shop);
 
+      // Check if we should show review banner
+      let showReviewBanner = false;
+      if (shop && !shop.reviewLeft) {
+        const stats = await getGenerationStats(session.shop);
+        if ([1, 5, 10].includes(stats.totalGenerations)) {
+          showReviewBanner = true;
+        }
+      }
+
       return json({
         success: true,
         result,
         generationId,
         newUsage: usage.used + 1,
+        showReviewBanner,
       });
     } catch (error) {
       console.error("Generation error:", error);
@@ -376,6 +391,12 @@ export default function GeneratePage() {
     setShowApplyConfirm(false);
   }, [selectedProduct, actionData, submit]);
 
+  const handleDismissReview = useCallback(() => {
+    const formData = new FormData();
+    formData.append("_action", "dismissReview");
+    submit(formData, { method: "post" });
+  }, [submit]);
+
   const handleCopy = useCallback(
     (text: string) => {
       navigator.clipboard.writeText(text);
@@ -568,6 +589,22 @@ export default function GeneratePage() {
 
         {/* Right: Results */}
         <Layout.Section variant="oneThird">
+          <BlockStack gap="500">
+          {actionData?.showReviewBanner && (
+            <Banner
+              title="Enjoying Describely?"
+              tone="info"
+              onDismiss={handleDismissReview}
+              action={{
+                content: "Leave a Review",
+                url: "https://apps.shopify.com/describely/reviews",
+                external: true,
+                onAction: handleDismissReview,
+              }}
+            >
+              <p>Your descriptions are looking great! If you're finding Describely helpful, a quick review would mean a lot.</p>
+            </Banner>
+          )}
           <Card>
             <BlockStack gap="400">
               <Text as="h2" variant="headingMd">
@@ -755,6 +792,7 @@ export default function GeneratePage() {
               )}
             </BlockStack>
           </Card>
+          </BlockStack>
         </Layout.Section>
       </Layout>
     </Page>

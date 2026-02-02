@@ -35,8 +35,8 @@ import {
   incrementUsage,
 } from "~/services/billing.server";
 import { getAllNiches } from "~/services/prompts.server";
-import { getShop } from "~/models/shop.server";
-import { createGeneration, markGenerationApplied } from "~/models/generation.server";
+import { getShop, markReviewLeft } from "~/models/shop.server";
+import { createGeneration, markGenerationApplied, getGenerationStats } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
 import { PRODUCTS_QUERY, parseProductsResponse } from "~/utils/shopify.server";
 import { BulkProductPicker } from "~/components/BulkProductPicker";
@@ -103,6 +103,12 @@ export async function action({ request }: ActionFunctionArgs) {
       console.error("Product search error:", error);
       return json({ products: [] });
     }
+  }
+
+  // --- Dismiss review banner ---
+  if (actionType === "dismissReview") {
+    await markReviewLeft(session.shop);
+    return json({ reviewDismissed: true });
   }
 
   // --- Apply selected results to Shopify ---
@@ -338,12 +344,24 @@ export async function action({ request }: ActionFunctionArgs) {
     }
   }
 
+  // Check if we should show review banner (if a milestone was crossed during this batch)
+  let showReviewBanner = false;
+  if (shop && !shop.reviewLeft && results.length > 0) {
+    const stats = await getGenerationStats(session.shop);
+    const prevTotal = stats.totalGenerations - results.length;
+    const milestones = [1, 5, 10];
+    if (milestones.some(m => prevTotal < m && stats.totalGenerations >= m)) {
+      showReviewBanner = true;
+    }
+  }
+
   return json({
     success: true,
     results,
     errors,
     total: productInputs.length,
     completed: results.length,
+    showReviewBanner,
   });
 }
 
@@ -502,6 +520,12 @@ export default function BulkPage() {
     formData.append("items", JSON.stringify(itemsToApply));
     submit(formData, { method: "post" });
   }, [results, checkedResults, appliedResults, submit]);
+
+  const handleDismissReview = useCallback(() => {
+    const formData = new FormData();
+    formData.append("_action", "dismissReview");
+    submit(formData, { method: "post" });
+  }, [submit]);
 
   const handleCopyAll = useCallback(() => {
     if (!results.length) return;
@@ -741,6 +765,23 @@ export default function BulkPage() {
                   <ProgressBar progress={50} tone="primary" />
                 </BlockStack>
               </Card>
+            )}
+
+            {/* Review Banner */}
+            {actionData?.showReviewBanner && (
+              <Banner
+                title="Enjoying Describely?"
+                tone="info"
+                onDismiss={handleDismissReview}
+                action={{
+                  content: "Leave a Review",
+                  url: "https://apps.shopify.com/describely/reviews",
+                  external: true,
+                  onAction: handleDismissReview,
+                }}
+              >
+                <p>Your descriptions are looking great! If you're finding Describely helpful, a quick review would mean a lot.</p>
+              </Banner>
             )}
 
             {/* Step 3: Results */}

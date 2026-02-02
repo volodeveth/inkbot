@@ -39,6 +39,9 @@ model Shop {
   apiKeyPrefix     String?           // "dsc_xxxx" for display
   apiKeyCreatedAt  DateTime?
 
+  // Review tracking
+  reviewLeft       Boolean   @default(false)
+
   // Subscription
   plan             Plan     @default(FREE)
   subscriptionId   String?
