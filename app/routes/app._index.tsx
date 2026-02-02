@@ -72,8 +72,17 @@ export default function Dashboard() {
   const usagePercent = usage.limit > 0 ? (usage.used / usage.limit) * 100 : 0;
 
   return (
-    <Page title="Describely Dashboard">
+    <Page title="">
       <BlockStack gap="500">
+        {/* Logo */}
+        <Box>
+          <img
+            src="/logo.png"
+            alt="Describely"
+            style={{ height: "48px", display: "block" }}
+          />
+        </Box>
+
         {/* Review Banner */}
         {!reviewLeft && !actionData?.reviewLeft && (
           <Banner
