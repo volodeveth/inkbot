@@ -30,10 +30,10 @@ export const generateDescriptionSchema = z.object({
   keywords: z.string().max(500).optional(),
   language: z
     .enum([
-      "en", "uk", "zh", "es", "hi", "ar", "bn", "pt", "ja", "ko",
-      "fr", "de", "it", "tr", "vi", "th", "pl", "nl", "id", "sv",
-      "cs", "ro", "el", "hu", "da", "fi", "no", "he", "ms", "tl",
-      "fr-af", "ar-na", "sw", "af", "am", "yo", "zu", "xh", "ha", "ig", "om", "sn",
+      "en", "fr", "de", "es", "pt", "uk",
+      "af", "am", "ar", "ar-na", "bn", "zh", "cs", "da", "nl", "tl", "fi", "fr-af",
+      "el", "ha", "he", "hi", "hu", "ig", "id", "it", "ja", "ko", "ms", "no",
+      "om", "pl", "ro", "sn", "sw", "sv", "th", "tr", "vi", "xh", "yo", "zu",
     ])
     .optional()
     .default("en"),
