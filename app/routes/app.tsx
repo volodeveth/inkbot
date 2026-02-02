@@ -40,17 +40,17 @@ export default function App() {
       }}>
         Built by{" "}
         <a
-          href="https://volodeveth.vercel.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: "#5c6ac4", textDecoration: "none" }}
+          href="#"
+          onClick={(e) => { e.preventDefault(); window.open("https://volodeveth.vercel.app/", "_blank"); }}
+          style={{ color: "#5c6ac4", textDecoration: "none", cursor: "pointer" }}
         >
           VoloDev.eth
         </a>
         {" | "}
         <a
-          href="mailto:starbowshine@gmail.com"
-          style={{ color: "#5c6ac4", textDecoration: "none" }}
+          href="#"
+          onClick={(e) => { e.preventDefault(); window.open("mailto:starbowshine@gmail.com", "_blank"); }}
+          style={{ color: "#5c6ac4", textDecoration: "none", cursor: "pointer" }}
         >
           Support
         </a>
