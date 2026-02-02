@@ -1,15 +1,29 @@
-import { json, type ActionFunctionArgs } from "@remix-run/node";
-import { authenticate } from "../shopify.server";
+import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import { authenticateApiRequest } from "~/services/apiAuth.server";
 import { generateProductDescription } from "~/services/ai.server";
 import { checkUsageLimit, incrementUsage } from "~/services/billing.server";
 import { getShop } from "~/models/shop.server";
 import { createGeneration } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+  return json({ error: "Method not allowed" }, { status: 405, headers: corsHeaders });
+}
+
 /**
  * POST /api/bulk-generate
  *
  * Bulk generation API endpoint.
+ * Supports both Shopify session auth and Bearer API key auth.
  *
  * Body JSON:
  * {
@@ -24,35 +38,35 @@ import { getBrandVoice } from "~/models/brandVoice.server";
  * }
  */
 export async function action({ request }: ActionFunctionArgs) {
-  const { session } = await authenticate.admin(request);
+  const { shopDomain } = await authenticateApiRequest(request);
 
   if (request.method !== "POST") {
-    return json({ error: "Method not allowed" }, { status: 405 });
+    return json({ error: "Method not allowed" }, { status: 405, headers: corsHeaders });
   }
 
   let body: any;
   try {
     body = await request.json();
   } catch {
-    return json({ error: "Invalid JSON body" }, { status: 400 });
+    return json({ error: "Invalid JSON body" }, { status: 400, headers: corsHeaders });
   }
 
   const { products, niche, tone, language } = body;
 
   if (!Array.isArray(products) || products.length === 0) {
-    return json({ error: "products array is required" }, { status: 400 });
+    return json({ error: "products array is required" }, { status: 400, headers: corsHeaders });
   }
 
   if (!niche || !tone) {
-    return json({ error: "niche and tone are required" }, { status: 400 });
+    return json({ error: "niche and tone are required" }, { status: 400, headers: corsHeaders });
   }
 
   // Check usage
-  const usage = await checkUsageLimit(session.shop);
+  const usage = await checkUsageLimit(shopDomain);
   if (usage.plan !== "UNLIMITED") {
     return json(
       { error: "API access requires Unlimited plan." },
-      { status: 403 }
+      { status: 403, headers: corsHeaders }
     );
   }
   const remaining = usage.limit - usage.used;
@@ -63,14 +77,14 @@ export async function action({ request }: ActionFunctionArgs) {
         error: "Monthly limit reached. Upgrade your plan.",
         usage: { used: usage.used, limit: usage.limit, plan: usage.plan },
       },
-      { status: 429 }
+      { status: 429, headers: corsHeaders }
     );
   }
 
   // Limit to remaining quota
   const productsToProcess = products.slice(0, remaining);
-  const shop = await getShop(session.shop);
-  const brandVoice = await getBrandVoice(session.shop);
+  const shop = await getShop(shopDomain);
+  const brandVoice = await getBrandVoice(shopDomain);
 
   const results: any[] = [];
   const errors: { productTitle: string; error: string }[] = [];
@@ -119,7 +133,7 @@ export async function action({ request }: ActionFunctionArgs) {
           });
         }
 
-        await incrementUsage(session.shop);
+        await incrementUsage(shopDomain);
 
         results.push({
           productTitle: product.productTitle,
@@ -141,12 +155,15 @@ export async function action({ request }: ActionFunctionArgs) {
     }
   }
 
-  return json({
-    success: true,
-    results,
-    errors,
-    total: productsToProcess.length,
-    completed: results.length,
-    skipped: products.length - productsToProcess.length,
-  });
+  return json(
+    {
+      success: true,
+      results,
+      errors,
+      total: productsToProcess.length,
+      completed: results.length,
+      skipped: products.length - productsToProcess.length,
+    },
+    { headers: corsHeaders }
+  );
 }

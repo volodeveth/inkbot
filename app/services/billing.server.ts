@@ -99,6 +99,9 @@ export async function createSubscription(
         generationsLimit: PLAN_LIMITS.FREE,
         subscriptionId: null,
         subscriptionStatus: null,
+        apiKeyHash: null,
+        apiKeyPrefix: null,
+        apiKeyCreatedAt: null,
       },
     });
     return "";
@@ -191,6 +194,9 @@ export async function cancelSubscription(
       generationsLimit: PLAN_LIMITS.FREE,
       subscriptionId: null,
       subscriptionStatus: null,
+      apiKeyHash: null,
+      apiKeyPrefix: null,
+      apiKeyCreatedAt: null,
     },
   });
 }

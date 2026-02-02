@@ -1,16 +1,29 @@
-import { json, type ActionFunctionArgs } from "@remix-run/node";
-import { authenticate } from "../shopify.server";
+import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import { authenticateApiRequest } from "~/services/apiAuth.server";
 import { generateProductDescription } from "~/services/ai.server";
 import { checkUsageLimit, incrementUsage } from "~/services/billing.server";
 import { getShop } from "~/models/shop.server";
 import { createGeneration } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+  return json({ error: "Method not allowed" }, { status: 405, headers: corsHeaders });
+}
+
 /**
  * POST /api/generate
  *
  * Standalone API endpoint for description generation.
- * Used by external integrations or direct API calls.
+ * Supports both Shopify session auth and Bearer API key auth.
  *
  * Body JSON:
  * {
@@ -25,18 +38,18 @@ import { getBrandVoice } from "~/models/brandVoice.server";
  * }
  */
 export async function action({ request }: ActionFunctionArgs) {
-  const { session } = await authenticate.admin(request);
+  const { shopDomain } = await authenticateApiRequest(request);
 
   if (request.method !== "POST") {
-    return json({ error: "Method not allowed" }, { status: 405 });
+    return json({ error: "Method not allowed" }, { status: 405, headers: corsHeaders });
   }
 
   // Check usage
-  const usage = await checkUsageLimit(session.shop);
+  const usage = await checkUsageLimit(shopDomain);
   if (usage.plan !== "UNLIMITED") {
     return json(
       { error: "API access requires Unlimited plan." },
-      { status: 403 }
+      { status: 403, headers: corsHeaders }
     );
   }
   if (!usage.allowed) {
@@ -45,7 +58,7 @@ export async function action({ request }: ActionFunctionArgs) {
         error: "Monthly limit reached. Upgrade your plan.",
         usage: { used: usage.used, limit: usage.limit, plan: usage.plan },
       },
-      { status: 429 }
+      { status: 429, headers: corsHeaders }
     );
   }
 
@@ -53,7 +66,7 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     body = await request.json();
   } catch {
-    return json({ error: "Invalid JSON body" }, { status: 400 });
+    return json({ error: "Invalid JSON body" }, { status: 400, headers: corsHeaders });
   }
 
   const { productTitle, productType, existingDescription, features, niche, tone, keywords, language } = body;
@@ -61,13 +74,13 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!productTitle || !niche || !tone) {
     return json(
       { error: "productTitle, niche, and tone are required" },
-      { status: 400 }
+      { status: 400, headers: corsHeaders }
     );
   }
 
   try {
-    const shop = await getShop(session.shop);
-    const brandVoice = await getBrandVoice(session.shop);
+    const shop = await getShop(shopDomain);
+    const brandVoice = await getBrandVoice(shopDomain);
 
     const result = await generateProductDescription({
       productTitle,
@@ -109,22 +122,25 @@ export async function action({ request }: ActionFunctionArgs) {
       });
     }
 
-    await incrementUsage(session.shop);
+    await incrementUsage(shopDomain);
 
-    return json({
-      success: true,
-      result,
-      usage: {
-        used: usage.used + 1,
-        limit: usage.limit,
-        plan: usage.plan,
+    return json(
+      {
+        success: true,
+        result,
+        usage: {
+          used: usage.used + 1,
+          limit: usage.limit,
+          plan: usage.plan,
+        },
       },
-    });
+      { headers: corsHeaders }
+    );
   } catch (error: any) {
     console.error("API generate error:", error);
     return json(
       { error: "Generation failed", details: error.message },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

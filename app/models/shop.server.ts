@@ -48,3 +48,36 @@ export async function updateShopPlan(shopDomain: string, plan: Plan) {
     },
   });
 }
+
+export async function getShopByApiKeyHash(apiKeyHash: string) {
+  return db.shop.findUnique({
+    where: { apiKeyHash },
+    include: { brandVoice: true },
+  });
+}
+
+export async function setShopApiKey(
+  shopDomain: string,
+  apiKeyHash: string,
+  apiKeyPrefix: string
+) {
+  return db.shop.update({
+    where: { shopDomain },
+    data: {
+      apiKeyHash,
+      apiKeyPrefix,
+      apiKeyCreatedAt: new Date(),
+    },
+  });
+}
+
+export async function revokeShopApiKey(shopDomain: string) {
+  return db.shop.update({
+    where: { shopDomain },
+    data: {
+      apiKeyHash: null,
+      apiKeyPrefix: null,
+      apiKeyCreatedAt: null,
+    },
+  });
+}

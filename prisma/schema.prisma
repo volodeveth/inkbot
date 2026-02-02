@@ -34,6 +34,11 @@ model Shop {
   shopDomain       String   @unique
   accessToken      String
 
+  // API Key (hashed, for external API access)
+  apiKeyHash       String?   @unique
+  apiKeyPrefix     String?           // "dsc_xxxx" for display
+  apiKeyCreatedAt  DateTime?
+
   // Subscription
   plan             Plan     @default(FREE)
   subscriptionId   String?

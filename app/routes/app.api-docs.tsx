@@ -1,11 +1,13 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useActionData, useSubmit, useNavigation } from "@remix-run/react";
+import { useState, useCallback } from "react";
 import {
   Page,
   Layout,
   Card,
   BlockStack,
+  InlineStack,
   Text,
   Banner,
   Box,
@@ -15,11 +17,44 @@ import {
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { getShop } from "~/models/shop.server";
+import { setShopApiKey, revokeShopApiKey } from "~/models/shop.server";
+import { generateApiKey } from "~/services/apiKey.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
   const shop = await getShop(session.shop);
-  return json({ plan: shop?.plan || "FREE" });
+  return json({
+    plan: shop?.plan || "FREE",
+    hasApiKey: !!shop?.apiKeyHash,
+    apiKeyPrefix: shop?.apiKeyPrefix || null,
+    apiKeyCreatedAt: shop?.apiKeyCreatedAt ? shop.apiKeyCreatedAt.toISOString() : null,
+    appUrl: process.env.SHOPIFY_APP_URL || "",
+  });
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  const { session } = await authenticate.admin(request);
+  const shop = await getShop(session.shop);
+
+  if (!shop || shop.plan !== "UNLIMITED") {
+    return json({ error: "API keys require the Unlimited plan" }, { status: 403 });
+  }
+
+  const formData = await request.formData();
+  const _action = formData.get("_action") as string;
+
+  if (_action === "generateKey" || _action === "regenerateKey") {
+    const { plaintext, hash, prefix } = generateApiKey();
+    await setShopApiKey(session.shop, hash, prefix);
+    return json({ newKey: plaintext, prefix });
+  }
+
+  if (_action === "revokeKey") {
+    await revokeShopApiKey(session.shop);
+    return json({ revoked: true });
+  }
+
+  return json({ error: "Invalid action" }, { status: 400 });
 }
 
 const codeBoxStyles = {
@@ -42,7 +77,30 @@ function CodeBlock({ children }: { children: string }) {
 }
 
 export default function ApiDocs() {
-  const { plan } = useLoaderData<typeof loader>();
+  const { plan, hasApiKey, apiKeyPrefix, apiKeyCreatedAt, appUrl } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>() as any;
+  const submit = useSubmit();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
+
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyKey = useCallback(() => {
+    if (actionData?.newKey) {
+      navigator.clipboard.writeText(actionData.newKey);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [actionData?.newKey]);
+
+  const handleAction = useCallback(
+    (actionName: string) => {
+      const formData = new FormData();
+      formData.set("_action", actionName);
+      submit(formData, { method: "post" });
+    },
+    [submit]
+  );
 
   if (plan !== "UNLIMITED") {
     return (
@@ -66,11 +124,95 @@ export default function ApiDocs() {
     );
   }
 
+  const keyExists = hasApiKey || actionData?.newKey;
+  const wasRevoked = actionData?.revoked;
+
   return (
     <Page title="API Documentation">
       <Layout>
         <Layout.Section>
           <BlockStack gap="400">
+            {/* API Key Management */}
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h2" variant="headingMd">
+                  API Key Management
+                </Text>
+                <Text as="p" variant="bodyMd">
+                  Generate an API key to authenticate external requests to the Describely API.
+                  Keys use the <code>dsc_</code> prefix and are hashed before storage — the
+                  plaintext key is shown only once.
+                </Text>
+
+                {actionData?.newKey && (
+                  <Banner title="Save your API key now" tone="critical">
+                    <BlockStack gap="200">
+                      <Text as="p" variant="bodyMd">
+                        This key will not be shown again. Copy it and store it securely.
+                      </Text>
+                      <div style={codeBoxStyles}>
+                        <pre style={{ margin: 0, fontFamily: "monospace", fontSize: "13px", wordBreak: "break-all" }}>
+                          {actionData.newKey}
+                        </pre>
+                      </div>
+                      <InlineStack gap="200">
+                        <Button onClick={handleCopyKey}>
+                          {copied ? "Copied!" : "Copy Key"}
+                        </Button>
+                      </InlineStack>
+                    </BlockStack>
+                  </Banner>
+                )}
+
+                {wasRevoked && !actionData?.newKey && (
+                  <Banner title="API key revoked" tone="info">
+                    <p>Your API key has been revoked. External API requests will no longer be authenticated.</p>
+                  </Banner>
+                )}
+
+                {keyExists && !wasRevoked ? (
+                  <BlockStack gap="200">
+                    <InlineStack gap="200" align="start" blockAlign="center">
+                      <Text as="p" variant="bodyMd">
+                        <strong>Active key:</strong>{" "}
+                        {actionData?.prefix || apiKeyPrefix}****
+                      </Text>
+                      {(apiKeyCreatedAt || actionData?.newKey) && (
+                        <Badge>
+                          {`Created ${apiKeyCreatedAt ? new Date(apiKeyCreatedAt).toLocaleDateString() : "just now"}`}
+                        </Badge>
+                      )}
+                    </InlineStack>
+                    <InlineStack gap="200">
+                      <Button
+                        onClick={() => handleAction("regenerateKey")}
+                        loading={isSubmitting}
+                      >
+                        Regenerate Key
+                      </Button>
+                      <Button
+                        onClick={() => handleAction("revokeKey")}
+                        loading={isSubmitting}
+                        tone="critical"
+                      >
+                        Revoke Key
+                      </Button>
+                    </InlineStack>
+                  </BlockStack>
+                ) : !actionData?.newKey ? (
+                  <Button
+                    variant="primary"
+                    onClick={() => handleAction("generateKey")}
+                    loading={isSubmitting}
+                  >
+                    Generate API Key
+                  </Button>
+                ) : null}
+              </BlockStack>
+            </Card>
+
+            <Divider />
+
             {/* Authentication */}
             <Card>
               <BlockStack gap="300">
@@ -78,11 +220,51 @@ export default function ApiDocs() {
                   Authentication
                 </Text>
                 <Text as="p" variant="bodyMd">
-                  All API requests require a valid Shopify admin session. Requests
-                  must be made from your authenticated Shopify admin context. The
-                  API uses your shop's OAuth session token for authentication — no
-                  separate API keys are needed.
+                  All external API requests must include your API key in the
+                  Authorization header using the Bearer scheme:
                 </Text>
+                <CodeBlock>{`Authorization: Bearer dsc_your_api_key_here`}</CodeBlock>
+                <Text as="p" variant="bodyMd">
+                  Requests from within the Shopify admin (embedded app) are
+                  authenticated automatically via OAuth session — no API key
+                  needed.
+                </Text>
+              </BlockStack>
+            </Card>
+
+            <Divider />
+
+            {/* curl examples */}
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h2" variant="headingMd">
+                  Example: curl
+                </Text>
+                <Text as="h3" variant="headingSm">
+                  Single generation
+                </Text>
+                <CodeBlock>{`curl -X POST ${appUrl}/api/generate \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer dsc_your_api_key_here" \\
+  -d '{
+    "productTitle": "Wireless Headphones",
+    "niche": "electronics",
+    "tone": "professional"
+  }'`}</CodeBlock>
+                <Text as="h3" variant="headingSm">
+                  Bulk generation
+                </Text>
+                <CodeBlock>{`curl -X POST ${appUrl}/api/bulk-generate \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer dsc_your_api_key_here" \\
+  -d '{
+    "products": [
+      { "productTitle": "Wireless Headphones", "features": ["ANC", "40h battery"] },
+      { "productTitle": "Bluetooth Speaker", "features": ["Waterproof"] }
+    ],
+    "niche": "electronics",
+    "tone": "professional"
+  }'`}</CodeBlock>
               </BlockStack>
             </Card>
 
@@ -264,6 +446,12 @@ export default function ApiDocs() {
                     <Badge tone="critical">400</Badge>
                     <Text as="p" variant="bodyMd">
                       Bad Request — Missing required fields or invalid JSON body
+                    </Text>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Badge tone="critical">401</Badge>
+                    <Text as="p" variant="bodyMd">
+                      Unauthorized — Invalid or missing API key
                     </Text>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
