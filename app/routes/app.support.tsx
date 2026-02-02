@@ -22,7 +22,10 @@ import {
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { checkUsageLimit } from "~/services/billing.server";
+import db from "~/db.server";
 import type { PlanKey } from "~/utils/plans";
+
+const TICKET_OFFSET = 123149;
 
 const PLAN_DISPLAY_NAMES: Record<PlanKey, string> = {
   FREE: "Free",
@@ -68,6 +71,11 @@ export async function action({ request }: ActionFunctionArgs) {
   const planName = PLAN_DISPLAY_NAMES[plan as PlanKey] || plan;
 
   try {
+    const ticket = await db.supportTicket.create({
+      data: { shopDomain: shop, email, subject, description, plan: planName },
+    });
+    const ticketNumber = TICKET_OFFSET + ticket.id;
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -77,8 +85,8 @@ export async function action({ request }: ActionFunctionArgs) {
       body: JSON.stringify({
         from: "Describely <onboarding@resend.dev>",
         to: "starbowshine@gmail.com",
-        subject: `[Describely Support] ${subject}`,
-        text: `Shop: ${shop}\nPlan: ${planName}\nReply to: ${email}\n\n${description}`,
+        subject: `[Describely Support #${ticketNumber}] ${subject}`,
+        text: `Ticket: #${ticketNumber}\nShop: ${shop}\nPlan: ${planName}\nReply to: ${email}\n\n${description}`,
         reply_to: email,
       }),
     });
@@ -89,7 +97,7 @@ export async function action({ request }: ActionFunctionArgs) {
       return json({ error: "Failed to send message. Please try again later." });
     }
 
-    return json({ success: true });
+    return json({ success: true, ticketNumber });
   } catch (err) {
     console.error("Resend fetch error:", err);
     return json({ error: "Failed to send message. Please try again later." });
@@ -136,7 +144,7 @@ export default function Support() {
                 title="Message sent!"
                 tone="success"
               >
-                <p>We'll get back to you as soon as possible.</p>
+                <p>Your ticket <strong>#{actionData.ticketNumber}</strong> has been created. We'll get back to you as soon as possible.</p>
               </Banner>
             )}
             {actionData?.error && (

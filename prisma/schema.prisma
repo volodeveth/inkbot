@@ -136,6 +136,17 @@ enum GenerationStatus {
   APPLIED
 }
 
+// Support tickets
+model SupportTicket {
+  id          Int      @id @default(autoincrement())
+  shopDomain  String
+  email       String
+  subject     String
+  description String
+  plan        String
+  createdAt   DateTime @default(now())
+}
+
 // Niche templates
 model NicheTemplate {
   id             String   @id @default(cuid())
