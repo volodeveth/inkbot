@@ -424,6 +424,7 @@ export default function GeneratePage() {
   }, [selectedProduct, actionData, submit]);
 
   const handleLeaveReview = useCallback(() => {
+    window.open("https://apps.shopify.com/describely/reviews", "_blank");
     const formData = new FormData();
     formData.append("_action", "leaveReview");
     submit(formData, { method: "post" });
@@ -452,8 +453,6 @@ export default function GeneratePage() {
                 tone="info"
                 action={{
                   content: "Leave a Review",
-                  url: "https://apps.shopify.com/describely/reviews",
-                  external: true,
                   onAction: handleLeaveReview,
                 }}
               >
