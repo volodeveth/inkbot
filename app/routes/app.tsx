@@ -26,6 +26,7 @@ export default function App() {
         <Link to="/app/bulk">Bulk Generate</Link>
         <Link to="/app/history">History</Link>
         <Link to="/app/settings">Settings</Link>
+        <Link to="/app/api-docs">API</Link>
         <Link to="/app/billing">Billing</Link>
       </NavMenu>
       <Outlet />
