@@ -33,9 +33,9 @@ D:\Myapps\describely\
 │   ├── routes/
 │   │   ├── _index.tsx                   ✅ Root redirect → /auth/login (або /app з ?shop=)
 │   │   ├── app.tsx                    ✅ Layout з навігацією (Polaris + NavMenu)
-│   │   ├── app._index.tsx             ✅ Dashboard: usage, stats, quick actions, recent generations
-│   │   ├── app.generate.tsx           ✅ Генерація: product input, niche/tone/language, result display, apply/copy
-│   │   ├── app.bulk.tsx               ✅ Bulk: textarea input (Title|Type|Features), batch processing, results
+│   │   ├── app._index.tsx             ✅ Dashboard: usage, stats, quick actions, recent generations, review banner
+│   │   ├── app.generate.tsx           ✅ Генерація: product input, niche/tone/language, result display, apply/copy, review banner
+│   │   ├── app.bulk.tsx               ✅ Bulk: textarea input (Title|Type|Features), batch processing, results, review banner
 │   │   ├── app.settings.tsx           ✅ Brand voice: tone, style, keywords, avoid words, custom prompt, samples
 │   │   ├── app.history.tsx            ✅ Історія: фільтр по ніші, пагінація, copy, preview
 │   │   ├── app.billing.tsx            ✅ 4 плани (grid), upgrade/downgrade, FAQ
@@ -56,14 +56,14 @@ D:\Myapps\describely\
 │   │   └── GenerationCard.tsx         ✅ Повна картка результату: title, description, meta, keywords, actions
 │   │
 │   ├── services/
-│   │   ├── ai.server.ts               ✅ DeepSeek API (via OpenRouter): generateProductDescription(), generateBulkDescriptions()
+│   │   ├── ai.server.ts               ✅ DeepSeek API (via OpenRouter): generateProductDescription(), generateBulkDescriptions(), LANGUAGE_NAMES (42 мови)
 │   │   ├── prompts.server.ts          ✅ 9 ніш: NICHE_CONFIGS, getPromptForNiche(), getAllNiches()
 │   │   ├── billing.server.ts          ✅ checkUsageLimit(), incrementUsage(), createSubscription(), cancelSubscription() + auto-revoke API keys on downgrade
 │   │   ├── apiKey.server.ts           ✅ generateApiKey() (dsc_ prefix, 128-bit), hashApiKey() (SHA-256), isValidApiKeyFormat()
 │   │   └── apiAuth.server.ts          ✅ authenticateApiRequest(): Bearer API key auth → fallback to Shopify session auth
 │   │
 │   ├── models/
-│   │   ├── shop.server.ts             ✅ getShop(), getOrCreateShop(), updateShopSettings(), updateShopPlan(), getShopByApiKeyHash(), setShopApiKey(), revokeShopApiKey()
+│   │   ├── shop.server.ts             ✅ getShop(), getOrCreateShop(), updateShopSettings(), updateShopPlan(), getShopByApiKeyHash(), setShopApiKey(), revokeShopApiKey(), markReviewLeft()
 │   │   ├── generation.server.ts       ✅ createGeneration(), getGenerationsByShop(), getGenerationStats(), markGenerationApplied()
 │   │   ├── brandVoice.server.ts       ✅ getBrandVoice(), upsertBrandVoice()
 │   │   └── template.server.ts         ✅ getNicheTemplate(), getAllNicheTemplates(), seedNicheTemplates()
@@ -80,7 +80,7 @@ D:\Myapps\describely\
 │   └── shopify.server.ts             ✅ Shopify auth config (API v2024-10, Prisma session storage)
 │
 ├── prisma/
-│   └── schema.prisma                  ✅ 5 моделей: Session, Shop (+ apiKeyHash, apiKeyPrefix, apiKeyCreatedAt), BrandVoice, Generation, NicheTemplate
+│   └── schema.prisma                  ✅ 5 моделей: Session, Shop (+ apiKeyHash, apiKeyPrefix, apiKeyCreatedAt, reviewLeft), BrandVoice, Generation, NicheTemplate
 │                                         2 enum: Plan (FREE/STARTER/PRO/UNLIMITED), GenerationStatus
 │
 ├── public/                            (статичні файли)
@@ -123,9 +123,9 @@ D:\Myapps\describely\
 - Утиліти: Zod валідація форм, SEO scoring (0-100)
 
 ### Фаза 3: Frontend Pages ✅
-- **Dashboard** — usage card (progress bar), stats (total, avg SEO, applied), quick actions, recent 5 generations
-- **Generate** — product input form, niche/tone/language selectors, brand voice indicator, result display з SEO score, copy/apply actions
-- **Bulk Generate** — multi-line textarea (Title|Type|Features format), shared settings, batch results display
+- **Dashboard** — usage card (progress bar), stats (total, avg SEO, applied), quick actions, recent 5 generations, review banner
+- **Generate** — product input form, niche/tone/language (42 мови) selectors, brand voice indicator, result display з SEO score, copy/apply actions, review banner
+- **Bulk Generate** — multi-line textarea (Title|Type|Features format), shared settings, batch results display, review banner
 - **Settings** — brand voice config: tone, style, target audience, keywords, avoid words, brand values, custom prompt, sample texts
 - **History** — filterable by niche, paginated (10/page), expandable cards з description preview, copy actions
 - **Billing** — 4-column plan grid з features list, current plan highlight, upgrade/downgrade/cancel, FAQ section
@@ -244,8 +244,29 @@ fashion, electronics, beauty, food, home, sports, jewelry, pets, general
 ### Тони
 professional, casual, luxurious, playful, technical, minimalist
 
-### Мови
-en, uk, de, fr, es
+### Мови (42 мови)
+
+**Основні світові:**
+en (English), es (Spanish), fr (French), de (German), it (Italian), pt (Portuguese), zh (Chinese), ja (Japanese), ko (Korean)
+
+**Європейський регіон:**
+uk (Ukrainian), pl (Polish), nl (Dutch), sv (Swedish), da (Danish), no (Norwegian), fi (Finnish), cs (Czech), hu (Hungarian), ro (Romanian), el (Greek), tr (Turkish)
+
+**Азійський та Близькосхідний регіон:**
+ar (Arabic), hi (Hindi), th (Thai), vi (Vietnamese), id (Indonesian), ms (Malay), bn (Bengali), he (Hebrew), tl (Filipino)
+
+**Африканський регіон:**
+fr-af (French African), ar-na (Arabic North African), sw (Swahili), af (Afrikaans), am (Amharic), yo (Yoruba), zu (Zulu), xh (Xhosa), ha (Hausa), ig (Igbo), om (Oromo), sn (Shona)
+
+Мова задається через `LANGUAGE_NAMES` map в `ai.server.ts` (код → повна назва). Prompt містить потрійне підсилення мовної вимоги (system prompt CRITICAL LANGUAGE REQUIREMENT + rule #8 + user prompt IMPORTANT).
+
+### Review Banner
+- Перманентний банер "Enjoying Describely?" на Dashboard, Generate та Bulk сторінках
+- Показується доки `shop.reviewLeft === false`
+- Кнопка "Leave a Review" → відкриває URL App Store + встановлює `reviewLeft = true` через action `leaveReview`
+- Без кнопки dismiss — тільки "Leave a Review"
+- Поле `reviewLeft Boolean @default(false)` на моделі Shop
+- Функція `markReviewLeft(shopDomain)` в `shop.server.ts`
 
 ### Bulk Format (textarea input)
 ```
