@@ -21,7 +21,7 @@ GitHub: `https://github.com/volodeveth/describely` (private)
 | Хостинг | Vercel (serverless) | region: fra1 |
 | Платежі | Shopify Billing API | 4 плани |
 | Валідація | Zod | 3.24 |
-| Auth | @shopify/shopify-app-remix | OAuth + Session Storage |
+| Auth | @shopify/shopify-app-remix | OAuth + Session Storage + API Keys (dsc_ prefix) |
 
 ---
 
@@ -40,8 +40,9 @@ D:\Myapps\describely\
 │   │   ├── app.history.tsx            ✅ Історія: фільтр по ніші, пагінація, copy, preview
 │   │   ├── app.billing.tsx            ✅ 4 плани (grid), upgrade/downgrade, FAQ
 │   │   ├── app.billing.confirm.tsx    ✅ Підтвердження Shopify billing redirect
-│   │   ├── api.generate.tsx           ✅ POST JSON API для генерації (standalone endpoint)
-│   │   ├── api.bulk-generate.tsx      ✅ POST JSON API для bulk (batch по 3, rate limiting)
+│   │   ├── app.api-docs.tsx            ✅ API docs: key management (generate/regenerate/revoke), auth docs, curl examples, endpoints reference
+│   │   ├── api.generate.tsx           ✅ POST JSON API для генерації (Bearer API key + session auth, CORS)
+│   │   ├── api.bulk-generate.tsx      ✅ POST JSON API для bulk (Bearer API key + session auth, CORS, batch по 3)
 │   │   ├── api.analyze-voice.tsx      ✅ POST API: аналіз sample texts → brand voice profile
 │   │   ├── auth.$.tsx                 ✅ Shopify OAuth catch-all
 │   │   ├── auth.login/route.tsx       ✅ Сторінка логіну
@@ -57,10 +58,12 @@ D:\Myapps\describely\
 │   ├── services/
 │   │   ├── ai.server.ts               ✅ DeepSeek API (via OpenRouter): generateProductDescription(), generateBulkDescriptions()
 │   │   ├── prompts.server.ts          ✅ 9 ніш: NICHE_CONFIGS, getPromptForNiche(), getAllNiches()
-│   │   └── billing.server.ts          ✅ checkUsageLimit(), incrementUsage(), createSubscription(), cancelSubscription()
+│   │   ├── billing.server.ts          ✅ checkUsageLimit(), incrementUsage(), createSubscription(), cancelSubscription() + auto-revoke API keys on downgrade
+│   │   ├── apiKey.server.ts           ✅ generateApiKey() (dsc_ prefix, 128-bit), hashApiKey() (SHA-256), isValidApiKeyFormat()
+│   │   └── apiAuth.server.ts          ✅ authenticateApiRequest(): Bearer API key auth → fallback to Shopify session auth
 │   │
 │   ├── models/
-│   │   ├── shop.server.ts             ✅ getShop(), getOrCreateShop(), updateShopSettings(), updateShopPlan()
+│   │   ├── shop.server.ts             ✅ getShop(), getOrCreateShop(), updateShopSettings(), updateShopPlan(), getShopByApiKeyHash(), setShopApiKey(), revokeShopApiKey()
 │   │   ├── generation.server.ts       ✅ createGeneration(), getGenerationsByShop(), getGenerationStats(), markGenerationApplied()
 │   │   ├── brandVoice.server.ts       ✅ getBrandVoice(), upsertBrandVoice()
 │   │   └── template.server.ts         ✅ getNicheTemplate(), getAllNicheTemplates(), seedNicheTemplates()
@@ -77,7 +80,7 @@ D:\Myapps\describely\
 │   └── shopify.server.ts             ✅ Shopify auth config (API v2024-10, Prisma session storage)
 │
 ├── prisma/
-│   └── schema.prisma                  ✅ 5 моделей: Session, Shop, BrandVoice, Generation, NicheTemplate
+│   └── schema.prisma                  ✅ 5 моделей: Session, Shop (+ apiKeyHash, apiKeyPrefix, apiKeyCreatedAt), BrandVoice, Generation, NicheTemplate
 │                                         2 enum: Plan (FREE/STARTER/PRO/UNLIMITED), GenerationStatus
 │
 ├── public/                            (статичні файли)
@@ -129,9 +132,11 @@ D:\Myapps\describely\
 - **Components** — UsageCounter, SeoScoreBadge, NicheSelector, ToneSelector, GenerationCard
 
 ### Фаза 4: API Routes ✅
-- `POST /api/generate` — standalone JSON API з usage tracking
-- `POST /api/bulk-generate` — batch processing (3 concurrent), rate limiting
+- `POST /api/generate` — standalone JSON API з usage tracking, Bearer API key + session auth, CORS headers
+- `POST /api/bulk-generate` — batch processing (3 concurrent), rate limiting, Bearer API key + session auth, CORS headers
 - `POST /api/analyze-voice` — Claude-powered brand voice analysis з auto-save
+- **API Key Authentication** — `dsc_`-prefixed keys (128-bit random, SHA-256 hashed), UNLIMITED plan only, auto-revoke on downgrade
+- **API Docs page** (`app.api-docs.tsx`) — key management UI (generate/regenerate/revoke), Bearer auth docs, curl examples, endpoint reference
 
 ### Фаза 5: Deployment & Integration ✅ (частково)
 **Зроблено:**
@@ -204,6 +209,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 ```
 
+### API Key Auth Pattern (for api.generate / api.bulk-generate)
+```typescript
+import { authenticateApiRequest } from "~/services/apiAuth.server";
+
+export async function action({ request }: ActionFunctionArgs) {
+  // Checks Bearer dsc_... header first → falls back to Shopify session auth
+  const { shopDomain, authMethod } = await authenticateApiRequest(request);
+  // authMethod: "api_key" | "session"
+}
+```
+- Keys: `dsc_` + 32 hex chars (128-bit random), SHA-256 hashed in DB (`apiKeyHash` @unique on Shop)
+- Only UNLIMITED plan can create/use API keys
+- Keys auto-revoked when plan downgraded (cancelSubscription / createSubscription FREE)
+- CORS headers (`Access-Control-Allow-Origin: *`) + OPTIONS preflight on both API routes
+
 ### TypeScript Notes
 - `useActionData` повертає union type → використовуємо `as any` cast
 - Polaris `Badge` children повинен бути string → template literals `{`SEO: ${score}`}`
@@ -214,9 +234,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 | Plan | Price | Generations/month |
 |------|-------|-------------------|
 | FREE | $0 | 10 |
-| STARTER | $19 | 100 |
-| PRO | $49 | 500 |
-| UNLIMITED | $99 | 999999 |
+| STARTER | $9 | 100 |
+| PRO | $19 | 500 |
+| UNLIMITED | $49 | 999999 |
 
 ### 9 ніш
 fashion, electronics, beauty, food, home, sports, jewelry, pets, general
