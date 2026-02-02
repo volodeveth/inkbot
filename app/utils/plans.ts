@@ -9,7 +9,7 @@ export const PLAN_LIMITS: Record<PlanKey, number> = {
   FREE: 10,
   STARTER: 100,
   PRO: 500,
-  UNLIMITED: 999999,
+  UNLIMITED: 5000,
 };
 
 export const PLAN_PRICES: Record<PlanKey, number> = {
@@ -44,7 +44,7 @@ export const PLAN_FEATURES: Record<PlanKey, string[]> = {
     "Priority support",
   ],
   UNLIMITED: [
-    "Unlimited descriptions",
+    "5,000 descriptions/month",
     "All 9 niches",
     "SEO optimization",
     "Full brand voice",

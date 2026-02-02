@@ -81,7 +81,7 @@ const PLANS: { key: PlanKey; name: string; popular?: boolean }[] = [
   { key: "FREE", name: "Free" },
   { key: "STARTER", name: "Starter" },
   { key: "PRO", name: "Pro", popular: true },
-  { key: "UNLIMITED", name: "Unlimited" },
+  { key: "UNLIMITED", name: "Elite" },
 ];
 
 export default function BillingPage() {
@@ -194,9 +194,7 @@ export default function BillingPage() {
                         </InlineStack>
 
                         <Text as="p" variant="bodySm" tone="subdued">
-                          {limit >= 999999
-                            ? "Unlimited descriptions"
-                            : `${limit} descriptions/month`}
+                          {`${limit.toLocaleString()} descriptions/month`}
                         </Text>
                       </BlockStack>
 

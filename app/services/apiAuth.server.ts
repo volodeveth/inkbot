@@ -29,7 +29,7 @@ export async function authenticateApiRequest(
 
     if (shop.plan !== "UNLIMITED") {
       throw json(
-        { error: "API key access requires the Unlimited plan" },
+        { error: "API key access requires the Elite plan" },
         { status: 403 }
       );
     }

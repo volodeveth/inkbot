@@ -37,7 +37,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const shop = await getShop(session.shop);
 
   if (!shop || shop.plan !== "UNLIMITED") {
-    return json({ error: "API keys require the Unlimited plan" }, { status: 403 });
+    return json({ error: "API keys require the Elite plan" }, { status: 403 });
   }
 
   const formData = await request.formData();
@@ -108,12 +108,12 @@ export default function ApiDocs() {
         <Layout>
           <Layout.Section>
             <Banner
-              title="API access requires the Unlimited plan"
+              title="API access requires the Elite plan"
               tone="warning"
               action={{ content: "Upgrade Plan", url: "/app/billing" }}
             >
               <p>
-                The Describely API is available exclusively on the Unlimited
+                The Describely API is available exclusively on the Elite
                 plan ($49/month). Upgrade to integrate AI-powered product
                 descriptions directly into your workflow.
               </p>
@@ -313,7 +313,7 @@ export default function ApiDocs() {
   },
   "usage": {
     "used": 42,
-    "limit": 999999,
+    "limit": 5000,
     "plan": "UNLIMITED"
   }
 }`}</CodeBlock>
@@ -457,7 +457,7 @@ export default function ApiDocs() {
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <Badge tone="critical">403</Badge>
                     <Text as="p" variant="bodyMd">
-                      Forbidden — API access requires the Unlimited plan
+                      Forbidden — API access requires the Elite plan
                     </Text>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -494,8 +494,8 @@ export default function ApiDocs() {
   "error": "Description of what went wrong",
   "details": "Additional context (on 500 errors)",
   "usage": {                    // included on 429 errors
-    "used": 999999,
-    "limit": 999999,
+    "used": 5000,
+    "limit": 5000,
     "plan": "UNLIMITED"
   }
 }`}</CodeBlock>

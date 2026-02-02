@@ -48,7 +48,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const usage = await checkUsageLimit(shopDomain);
   if (usage.plan !== "UNLIMITED") {
     return json(
-      { error: "API access requires Unlimited plan." },
+      { error: "API access requires Elite plan." },
       { status: 403, headers: corsHeaders }
     );
   }

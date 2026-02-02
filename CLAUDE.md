@@ -236,7 +236,7 @@ export async function action({ request }: ActionFunctionArgs) {
 | FREE | $0 | 10 |
 | STARTER | $9 | 100 |
 | PRO | $19 | 500 |
-| UNLIMITED | $49 | 999999 |
+| ELITE (key: UNLIMITED) | $49 | 5000 |
 
 ### 9 ніш
 fashion, electronics, beauty, food, home, sports, jewelry, pets, general
