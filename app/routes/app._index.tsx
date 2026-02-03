@@ -74,13 +74,18 @@ export default function Dashboard() {
   return (
     <Page title="">
       <BlockStack gap="500">
-        {/* Logo */}
+        {/* Logo & Tagline */}
         <Box>
-          <img
-            src="/logo.png"
-            alt="Describely"
-            style={{ height: "48px", display: "block" }}
-          />
+          <BlockStack gap="200">
+            <img
+              src="/logo.png"
+              alt="Describely"
+              style={{ height: "48px", display: "block" }}
+            />
+            <Text as="p" variant="bodyLg" tone="subdued">
+              Stop writing. Start selling. AI-generated descriptions & SEO in seconds.
+            </Text>
+          </BlockStack>
         </Box>
 
         {/* Review Banner */}
