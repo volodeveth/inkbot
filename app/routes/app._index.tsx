@@ -80,7 +80,7 @@ export default function Dashboard() {
             <img
               src="/logo.png"
               alt="Describely"
-              style={{ height: "48px", width: "auto", display: "block" }}
+              style={{ height: "48px", maxWidth: "200px", objectFit: "contain" }}
             />
             <Text as="p" variant="bodyLg" tone="subdued">
               Stop writing. Start selling. AI-generated descriptions & SEO in seconds.
