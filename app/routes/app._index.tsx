@@ -80,7 +80,7 @@ export default function Dashboard() {
             <img
               src="/logo.png"
               alt="InkBot"
-              style={{ height: "48px", maxWidth: "200px", objectFit: "contain" }}
+              style={{ height: "72px", maxWidth: "320px", objectFit: "contain" }}
             />
             <Text as="p" variant="bodyLg" tone="subdued">
               Stop writing. Start selling. AI-generated descriptions & SEO in seconds.
