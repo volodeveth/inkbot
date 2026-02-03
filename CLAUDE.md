@@ -34,7 +34,7 @@ D:\Myapps\describely\
 │   ├── routes/
 │   │   ├── _index.tsx                   ✅ Root redirect → /auth/login (або /app з ?shop=)
 │   │   ├── app.tsx                    ✅ Layout з навігацією (Polaris + NavMenu), глобальний футер "Built by VoloDev.eth"
-│   │   ├── app._index.tsx             ✅ Dashboard: logo, usage, stats, quick actions, recent generations, review banner
+│   │   ├── app._index.tsx             ✅ Dashboard: logo, tagline, usage, stats, quick actions, recent generations, review banner
 │   │   ├── app.generate.tsx           ✅ Генерація: product input, niche/tone/language, result display, apply/copy, review banner
 │   │   ├── app.bulk.tsx               ✅ Bulk: textarea input (Title|Type|Features), batch processing, results, review banner
 │   │   ├── app.settings.tsx           ✅ Brand voice: tone, style, keywords, avoid words, custom prompt, samples
@@ -85,10 +85,12 @@ D:\Myapps\describely\
 │   └── schema.prisma                  ✅ 6 моделей: Session, Shop (+ apiKeyHash, apiKeyPrefix, apiKeyCreatedAt, reviewLeft), BrandVoice, Generation, NicheTemplate, SupportTicket (autoincrement ID)
 │                                         2 enum: Plan (FREE/STARTER/PRO/UNLIMITED), GenerationStatus
 │
-├── public/                            (статичні файли)
+├── public/
+│   └── logo.png                       ✅ InkBot Big Logo (881×427)
 ├── інструкції, дизайн, лого, файли/   📋 Дизайн-макети та повний план реалізації
-│   ├── describely_implementation_plan.md   ← Детальний план (70+ КБ)
-│   ├── InkBot logo.png
+│   ├── describely_implementation_plan.md   ← Детальний план (70+ КБ, стара назва)
+│   ├── InkBot Big Logo.png            ✅ 881×427 — для dashboard
+│   ├── InkBot small logo.png          ✅ 1200×1200 — для Shopify Partners app icon
 │   └── Gemini_Generated_Image_*.png   ← UI мокапи (dashboard, generate, mobile)
 │
 ├── node_modules/                      ✅ Встановлені
@@ -125,7 +127,7 @@ D:\Myapps\describely\
 - Утиліти: Zod валідація форм, SEO scoring (0-100)
 
 ### Фаза 3: Frontend Pages ✅
-- **Dashboard** — logo, usage card (progress bar), stats (total, avg SEO, applied), quick actions, recent 5 generations, review banner
+- **Dashboard** — logo, tagline ("Stop writing. Start selling. AI-generated descriptions & SEO in seconds."), usage card (progress bar), stats (total, avg SEO, applied), quick actions, recent 5 generations, review banner
 - **Generate** — product input form, niche/tone/language (42 мови) selectors, brand voice indicator, result display з SEO score, copy/apply actions, review banner
 - **Bulk Generate** — multi-line textarea (Title|Type|Features format), shared settings, batch results display, review banner
 - **Settings** — brand voice config: tone, style, target audience, keywords, avoid words, brand values, custom prompt, sample texts
@@ -283,6 +285,16 @@ fr-af (French African), ar-na (Arabic North African), sw (Swahili), af (Afrikaan
 - **Автоматичні номери тікетів**: модель `SupportTicket` (autoincrement ID), номер = `123149 + id` (починаючи з `#123150`)
 - Номер тікету показується в success банері та включається в email subject: `[InkBot Support #123150] Subject`
 - Env: потрібен `RESEND_API_KEY` (Resend free tier: 100 emails/day, 3000/month)
+
+### Sidebar Menu (порядок)
+1. Dashboard
+2. Generate
+3. Bulk Generate
+4. History
+5. API
+6. Settings
+7. Billing
+8. Support
 
 ### Footer
 - Глобальний футер в `app.tsx` під `<Outlet />`
