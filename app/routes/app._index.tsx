@@ -76,11 +76,11 @@ export default function Dashboard() {
       <BlockStack gap="500">
         {/* Logo & Tagline */}
         <Box>
-          <BlockStack gap="200">
+          <BlockStack gap="200" inlineAlign="start">
             <img
               src="/logo.png"
               alt="InkBot"
-              style={{ height: "72px", maxWidth: "320px", objectFit: "contain" }}
+              style={{ height: "72px", maxWidth: "320px", objectFit: "contain", display: "block" }}
             />
             <Text as="p" variant="bodyLg" tone="subdued">
               Stop writing. Start selling. AI-generated descriptions & SEO in seconds.
