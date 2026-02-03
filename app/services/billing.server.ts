@@ -140,7 +140,7 @@ export async function createSubscription(
   `,
     {
       variables: {
-        name: `Describely ${plan} Plan`,
+        name: `InkBot ${plan} Plan`,
         price: PLAN_PRICES[plan],
         returnUrl: `${process.env.SHOPIFY_APP_URL}/app/billing/confirm`,
         test: isTest ? true : null,

@@ -83,9 +83,9 @@ export async function action({ request }: ActionFunctionArgs) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Describely <onboarding@resend.dev>",
+        from: "InkBot <onboarding@resend.dev>",
         to: "starbowshine@gmail.com",
-        subject: `[Describely Support #${ticketNumber}] ${subject}`,
+        subject: `[InkBot Support #${ticketNumber}] ${subject}`,
         text: `Ticket: #${ticketNumber}\nShop: ${shop}\nPlan: ${planName}\nReply to: ${email}\n\n${description}`,
         reply_to: email,
       }),

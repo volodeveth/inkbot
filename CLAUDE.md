@@ -1,10 +1,10 @@
-# Describely — Контекст проекту для Claude Code
+# InkBot — Контекст проекту для Claude Code
 
 ## Що це за проект
 
-**Describely** — Shopify App для AI-генерації описів товарів з SEO-оптимізацією.
-Vercel URL: `https://describely-steel.vercel.app`
-GitHub: `https://github.com/volodeveth/describely` (private)
+**InkBot — AI Product Descriptions & SEO** — Shopify App для AI-генерації описів товарів з SEO-оптимізацією.
+Vercel URL: `https://inkbotapp.vercel.app`
+GitHub: `https://github.com/volodeveth/inkbot` (private)
 
 Користувач обирає товар зі свого Shopify-магазину (або вводить вручну), вибирає нішу, тон та мову — і отримує готовий опис з SEO meta-тегами, оцінкою SEO та рекомендованими ключовими словами. Опис можна одразу застосувати до товару в Shopify.
 
@@ -21,6 +21,7 @@ GitHub: `https://github.com/volodeveth/describely` (private)
 | Хостинг | Vercel (serverless) | region: fra1 |
 | Платежі | Shopify Billing API | 4 плани |
 | Валідація | Zod | 3.24 |
+| Email | Resend API (via fetch) | Free tier, onboarding@resend.dev sender |
 | Auth | @shopify/shopify-app-remix | OAuth + Session Storage + API Keys (dsc_ prefix) |
 
 ---
@@ -32,8 +33,8 @@ D:\Myapps\describely\
 ├── app/
 │   ├── routes/
 │   │   ├── _index.tsx                   ✅ Root redirect → /auth/login (або /app з ?shop=)
-│   │   ├── app.tsx                    ✅ Layout з навігацією (Polaris + NavMenu)
-│   │   ├── app._index.tsx             ✅ Dashboard: usage, stats, quick actions, recent generations, review banner
+│   │   ├── app.tsx                    ✅ Layout з навігацією (Polaris + NavMenu), глобальний футер "Built by VoloDev.eth"
+│   │   ├── app._index.tsx             ✅ Dashboard: logo, usage, stats, quick actions, recent generations, review banner
 │   │   ├── app.generate.tsx           ✅ Генерація: product input, niche/tone/language, result display, apply/copy, review banner
 │   │   ├── app.bulk.tsx               ✅ Bulk: textarea input (Title|Type|Features), batch processing, results, review banner
 │   │   ├── app.settings.tsx           ✅ Brand voice: tone, style, keywords, avoid words, custom prompt, samples
@@ -41,6 +42,7 @@ D:\Myapps\describely\
 │   │   ├── app.billing.tsx            ✅ 4 плани (grid), upgrade/downgrade, FAQ
 │   │   ├── app.billing.confirm.tsx    ✅ Підтвердження Shopify billing redirect
 │   │   ├── app.api-docs.tsx            ✅ API docs: key management (generate/regenerate/revoke), auth docs, curl examples, endpoints reference
+│   │   ├── app.support.tsx            ✅ Support: contact form (shop/plan auto-fill, email/subject/description), Resend API, auto ticket numbers (#123150+)
 │   │   ├── api.generate.tsx           ✅ POST JSON API для генерації (Bearer API key + session auth, CORS)
 │   │   ├── api.bulk-generate.tsx      ✅ POST JSON API для bulk (Bearer API key + session auth, CORS, batch по 3)
 │   │   ├── api.analyze-voice.tsx      ✅ POST API: аналіз sample texts → brand voice profile
@@ -80,13 +82,13 @@ D:\Myapps\describely\
 │   └── shopify.server.ts             ✅ Shopify auth config (API v2024-10, Prisma session storage)
 │
 ├── prisma/
-│   └── schema.prisma                  ✅ 5 моделей: Session, Shop (+ apiKeyHash, apiKeyPrefix, apiKeyCreatedAt, reviewLeft), BrandVoice, Generation, NicheTemplate
+│   └── schema.prisma                  ✅ 6 моделей: Session, Shop (+ apiKeyHash, apiKeyPrefix, apiKeyCreatedAt, reviewLeft), BrandVoice, Generation, NicheTemplate, SupportTicket (autoincrement ID)
 │                                         2 enum: Plan (FREE/STARTER/PRO/UNLIMITED), GenerationStatus
 │
 ├── public/                            (статичні файли)
 ├── інструкції, дизайн, лого, файли/   📋 Дизайн-макети та повний план реалізації
 │   ├── describely_implementation_plan.md   ← Детальний план (70+ КБ)
-│   ├── Describely logo.png
+│   ├── InkBot logo.png
 │   └── Gemini_Generated_Image_*.png   ← UI мокапи (dashboard, generate, mobile)
 │
 ├── node_modules/                      ✅ Встановлені
@@ -123,13 +125,15 @@ D:\Myapps\describely\
 - Утиліти: Zod валідація форм, SEO scoring (0-100)
 
 ### Фаза 3: Frontend Pages ✅
-- **Dashboard** — usage card (progress bar), stats (total, avg SEO, applied), quick actions, recent 5 generations, review banner
+- **Dashboard** — logo, usage card (progress bar), stats (total, avg SEO, applied), quick actions, recent 5 generations, review banner
 - **Generate** — product input form, niche/tone/language (42 мови) selectors, brand voice indicator, result display з SEO score, copy/apply actions, review banner
 - **Bulk Generate** — multi-line textarea (Title|Type|Features format), shared settings, batch results display, review banner
 - **Settings** — brand voice config: tone, style, target audience, keywords, avoid words, brand values, custom prompt, sample texts
 - **History** — filterable by niche, paginated (10/page), expandable cards з description preview, copy actions
 - **Billing** — 4-column plan grid з features list, current plan highlight, upgrade/downgrade/cancel, FAQ section
+- **Support** — contact form з auto-fill (shop, plan), email/subject/description, Resend API відправка, автоматичні номери тікетів (#123150+)
 - **Components** — UsageCounter, SeoScoreBadge, NicheSelector, ToneSelector, GenerationCard
+- **Footer** — глобальний футер "Built by VoloDev.eth" (onClick window.open для обходу Shopify iframe CSP)
 
 ### Фаза 4: API Routes ✅
 - `POST /api/generate` — standalone JSON API з usage tracking, Bearer API key + session auth, CORS headers
@@ -140,19 +144,19 @@ D:\Myapps\describely\
 
 ### Фаза 5: Deployment & Integration ✅ (частково)
 **Зроблено:**
-- ✅ GitHub repo створено (private): `https://github.com/volodeveth/describely`
-- ✅ Vercel deployment працює: `https://describely-steel.vercel.app`
+- ✅ GitHub repo створено (private): `https://github.com/volodeveth/inkbot`
+- ✅ Vercel deployment працює: `https://inkbotapp.vercel.app`
 - ✅ Neon PostgreSQL database створена, таблиці синхронізовані (`prisma db push`)
-- ✅ Shopify Partners app створено (назва: `describely`)
+- ✅ Shopify Partners app створено (назва: `inkbot`)
 - ✅ App URLs налаштовані (redirect URLs, app URL → Vercel)
-- ✅ Environment variables налаштовані в Vercel (SHOPIFY_API_KEY, SHOPIFY_API_SECRET, SHOPIFY_APP_URL, DATABASE_URL, DIRECT_URL, SCOPES, OPENROUTER_API_KEY)
+- ✅ Environment variables налаштовані в Vercel (SHOPIFY_API_KEY, SHOPIFY_API_SECRET, SHOPIFY_APP_URL, DATABASE_URL, DIRECT_URL, SCOPES, OPENROUTER_API_KEY, RESEND_API_KEY)
 - ✅ Dev store створено і додаток встановлено — працює!
 
 **Потрібно зробити:**
 1. **Тестування в dev store**: перевірити генерацію описів, bulk, settings, billing flow
 2. **Додати OPENROUTER_API_KEY** з реальним ключем в Vercel (якщо ще не додано)
 3. **Seed niche templates**: викликати `seedNicheTemplates()` з `models/template.server.ts`
-4. **Custom domain**: налаштувати describely.app → Vercel (опціонально)
+4. **Custom domain**: налаштувати inkbot.app → Vercel (опціонально)
 5. **UI polish**: перевірити відповідність мокапам з папки інструкцій
 6. **App Store submission**: screenshots, description, privacy policy
 
@@ -171,6 +175,11 @@ D:\Myapps\describely\
 - useActionData union type → cast `as any`
 - CSS `?url` imports → `env.d.ts` declaration
 - LoginErrorType → `type LoginError` import
+
+### Shopify iframe CSP
+- Зовнішні посилання (`<a href="...">`) блокуються CSP в Shopify iframe → використовуємо `onClick + window.open()` замість `href`
+- Review banner: deep link `https://admin.shopify.com/store/STORE/oauth/install?client_id=APP_ID` → відкриває Shopify review modal напряму
+- Footer: `href="#" onClick={(e) => { e.preventDefault(); window.open(url, "_blank"); }}`
 
 ### Prisma
 - Prisma v5.22 (не v6!) через peer dependency від `@shopify/shopify-app-session-storage-prisma`
@@ -258,15 +267,27 @@ ar (Arabic), hi (Hindi), th (Thai), vi (Vietnamese), id (Indonesian), ms (Malay)
 **Африканський регіон:**
 fr-af (French African), ar-na (Arabic North African), sw (Swahili), af (Afrikaans), am (Amharic), yo (Yoruba), zu (Zulu), xh (Xhosa), ha (Hausa), ig (Igbo), om (Oromo), sn (Shona)
 
-Мова задається через `LANGUAGE_NAMES` map в `ai.server.ts` (код → повна назва). Prompt містить потрійне підсилення мовної вимоги (system prompt CRITICAL LANGUAGE REQUIREMENT + rule #8 + user prompt IMPORTANT).
+Мова задається через `LANGUAGE_NAMES` map в `ai.server.ts` (код → повна назва). Порядок у селекторі: пріоритетна група (en, es, fr, de, it, pt, zh, ja, ko) першою, потім решта алфавітно. Prompt містить потрійне підсилення мовної вимоги (system prompt CRITICAL LANGUAGE REQUIREMENT + rule #8 + user prompt IMPORTANT).
 
 ### Review Banner
-- Перманентний банер "Enjoying Describely?" на Dashboard, Generate та Bulk сторінках
+- Перманентний банер "Enjoying InkBot?" на Dashboard, Generate та Bulk сторінках
 - Показується доки `shop.reviewLeft === false`
-- Кнопка "Leave a Review" → відкриває URL App Store + встановлює `reviewLeft = true` через action `leaveReview`
+- Кнопка "Leave a Review" → deep link `https://admin.shopify.com/store/{store}/oauth/install?client_id={appId}` через `window.open()` + встановлює `reviewLeft = true` через action `leaveReview`
 - Без кнопки dismiss — тільки "Leave a Review"
 - Поле `reviewLeft Boolean @default(false)` на моделі Shop
 - Функція `markReviewLeft(shopDomain)` в `shop.server.ts`
+
+### Support Page (`app.support.tsx`)
+- Контактна форма з полями: Shop (disabled, auto-fill), Plan (disabled, auto-fill), Email, Subject, Description
+- Відправка через Resend API (`fetch`, без npm пакету): `from: "InkBot <onboarding@resend.dev>"`, `to: "starbowshine@gmail.com"`, `reply_to: email користувача`
+- **Автоматичні номери тікетів**: модель `SupportTicket` (autoincrement ID), номер = `123149 + id` (починаючи з `#123150`)
+- Номер тікету показується в success банері та включається в email subject: `[InkBot Support #123150] Subject`
+- Env: потрібен `RESEND_API_KEY` (Resend free tier: 100 emails/day, 3000/month)
+
+### Footer
+- Глобальний футер в `app.tsx` під `<Outlet />`
+- "Built by VoloDev.eth" → посилання на `https://volodeveth.vercel.app/`
+- Використовує `onClick + window.open()` замість `href` для обходу Shopify iframe CSP
 
 ### Bulk Format (textarea input)
 ```

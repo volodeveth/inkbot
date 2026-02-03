@@ -424,7 +424,7 @@ export default function GeneratePage() {
   }, [selectedProduct, actionData, submit]);
 
   const handleLeaveReview = useCallback(() => {
-    window.open("https://apps.shopify.com/describely/reviews#modal-show=WriteReviewModal", "_blank");
+    window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
     const formData = new FormData();
     formData.append("_action", "leaveReview");
     submit(formData, { method: "post" });
@@ -449,14 +449,14 @@ export default function GeneratePage() {
             {/* Review Banner */}
             {!reviewLeft && !actionData?.reviewLeft && (
               <Banner
-                title="Enjoying Describely?"
+                title="Enjoying InkBot?"
                 tone="info"
                 action={{
                   content: "Leave a Review",
                   onAction: handleLeaveReview,
                 }}
               >
-                <p>If you're finding Describely helpful, a quick review would mean a lot.</p>
+                <p>If you're finding InkBot helpful, a quick review would mean a lot.</p>
               </Banner>
             )}
 

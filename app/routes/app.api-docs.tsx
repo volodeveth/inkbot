@@ -113,7 +113,7 @@ export default function ApiDocs() {
               action={{ content: "Upgrade Plan", url: "/app/billing" }}
             >
               <p>
-                The Describely API is available exclusively on the Elite
+                The InkBot API is available exclusively on the Elite
                 plan ($49/month). Upgrade to integrate AI-powered product
                 descriptions directly into your workflow.
               </p>
@@ -139,7 +139,7 @@ export default function ApiDocs() {
                   API Key Management
                 </Text>
                 <Text as="p" variant="bodyMd">
-                  Generate an API key to authenticate external requests to the Describely API.
+                  Generate an API key to authenticate external requests to the InkBot API.
                   Keys use the <code>dsc_</code> prefix and are hashed before storage — the
                   plaintext key is shown only once.
                 </Text>
