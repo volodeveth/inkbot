@@ -52,7 +52,7 @@ export default function Landing() {
       <nav style={styles.nav}>
         <div style={styles.navContainer}>
           <div style={styles.logo}>
-            <span style={styles.logoIcon}>🖊️</span>
+            <img src="/favicon.png" alt="InkBot" style={styles.logoImage} />
             <span style={styles.logoText}>InkBot</span>
           </div>
           <div style={styles.navLinks}>
@@ -80,18 +80,23 @@ export default function Landing() {
           transition: "all 0.8s ease-out",
         }}>
           <div style={styles.badge}>
+            <svg width="20" height="20" viewBox="0 0 109 124" fill="#95BF47">
+              <path d="M74.7 14.8c-.1-.6-.6-1-1.1-1-.5 0-9.3-.2-9.3-.2s-6.2-6-6.9-6.7c-.7-.7-2-.5-2.5-.3 0 0-1.3.4-3.5 1.1-.4-1.1-.9-2.5-1.5-4C47.1-2.6 42.6.4 42.6.4S41.2 2.1 39.4 5c-.4-.1-.8-.2-1.2-.3-.9-2.9-2.5-5.6-5.3-5.6h-.2c-.8-1-1.8-1.4-2.6-1.4-6.5 0-9.6 8.1-10.6 12.2-2.6.8-4.4 1.4-4.7 1.5-1.4.5-1.5.5-1.7 1.8-.1 1-3.8 29.1-3.8 29.1L36.8 48l19.2-4.2S74.8 15.4 74.7 14.8zM53 10.5c-1.7.5-3.5 1.1-5.5 1.7 0-2.8-.4-6.8-1.7-10.1 4.2.8 6.3 5.6 7.2 8.4zm-8.8 2.7l-11.8 3.7c1.1-4.4 3.3-8.8 7.5-10.3 1.6 2.4 2.6 5.7 2.8 9.3-1 .2-1.4.3-1.4.3l2.9-3zm-7.3-12c.5 0 .9.2 1.4.5-5 2.4-7.4 8.4-8.7 13.4-2.7.8-5.3 1.6-7.8 2.4 1.5-7.3 6.9-16.3 15.1-16.3z"/>
+              <path d="M73.6 13.8c-.5 0-9.3-.2-9.3-.2s-6.2-6-6.9-6.7c-.3-.3-.6-.4-.9-.4l-2.7 54.4 26.4-5.7S74 14.4 73.6 13.8z" fill="#5E8E3E"/>
+              <path d="M44.2 41.2l-4.4 13c0 0-3.9-2.1-8.6-2.1-7 0-7.3 4.4-7.3 5.5 0 6 15.7 8.3 15.7 22.4 0 11.1-7 18.2-16.5 18.2-11.4 0-17.2-7.1-17.2-7.1l3-10s6 5.1 11.1 5.1c3.3 0 4.7-2.6 4.7-4.5 0-7.9-12.9-8.2-12.9-21.1 0-10.8 7.8-21.4 23.5-21.4 6.1 0 8.9 2 8.9 2z" fill="#fff"/>
+            </svg>
             <span style={styles.badgeDot}></span>
-            Trusted by Shopify Merchants
+            Official Shopify App
           </div>
           <h1 style={styles.heroTitle}>
             AI Product Descriptions
             <br />
-            <span style={styles.heroGradient}>That Actually Sell</span>
+            <span style={styles.heroGradient}>For Your Shopify Store</span>
           </h1>
           <p style={styles.heroSubtitle}>
             Generate unique, SEO-optimized descriptions in your brand voice.
             <br />
-            10x faster than manual writing. 42 languages. Instant results.
+            Built for Shopify. 42 languages. 9 niches. Instant results.
           </p>
           <div style={styles.heroButtons}>
             <button
@@ -128,6 +133,17 @@ export default function Landing() {
               <span style={styles.statNumber}>9</span>
               <span style={styles.statLabel}>Industry Niches</span>
             </div>
+          </div>
+
+          {/* Shopify Badge */}
+          <div style={styles.shopifyBadge}>
+            <span style={styles.shopifyBadgeText}>Available on</span>
+            <svg width="100" height="28" viewBox="0 0 446 127" fill="#95BF47">
+              <path d="M74.7 14.8c-.1-.6-.6-1-1.1-1-.5 0-9.3-.2-9.3-.2s-6.2-6-6.9-6.7c-.7-.7-2-.5-2.5-.3 0 0-1.3.4-3.5 1.1-.4-1.1-.9-2.5-1.5-4C47.1-2.6 42.6.4 42.6.4S41.2 2.1 39.4 5c-.4-.1-.8-.2-1.2-.3-.9-2.9-2.5-5.6-5.3-5.6h-.2c-.8-1-1.8-1.4-2.6-1.4-6.5 0-9.6 8.1-10.6 12.2-2.6.8-4.4 1.4-4.7 1.5-1.4.5-1.5.5-1.7 1.8-.1 1-3.8 29.1-3.8 29.1L36.8 48l19.2-4.2S74.8 15.4 74.7 14.8z"/>
+              <path d="M73.6 13.8c-.5 0-9.3-.2-9.3-.2s-6.2-6-6.9-6.7c-.3-.3-.6-.4-.9-.4l-2.7 54.4 26.4-5.7S74 14.4 73.6 13.8z" fill="#5E8E3E"/>
+              <path d="M44.2 41.2l-4.4 13c0 0-3.9-2.1-8.6-2.1-7 0-7.3 4.4-7.3 5.5 0 6 15.7 8.3 15.7 22.4 0 11.1-7 18.2-16.5 18.2-11.4 0-17.2-7.1-17.2-7.1l3-10s6 5.1 11.1 5.1c3.3 0 4.7-2.6 4.7-4.5 0-7.9-12.9-8.2-12.9-21.1 0-10.8 7.8-21.4 23.5-21.4 6.1 0 8.9 2 8.9 2z" fill="#fff"/>
+              <text x="95" y="85" fill="#ffffff" style={{fontSize: "52px", fontWeight: "600", fontFamily: "Inter, sans-serif"}}>Shopify</text>
+            </svg>
           </div>
         </div>
 
@@ -179,9 +195,9 @@ export default function Landing() {
         <div style={styles.sectionContainer}>
           <div style={styles.sectionHeader}>
             <span style={styles.sectionTag}>Features</span>
-            <h2 style={styles.sectionTitle}>Everything You Need to Scale</h2>
+            <h2 style={styles.sectionTitle}>Everything Your Shopify Store Needs</h2>
             <p style={styles.sectionSubtitle}>
-              Powerful AI tools designed specifically for Shopify merchants
+              Powerful AI tools designed specifically for Shopify merchants. One-click integration with your store.
             </p>
           </div>
 
@@ -213,9 +229,9 @@ export default function Landing() {
                 description: "Reach global customers with descriptions in English, Spanish, French, German, Chinese, and 37 more.",
               },
               {
-                icon: "🔌",
-                title: "API Access",
-                description: "Integrate InkBot into your workflow with our REST API. Automate your product descriptions.",
+                icon: "🛒",
+                title: "Shopify Integration",
+                description: "One-click apply to your Shopify products. Seamless sync with your store catalog.",
               },
             ].map((feature, index) => (
               <div
@@ -389,11 +405,13 @@ export default function Landing() {
           <div style={styles.footerTop}>
             <div style={styles.footerBrand}>
               <div style={styles.logo}>
-                <span style={styles.logoIcon}>🖊️</span>
+                <img src="/favicon.png" alt="InkBot" style={styles.logoImage} />
                 <span style={styles.logoText}>InkBot</span>
               </div>
               <p style={styles.footerTagline}>
                 AI-powered product descriptions for Shopify merchants.
+                <br />
+                Available on Shopify App Store.
               </p>
             </div>
             <div style={styles.footerLinks}>
@@ -527,10 +545,12 @@ const styles: Record<string, React.CSSProperties> = {
   logo: {
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    gap: "10px",
   },
-  logoIcon: {
-    fontSize: "24px",
+  logoImage: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "8px",
   },
   logoText: {
     fontSize: "20px",
@@ -700,6 +720,22 @@ const styles: Record<string, React.CSSProperties> = {
     width: "1px",
     height: "40px",
     background: "rgba(255, 255, 255, 0.1)",
+  },
+  shopifyBadge: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "12px",
+    marginTop: "40px",
+    padding: "16px 24px",
+    background: "rgba(149, 191, 71, 0.1)",
+    border: "1px solid rgba(149, 191, 71, 0.3)",
+    borderRadius: "12px",
+  },
+  shopifyBadgeText: {
+    fontSize: "14px",
+    color: "#95BF47",
+    fontWeight: "500",
   },
 
   // App Preview
