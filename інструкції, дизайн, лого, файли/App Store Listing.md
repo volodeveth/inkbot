@@ -86,25 +86,84 @@ Built with ❤️ by VoloDev.eth
 
 ---
 
-## Screenshots (1600×900 px) — What to Show
+## Screenshots (1600×900 px)
 
 ### Screenshot 1: Dashboard
-- Show the main dashboard with logo, tagline, usage stats, recent generations
-- Caption: "Clean dashboard with usage tracking and quick actions"
+**Caption:** "Your AI Writing Assistant — Track Usage & Recent Generations"
 
-### Screenshot 2: Generate Page
-- Show the generate form with a filled product and generated result
-- Include visible SEO score badge (green, high score)
-- Caption: "Generate SEO-optimized descriptions in one click"
+What to show:
+- Main dashboard with InkBot logo and tagline
+- Usage progress bar (e.g., "23/100 generations used")
+- Stats cards: Total Generated, Avg SEO Score, Applied to Products
+- Recent generations list with product names and SEO scores
+- Quick action buttons
+
+---
+
+### Screenshot 2: Generate Page (Main Feature)
+**Caption:** "Generate SEO-Optimized Descriptions in Seconds"
+
+What to show:
+- Product input filled: "Premium Wireless Headphones"
+- Niche selector: Electronics selected
+- Tone selector: Professional
+- Generated result with:
+  - Product title
+  - Full description (visible text)
+  - SEO Score badge: 94 (green)
+  - Meta title & description
+  - Keywords list
+- "Apply to Shopify" button visible
+
+---
 
 ### Screenshot 3: Bulk Generation
-- Show bulk input with multiple products and results
-- Caption: "Process multiple products at once with bulk generation"
+**Caption:** "Process Your Entire Catalog — Bulk Generate Up to 100 Products"
 
-### Screenshot 4: Settings / Brand Voice
-- Show brand voice configuration page
-- Caption: "Customize your brand voice for consistent descriptions"
+What to show:
+- Bulk input textarea with 3-5 products listed
+- Shared settings: Niche, Tone, Language
+- Results section showing multiple generated descriptions
+- Progress indicator or success badges
+- "Apply All" action visible
 
-### Screenshot 5: Billing Plans (optional)
-- Show the 4 pricing plans grid
-- Caption: "Flexible plans from Free to Elite with API access"
+---
+
+### Screenshot 4: Brand Voice Settings
+**Caption:** "Train AI to Match Your Brand Voice Perfectly"
+
+What to show:
+- Brand Voice configuration form:
+  - Tone dropdown (e.g., "Luxurious")
+  - Writing style (e.g., "Elegant and sophisticated")
+  - Target audience field
+  - Keywords to include
+  - Words to avoid
+  - Sample texts area
+- "Save Settings" button
+
+---
+
+### Screenshot 5: Pricing Plans
+**Caption:** "Start Free — Upgrade As You Grow"
+
+What to show:
+- 4-column pricing grid:
+  - Free ($0) — 5 generations/month
+  - Starter ($9) — 100 generations/month
+  - Pro ($19) — 500 generations/month ★ Popular
+  - Elite ($49) — 5,000 generations/month + API
+- Current plan highlighted
+- Feature checkmarks visible
+- Upgrade buttons
+
+---
+
+## Screenshot Tips
+
+1. **Use real-looking data** — Fill forms with realistic product names and descriptions
+2. **Show success states** — Display high SEO scores (90+), completed generations
+3. **Highlight key features** — Make sure SEO score badges, language selectors are visible
+4. **Clean UI** — No error states, loading spinners, or empty states
+5. **Consistent sizing** — All screenshots exactly 1600×900 px
+6. **Browser chrome optional** — Can show with or without browser frame
