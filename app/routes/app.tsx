@@ -47,6 +47,22 @@ export default function App() {
         >
           VoloDev.eth
         </a>
+        <span style={{ margin: "0 8px", color: "#8c9196" }}>•</span>
+        <a
+          href="#"
+          onClick={(e) => { e.preventDefault(); window.open("/privacy", "_blank"); }}
+          style={{ color: "#5c6ac4", textDecoration: "none", cursor: "pointer" }}
+        >
+          Privacy
+        </a>
+        <span style={{ margin: "0 8px", color: "#8c9196" }}>•</span>
+        <a
+          href="#"
+          onClick={(e) => { e.preventDefault(); window.open("/terms", "_blank"); }}
+          style={{ color: "#5c6ac4", textDecoration: "none", cursor: "pointer" }}
+        >
+          Terms
+        </a>
       </div>
     </AppProvider>
   );
