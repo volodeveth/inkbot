@@ -222,7 +222,7 @@ export default function PrivacyPolicy() {
       {/* Footer */}
       <footer style={styles.footer}>
         <div style={styles.footerContainer}>
-          <p style={styles.copyright}>© 2025 InkBot. All rights reserved.</p>
+          <p style={styles.copyright}>© 2026 InkBot. All rights reserved.</p>
           <div style={styles.footerLinks}>
             <a href="/landing" style={styles.footerLink}>Home</a>
             <a href="/terms" style={styles.footerLink}>Terms</a>

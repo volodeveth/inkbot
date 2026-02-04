@@ -446,7 +446,7 @@ export default function Landing() {
             </div>
           </div>
           <div style={styles.footerBottom}>
-            <p style={styles.copyright}>© 2025 InkBot. All rights reserved.</p>
+            <p style={styles.copyright}>© 2026 InkBot. All rights reserved.</p>
             <p style={styles.builtBy}>
               Built by{" "}
               <a
