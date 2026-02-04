@@ -32,7 +32,7 @@ GitHub: `https://github.com/volodeveth/inkbot` (private)
 D:\Myapps\describely\
 ├── app/
 │   ├── routes/
-│   │   ├── _index.tsx                   ✅ Root redirect → /auth/login (або /app з ?shop=)
+│   │   ├── _index.tsx                   ✅ Root redirect → /landing (або /app з ?shop=)
 │   │   ├── app.tsx                    ✅ Layout з навігацією (Polaris + NavMenu), глобальний футер "Built by VoloDev.eth"
 │   │   ├── app._index.tsx             ✅ Dashboard: logo, tagline, usage, stats, quick actions, recent generations, review banner
 │   │   ├── app.generate.tsx           ✅ Генерація: product input, niche/tone/language, result display, apply/copy, review banner
@@ -49,8 +49,9 @@ D:\Myapps\describely\
 │   │   ├── auth.$.tsx                 ✅ Shopify OAuth catch-all
 │   │   ├── auth.login/route.tsx       ✅ Сторінка логіну
 │   │   ├── webhooks.tsx               ✅ Shopify webhooks (APP_UNINSTALLED, compliance)
-│   │   ├── privacy.tsx                ✅ Privacy Policy (публічна сторінка, без auth)
-│   │   └── terms.tsx                  ✅ Terms of Service (публічна сторінка, без auth)
+│   │   ├── landing.tsx                ✅ Публічна landing page (dark theme, hover effects, SEO)
+│   │   ├── privacy.tsx                ✅ Privacy Policy (dark theme, matching landing)
+│   │   └── terms.tsx                  ✅ Terms of Service (dark theme, matching landing)
 │   │
 │   ├── components/
 │   │   ├── UsageCounter.tsx           ✅ Usage progress bar з планом badge (compact mode)
@@ -80,7 +81,7 @@ D:\Myapps\describely\
 │   ├── db.server.ts                   ✅ Prisma Client з Neon serverless адаптером (ws)
 │   ├── env.d.ts                       ✅ TypeScript declarations для CSS ?url imports
 │   ├── entry.server.tsx               ✅ Remix server entry з Shopify headers
-│   ├── root.tsx                       ✅ Root layout (HTML shell, Shopify fonts)
+│   ├── root.tsx                       ✅ Root layout (HTML shell, Shopify fonts, favicon)
 │   └── shopify.server.ts             ✅ Shopify auth config (API v2024-10, Prisma session storage)
 │
 ├── prisma/
@@ -88,7 +89,9 @@ D:\Myapps\describely\
 │                                         2 enum: Plan (FREE/STARTER/PRO/UNLIMITED), GenerationStatus
 │
 ├── public/
-│   └── logo.png                       ✅ InkBot Big Logo (881×427)
+│   ├── favicon.png                    ✅ InkBot small logo (1200×1200) — favicon
+│   ├── logo.png                       ✅ InkBot Big Logo (881×427)
+│   └── logo-big.png                   ✅ InkBot Big Logo (881×427) — для landing
 ├── інструкції, дизайн, лого, файли/   📋 Дизайн-макети та повний план реалізації
 │   ├── describely_implementation_plan.md   ← Детальний план (70+ КБ, стара назва)
 │   ├── Публікація InkBot в Shopify App Store.txt  ✅ Чекліст публікації
@@ -167,8 +170,10 @@ D:\Myapps\describely\
 6. **App Store submission**: screenshots (3-5 шт, 1600×900)
 
 **Готово для App Store:**
-- ✅ Privacy Policy (`/privacy`)
-- ✅ Terms of Service (`/terms`)
+- ✅ Privacy Policy (`/privacy`) — dark theme, matching landing
+- ✅ Terms of Service (`/terms`) — dark theme, matching landing
+- ✅ Landing Page (`/landing`) — public marketing page з SEO, hover effects
+- ✅ Favicon (`/favicon.png`) — InkBot small logo 1200×1200
 - ✅ Tagline (98 символів) — див. `App Store Listing.md`
 - ✅ Full Description — див. `App Store Listing.md`
 - ✅ Категорії: Store design → Product descriptions, Marketing → SEO
@@ -314,9 +319,20 @@ fr-af (French African), ar-na (Arabic North African), sw (Swahili), af (Afrikaan
 - Використовує `onClick + window.open()` замість `href` для обходу Shopify iframe CSP
 
 ### Public Pages (без Shopify auth)
-- `/privacy` — Privacy Policy (повний текст, styled)
-- `/terms` — Terms of Service (повний текст, styled)
-- Доступні публічно: `https://inkbotapp.vercel.app/privacy`, `https://inkbotapp.vercel.app/terms`
+- `/landing` — Landing page (dark theme, hero, features, pricing, CTA, hover effects, SEO meta tags)
+- `/privacy` — Privacy Policy (dark theme, matching landing)
+- `/terms` — Terms of Service (dark theme, matching landing)
+- Доступні публічно: `https://inkbotapp.vercel.app/landing`, `/privacy`, `/terms`
+- **Landing features**:
+  - Navigation з hover effects (animated underline)
+  - Hero section з Shopify badge та CTA buttons
+  - Features grid (6 feature cards з hover effects)
+  - "How it Works" section (3 steps)
+  - Pricing grid (4 plans, matching billing page)
+  - Final CTA section
+  - Footer з links
+- **Styling**: Dark theme (#0a0a0f base), purple/violet gradients (#8b5cf6, #6d28d9), glassmorphism, CSS animations
+- **SEO**: Open Graph, Twitter Cards meta tags для Google indexing
 
 ### Bulk Format (textarea input)
 ```
