@@ -51,17 +51,18 @@ export default function Landing() {
       {/* Navigation */}
       <nav style={styles.nav}>
         <div style={styles.navContainer}>
-          <div style={styles.logo}>
+          <div style={styles.logo} className="logo">
             <img src="/favicon.png" alt="InkBot" style={styles.logoImage} />
             <span style={styles.logoText}>InkBot</span>
           </div>
           <div style={styles.navLinks}>
-            <a href="#features" onClick={(e) => handleNavClick(e, "features")} style={styles.navLink}>Features</a>
-            <a href="#how-it-works" onClick={(e) => handleNavClick(e, "how-it-works")} style={styles.navLink}>How It Works</a>
-            <a href="#pricing" onClick={(e) => handleNavClick(e, "pricing")} style={styles.navLink}>Pricing</a>
+            <a href="#features" onClick={(e) => handleNavClick(e, "features")} style={styles.navLink} className="nav-link">Features</a>
+            <a href="#how-it-works" onClick={(e) => handleNavClick(e, "how-it-works")} style={styles.navLink} className="nav-link">How It Works</a>
+            <a href="#pricing" onClick={(e) => handleNavClick(e, "pricing")} style={styles.navLink} className="nav-link">Pricing</a>
             <button
               onClick={() => handleExternalLink("https://apps.shopify.com/inkbot")}
               style={styles.ctaButton}
+              className="cta-btn"
             >
               Start Free
             </button>
@@ -79,7 +80,7 @@ export default function Landing() {
           transform: isVisible ? "translateY(0)" : "translateY(30px)",
           transition: "all 0.8s ease-out",
         }}>
-          <div style={styles.badge}>
+          <div style={styles.badge} className="badge">
             <svg width="20" height="23" viewBox="0 0 256 292" fill="none">
               <path d="M223.774 57.34c-.201-1.46-1.48-2.268-2.537-2.357-1.055-.088-23.383-1.743-23.383-1.743s-15.507-15.395-17.209-17.099c-1.703-1.703-5.029-.593-6.32-.19-.19.056-3.388 1.043-8.678 2.68-5.18-14.906-14.322-28.604-30.405-28.604-.444 0-.901.018-1.358.044C129.31 3.407 123.644.779 118.75.779c-37.465 0-55.364 46.835-60.976 70.635-14.558 4.511-24.9 7.718-26.221 8.133-8.126 2.549-8.383 2.805-9.45 10.462C21.3 95.806.038 260.235.038 260.235l165.678 31.042 89.77-19.42S223.973 58.8 223.775 57.34zM156.49 40.848l-14.019 4.339c.005-.988.01-1.96.01-3.023 0-9.264-1.286-16.723-3.349-22.636 8.287 1.04 13.826 10.469 17.358 21.32zm-27.638-19.483c2.304 5.773 3.802 14.058 3.802 25.238 0 .572-.005 1.095-.01 1.624-9.117 2.824-19.024 5.89-28.953 8.966 5.575-21.516 16.025-31.908 25.161-35.828zm-10.051-9.14c1.467 0 2.949.49 4.404 1.469-12.04 5.655-24.942 19.88-30.447 48.39l-22.94 7.105c6.377-21.642 21.456-56.964 48.983-56.964z" fill="#95BF47"/>
               <path d="M221.237 54.983c-1.055-.088-23.383-1.743-23.383-1.743s-15.507-15.395-17.209-17.099c-.637-.637-1.496-.96-2.394-1.072l-12.527 255.158 89.762-19.42s-31.986-217.36-32.186-218.819c-.201-1.458-1.48-2.266-2.063-3.005z" fill="#5E8E3E"/>
@@ -102,6 +103,7 @@ export default function Landing() {
             <button
               onClick={() => handleExternalLink("https://apps.shopify.com/inkbot")}
               style={styles.primaryButton}
+              className="btn-primary"
             >
               <span>Try Free</span>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -111,6 +113,7 @@ export default function Landing() {
             <button
               onClick={() => handleNavClick({ preventDefault: () => {} } as any, "how-it-works")}
               style={styles.secondaryButton}
+              className="btn-secondary"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="5 3 19 12 5 21 5 3"/>
@@ -119,24 +122,24 @@ export default function Landing() {
             </button>
           </div>
           <div style={styles.heroStats}>
-            <div style={styles.stat}>
-              <span style={styles.statNumber}>10K+</span>
+            <div style={styles.stat} className="stat">
+              <span style={styles.statNumber} className="stat-number">10K+</span>
               <span style={styles.statLabel}>Descriptions Generated</span>
             </div>
             <div style={styles.statDivider}></div>
-            <div style={styles.stat}>
-              <span style={styles.statNumber}>42</span>
+            <div style={styles.stat} className="stat">
+              <span style={styles.statNumber} className="stat-number">42</span>
               <span style={styles.statLabel}>Languages</span>
             </div>
             <div style={styles.statDivider}></div>
-            <div style={styles.stat}>
-              <span style={styles.statNumber}>9</span>
+            <div style={styles.stat} className="stat">
+              <span style={styles.statNumber} className="stat-number">9</span>
               <span style={styles.statLabel}>Industry Niches</span>
             </div>
           </div>
 
           {/* Shopify Badge */}
-          <div style={styles.shopifyBadge}>
+          <div style={styles.shopifyBadge} className="shopify-badge">
             <span style={styles.shopifyBadgeText}>Available on</span>
             <svg width="24" height="28" viewBox="0 0 256 292" fill="none" style={{marginRight: "8px"}}>
               <path d="M223.774 57.34c-.201-1.46-1.48-2.268-2.537-2.357-1.055-.088-23.383-1.743-23.383-1.743s-15.507-15.395-17.209-17.099c-1.703-1.703-5.029-.593-6.32-.19-.19.056-3.388 1.043-8.678 2.68-5.18-14.906-14.322-28.604-30.405-28.604-.444 0-.901.018-1.358.044C129.31 3.407 123.644.779 118.75.779c-37.465 0-55.364 46.835-60.976 70.635-14.558 4.511-24.9 7.718-26.221 8.133-8.126 2.549-8.383 2.805-9.45 10.462C21.3 95.806.038 260.235.038 260.235l165.678 31.042 89.77-19.42S223.973 58.8 223.775 57.34zM156.49 40.848l-14.019 4.339c.005-.988.01-1.96.01-3.023 0-9.264-1.286-16.723-3.349-22.636 8.287 1.04 13.826 10.469 17.358 21.32zm-27.638-19.483c2.304 5.773 3.802 14.058 3.802 25.238 0 .572-.005 1.095-.01 1.624-9.117 2.824-19.024 5.89-28.953 8.966 5.575-21.516 16.025-31.908 25.161-35.828zm-10.051-9.14c1.467 0 2.949.49 4.404 1.469-12.04 5.655-24.942 19.88-30.447 48.39l-22.94 7.105c6.377-21.642 21.456-56.964 48.983-56.964z" fill="#95BF47"/>
@@ -154,7 +157,7 @@ export default function Landing() {
           transform: isVisible ? "translateY(0)" : "translateY(50px)",
           transition: "all 1s ease-out 0.3s",
         }}>
-          <div style={styles.appWindow}>
+          <div style={styles.appWindow} className="app-window">
             <div style={styles.appWindowHeader}>
               <div style={styles.windowDots}>
                 <span style={{...styles.windowDot, background: "#ff5f57"}}></span>
@@ -242,7 +245,7 @@ export default function Landing() {
                 }}
                 className="feature-card"
               >
-                <div style={styles.featureIcon}>{feature.icon}</div>
+                <div style={styles.featureIcon} className="feature-icon">{feature.icon}</div>
                 <h3 style={styles.featureTitle}>{feature.title}</h3>
                 <p style={styles.featureDescription}>{feature.description}</p>
               </div>
@@ -280,8 +283,8 @@ export default function Landing() {
                 description: "Get your SEO-optimized description instantly. One click to apply it to your Shopify product.",
               },
             ].map((item, index) => (
-              <div key={index} style={styles.stepCard}>
-                <div style={styles.stepNumber}>{item.step}</div>
+              <div key={index} style={styles.stepCard} className="step-card">
+                <div style={styles.stepNumber} className="step-number">{item.step}</div>
                 <div style={styles.stepContent}>
                   <h3 style={styles.stepTitle}>{item.title}</h3>
                   <p style={styles.stepDescription}>{item.description}</p>
@@ -349,6 +352,7 @@ export default function Landing() {
                   ...styles.pricingCard,
                   ...(plan.popular ? styles.pricingCardPopular : {}),
                 }}
+                className={`pricing-card ${plan.popular ? 'popular' : ''}`}
               >
                 {plan.popular && <div style={styles.popularBadge}>Most Popular</div>}
                 <h3 style={styles.planName}>{plan.name}</h3>
@@ -368,6 +372,7 @@ export default function Landing() {
                 <button
                   onClick={() => handleExternalLink("https://apps.shopify.com/inkbot")}
                   style={plan.popular ? styles.pricingButtonPopular : styles.pricingButton}
+                  className={plan.popular ? 'pricing-btn-popular' : 'pricing-btn'}
                 >
                   {plan.cta}
                 </button>
@@ -389,6 +394,7 @@ export default function Landing() {
           <button
             onClick={() => handleExternalLink("https://apps.shopify.com/inkbot")}
             style={styles.ctaButtonLarge}
+            className="btn-primary"
           >
             Install InkBot Free
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -404,7 +410,7 @@ export default function Landing() {
         <div style={styles.footerContainer}>
           <div style={styles.footerTop}>
             <div style={styles.footerBrand}>
-              <div style={styles.logo}>
+              <div style={styles.logo} className="logo">
                 <img src="/favicon.png" alt="InkBot" style={styles.logoImage} />
                 <span style={styles.logoText}>InkBot</span>
               </div>
@@ -417,14 +423,14 @@ export default function Landing() {
             <div style={styles.footerLinks}>
               <div style={styles.footerColumn}>
                 <h4 style={styles.footerHeading}>Product</h4>
-                <a href="#features" onClick={(e) => handleNavClick(e, "features")} style={styles.footerLink}>Features</a>
-                <a href="#pricing" onClick={(e) => handleNavClick(e, "pricing")} style={styles.footerLink}>Pricing</a>
-                <a href="#how-it-works" onClick={(e) => handleNavClick(e, "how-it-works")} style={styles.footerLink}>How It Works</a>
+                <a href="#features" onClick={(e) => handleNavClick(e, "features")} style={styles.footerLink} className="footer-link">Features</a>
+                <a href="#pricing" onClick={(e) => handleNavClick(e, "pricing")} style={styles.footerLink} className="footer-link">Pricing</a>
+                <a href="#how-it-works" onClick={(e) => handleNavClick(e, "how-it-works")} style={styles.footerLink} className="footer-link">How It Works</a>
               </div>
               <div style={styles.footerColumn}>
                 <h4 style={styles.footerHeading}>Legal</h4>
-                <a href="/privacy" style={styles.footerLink}>Privacy Policy</a>
-                <a href="/terms" style={styles.footerLink}>Terms of Service</a>
+                <a href="/privacy" style={styles.footerLink} className="footer-link">Privacy Policy</a>
+                <a href="/terms" style={styles.footerLink} className="footer-link">Terms of Service</a>
               </div>
               <div style={styles.footerColumn}>
                 <h4 style={styles.footerHeading}>Install</h4>
@@ -432,6 +438,7 @@ export default function Landing() {
                   href="#"
                   onClick={(e) => { e.preventDefault(); handleExternalLink("https://apps.shopify.com/inkbot"); }}
                   style={styles.footerLink}
+                  className="footer-link"
                 >
                   Shopify App Store
                 </a>
@@ -507,12 +514,259 @@ const globalStyles = `
   .feature-card {
     animation: fadeInUp 0.6s ease-out forwards;
     opacity: 0;
+    cursor: pointer;
   }
 
   .feature-card:hover {
-    transform: translateY(-8px) !important;
+    transform: translateY(-12px) scale(1.02) !important;
+    border-color: rgba(139, 92, 246, 0.6) !important;
+    box-shadow: 0 25px 50px rgba(139, 92, 246, 0.3) !important;
+    background: rgba(139, 92, 246, 0.1) !important;
+  }
+
+  .feature-card:hover .feature-icon {
+    transform: scale(1.2) rotate(5deg);
+  }
+
+  /* Navigation links */
+  .nav-link {
+    position: relative;
+    transition: color 0.3s ease;
+  }
+
+  .nav-link:hover {
+    color: #ffffff !important;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+    transition: width 0.3s ease;
+  }
+
+  .nav-link:hover::after {
+    width: 100%;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 40px rgba(139, 92, 246, 0.5) !important;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+
+  .btn-primary:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .btn-secondary {
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.1) !important;
     border-color: rgba(139, 92, 246, 0.5) !important;
-    box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-secondary:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* CTA Button */
+  .cta-btn {
+    transition: all 0.3s ease;
+  }
+
+  .cta-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.4) !important;
+  }
+
+  /* Pricing cards */
+  .pricing-card {
+    transition: all 0.4s ease;
+    cursor: pointer;
+  }
+
+  .pricing-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 30px 60px rgba(139, 92, 246, 0.2) !important;
+  }
+
+  .pricing-card.popular:hover {
+    transform: translateY(-15px) scale(1.05);
+    box-shadow: 0 40px 80px rgba(139, 92, 246, 0.3) !important;
+  }
+
+  .pricing-btn {
+    transition: all 0.3s ease;
+  }
+
+  .pricing-btn:hover {
+    transform: scale(1.05);
+    background: rgba(139, 92, 246, 0.2) !important;
+    border-color: rgba(139, 92, 246, 0.5) !important;
+  }
+
+  .pricing-btn-popular {
+    transition: all 0.3s ease;
+  }
+
+  .pricing-btn-popular:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.5) !important;
+  }
+
+  /* Step cards */
+  .step-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .step-card:hover {
+    transform: translateY(-8px);
+  }
+
+  .step-card:hover .step-number {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 15px 30px rgba(139, 92, 246, 0.4);
+  }
+
+  .step-number {
+    transition: all 0.3s ease;
+  }
+
+  /* Badge */
+  .badge {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .badge:hover {
+    transform: scale(1.05);
+    border-color: rgba(139, 92, 246, 0.6) !important;
+    box-shadow: 0 5px 20px rgba(139, 92, 246, 0.3);
+  }
+
+  /* Shopify badge */
+  .shopify-badge {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .shopify-badge:hover {
+    transform: scale(1.05);
+    border-color: rgba(149, 191, 71, 0.6) !important;
+    box-shadow: 0 10px 30px rgba(149, 191, 71, 0.2);
+  }
+
+  /* Stats */
+  .stat {
+    transition: all 0.3s ease;
+    cursor: default;
+  }
+
+  .stat:hover {
+    transform: scale(1.1);
+  }
+
+  .stat:hover .stat-number {
+    color: #a78bfa !important;
+  }
+
+  /* Footer links */
+  .footer-link {
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .footer-link:hover {
+    color: #a78bfa !important;
+    transform: translateX(3px);
+  }
+
+  /* App window */
+  .app-window {
+    transition: all 0.5s ease;
+  }
+
+  .app-window:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 50px 100px rgba(139, 92, 246, 0.3) !important;
+  }
+
+  /* Logo */
+  .logo {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .logo:hover {
+    transform: scale(1.05);
+  }
+
+  .logo:hover img {
+    transform: rotate(10deg);
+  }
+
+  .logo img {
+    transition: all 0.3s ease;
+  }
+
+  /* Feature icon animation */
+  .feature-icon {
+    transition: all 0.3s ease;
+    display: inline-block;
+  }
+
+  /* Glow effect on scroll */
+  @keyframes glow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* Floating animation for hero elements */
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .hero-glow {
+    animation: floatSlow 8s ease-in-out infinite;
+  }
+
+  /* Ripple effect */
+  @keyframes ripple {
+    0% { transform: scale(1); opacity: 0.5; }
+    100% { transform: scale(1.5); opacity: 0; }
   }
 `;
 
