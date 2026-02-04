@@ -6,7 +6,7 @@
 export type PlanKey = "FREE" | "STARTER" | "PRO" | "UNLIMITED";
 
 export const PLAN_LIMITS: Record<PlanKey, number> = {
-  FREE: 10,
+  FREE: 5,
   STARTER: 100,
   PRO: 500,
   UNLIMITED: 5000,
@@ -21,7 +21,7 @@ export const PLAN_PRICES: Record<PlanKey, number> = {
 
 export const PLAN_FEATURES: Record<PlanKey, string[]> = {
   FREE: [
-    "10 descriptions/month",
+    "5 descriptions/month",
     "All 9 niches",
     "SEO optimization",
     "Basic brand voice",

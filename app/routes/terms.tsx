@@ -135,7 +135,7 @@ export default function TermsOfService() {
               <h3 style={styles.subheading}>4.1 Available Plans</h3>
               <p>We offer the following subscription plans:</p>
               <ul style={styles.list}>
-                <li><strong>Free:</strong> 10 generations per month, $0/month</li>
+                <li><strong>Free:</strong> 5 generations per month, $0/month</li>
                 <li><strong>Starter:</strong> 100 generations per month, $9/month</li>
                 <li><strong>Pro:</strong> 500 generations per month, $19/month</li>
                 <li><strong>Elite:</strong> 5,000 generations per month, $49/month (includes API access)</li>

@@ -381,7 +381,7 @@ export default function Landing() {
                 price: "$0",
                 period: "/month",
                 description: "Perfect for trying out",
-                features: ["10 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Basic support"],
+                features: ["5 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Basic support"],
                 cta: "Start Free",
                 popular: false,
               },
@@ -468,7 +468,7 @@ export default function Landing() {
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </button>
-          <p style={styles.ctaNote}>Free plan includes 10 generations/month. No credit card required.</p>
+          <p style={styles.ctaNote}>Free plan includes 5 generations/month. No credit card required.</p>
         </div>
       </section>
 
