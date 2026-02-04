@@ -57,10 +57,10 @@ Integrate InkBot into your workflow with our REST API. Generate descriptions pro
 
 ## Pricing
 
-- **Free**: 5 generations/month — Perfect for trying out
-- **Starter ($9/mo)**: 100 generations/month — For growing stores
-- **Pro ($19/mo)**: 500 generations/month — For active sellers
-- **Elite ($49/mo)**: 5,000 generations/month + API access — For power users
+- **Free**: 100 generations/month — Perfect for trying out
+- **Starter ($9/mo)**: 1,000 generations/month — For growing stores
+- **Pro ($19/mo)**: 10,000 generations/month — For active sellers
+- **Elite ($99/mo)**: 100,000 generations/month + API access — For power users
 
 ## How It Works
 
@@ -71,7 +71,7 @@ Integrate InkBot into your workflow with our REST API. Generate descriptions pro
 
 ## Get Started Today
 
-Install InkBot and get 5 free generations. No credit card required.
+Install InkBot and get 100 free generations/month. No credit card required.
 
 ---
 
@@ -149,10 +149,10 @@ What to show:
 
 What to show:
 - 4-column pricing grid:
-  - Free ($0) — 5 generations/month
-  - Starter ($9) — 100 generations/month
-  - Pro ($19) — 500 generations/month ★ Popular
-  - Elite ($49) — 5,000 generations/month + API
+  - Free ($0) — 100 generations/month
+  - Starter ($9) — 1,000 generations/month
+  - Pro ($19) — 10,000 generations/month ★ Popular
+  - Elite ($99) — 100,000 generations/month + API
 - Current plan highlighted
 - Feature checkmarks visible
 - Upgrade buttons

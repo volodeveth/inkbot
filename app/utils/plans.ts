@@ -6,28 +6,28 @@
 export type PlanKey = "FREE" | "STARTER" | "PRO" | "UNLIMITED";
 
 export const PLAN_LIMITS: Record<PlanKey, number> = {
-  FREE: 5,
-  STARTER: 100,
-  PRO: 500,
-  UNLIMITED: 5000,
+  FREE: 100,
+  STARTER: 1000,
+  PRO: 10000,
+  UNLIMITED: 100000,
 };
 
 export const PLAN_PRICES: Record<PlanKey, number> = {
   FREE: 0,
   STARTER: 9,
   PRO: 19,
-  UNLIMITED: 49,
+  UNLIMITED: 99,
 };
 
 export const PLAN_FEATURES: Record<PlanKey, string[]> = {
   FREE: [
-    "5 descriptions/month",
+    "100 descriptions/month",
     "All 9 niches",
     "SEO optimization",
     "Basic brand voice",
   ],
   STARTER: [
-    "100 descriptions/month",
+    "1,000 descriptions/month",
     "All 9 niches",
     "SEO optimization",
     "Full brand voice",
@@ -35,7 +35,7 @@ export const PLAN_FEATURES: Record<PlanKey, string[]> = {
     "Generation history",
   ],
   PRO: [
-    "500 descriptions/month",
+    "10,000 descriptions/month",
     "All 9 niches",
     "SEO optimization",
     "Full brand voice",
@@ -44,7 +44,7 @@ export const PLAN_FEATURES: Record<PlanKey, string[]> = {
     "Priority support",
   ],
   UNLIMITED: [
-    "5,000 descriptions/month",
+    "100,000 descriptions/month",
     "All 9 niches",
     "SEO optimization",
     "Full brand voice",

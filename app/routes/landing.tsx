@@ -381,7 +381,7 @@ export default function Landing() {
                 price: "$0",
                 period: "/month",
                 description: "Perfect for trying out",
-                features: ["5 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Basic support"],
+                features: ["100 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Basic support"],
                 cta: "Start Free",
                 popular: false,
               },
@@ -390,7 +390,7 @@ export default function Landing() {
                 price: "$9",
                 period: "/month",
                 description: "For growing stores",
-                features: ["100 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Brand voice settings", "Email support"],
+                features: ["1,000 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Brand voice settings", "Email support"],
                 cta: "Get Started",
                 popular: false,
               },
@@ -399,16 +399,16 @@ export default function Landing() {
                 price: "$19",
                 period: "/month",
                 description: "For active sellers",
-                features: ["500 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Brand voice settings", "Bulk generation", "Priority support"],
+                features: ["10,000 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Brand voice settings", "Bulk generation", "Priority support"],
                 cta: "Go Pro",
                 popular: true,
               },
               {
                 name: "Elite",
-                price: "$49",
+                price: "$99",
                 period: "/month",
                 description: "For power users",
-                features: ["5,000 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Brand voice settings", "Bulk generation", "API access", "Premium support"],
+                features: ["100,000 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Brand voice settings", "Bulk generation", "API access", "Premium support"],
                 cta: "Go Elite",
                 popular: false,
               },
@@ -468,7 +468,7 @@ export default function Landing() {
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </button>
-          <p style={styles.ctaNote}>Free plan includes 5 generations/month. No credit card required.</p>
+          <p style={styles.ctaNote}>Free plan includes 100 generations/month. No credit card required.</p>
         </div>
       </section>
 

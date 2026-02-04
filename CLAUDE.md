@@ -260,10 +260,10 @@ export async function action({ request }: ActionFunctionArgs) {
 ### Плани та ліміти
 | Plan | Price | Generations/month |
 |------|-------|-------------------|
-| FREE | $0 | 5 |
-| STARTER | $9 | 100 |
-| PRO | $19 | 500 |
-| ELITE (key: UNLIMITED) | $49 | 5000 |
+| FREE | $0 | 100 |
+| STARTER | $9 | 1,000 |
+| PRO | $19 | 10,000 |
+| ELITE (key: UNLIMITED) | $99 | 100,000 |
 
 ### 9 ніш
 fashion, electronics, beauty, food, home, sports, jewelry, pets, general

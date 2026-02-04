@@ -49,7 +49,7 @@ model Shop {
 
   // Usage
   generationsUsed  Int      @default(0)
-  generationsLimit Int      @default(5)
+  generationsLimit Int      @default(100)
   resetDate        DateTime @default(now())
 
   // Settings
