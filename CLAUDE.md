@@ -48,7 +48,9 @@ D:\Myapps\describely\
 │   │   ├── api.analyze-voice.tsx      ✅ POST API: аналіз sample texts → brand voice profile
 │   │   ├── auth.$.tsx                 ✅ Shopify OAuth catch-all
 │   │   ├── auth.login/route.tsx       ✅ Сторінка логіну
-│   │   └── webhooks.tsx               ✅ Shopify webhooks (APP_UNINSTALLED, compliance)
+│   │   ├── webhooks.tsx               ✅ Shopify webhooks (APP_UNINSTALLED, compliance)
+│   │   ├── privacy.tsx                ✅ Privacy Policy (публічна сторінка, без auth)
+│   │   └── terms.tsx                  ✅ Terms of Service (публічна сторінка, без auth)
 │   │
 │   ├── components/
 │   │   ├── UsageCounter.tsx           ✅ Usage progress bar з планом badge (compact mode)
@@ -89,6 +91,8 @@ D:\Myapps\describely\
 │   └── logo.png                       ✅ InkBot Big Logo (881×427)
 ├── інструкції, дизайн, лого, файли/   📋 Дизайн-макети та повний план реалізації
 │   ├── describely_implementation_plan.md   ← Детальний план (70+ КБ, стара назва)
+│   ├── Публікація InkBot в Shopify App Store.txt  ✅ Чекліст публікації
+│   ├── App Store Listing.md           ✅ Tagline, description, screenshot guide
 │   ├── InkBot Big Logo.png            ✅ 881×427 — для dashboard
 │   ├── InkBot small logo.png          ✅ 1200×1200 — для Shopify Partners app icon
 │   └── Gemini_Generated_Image_*.png   ← UI мокапи (dashboard, generate, mobile)
@@ -160,7 +164,14 @@ D:\Myapps\describely\
 3. **Seed niche templates**: викликати `seedNicheTemplates()` з `models/template.server.ts`
 4. **Custom domain**: налаштувати inkbot.app → Vercel (опціонально)
 5. **UI polish**: перевірити відповідність мокапам з папки інструкцій
-6. **App Store submission**: screenshots, description, privacy policy
+6. **App Store submission**: screenshots (3-5 шт, 1600×900)
+
+**Готово для App Store:**
+- ✅ Privacy Policy (`/privacy`)
+- ✅ Terms of Service (`/terms`)
+- ✅ Tagline (98 символів) — див. `App Store Listing.md`
+- ✅ Full Description — див. `App Store Listing.md`
+- ✅ Категорії: Store design → Product descriptions, Marketing → SEO
 
 ---
 
@@ -298,8 +309,14 @@ fr-af (French African), ar-na (Arabic North African), sw (Swahili), af (Afrikaan
 
 ### Footer
 - Глобальний футер в `app.tsx` під `<Outlet />`
-- "Built by VoloDev.eth" → посилання на `https://volodeveth.vercel.app/`
+- "Built by VoloDev.eth • Privacy • Terms"
+- Посилання: VoloDev.eth → `https://volodeveth.vercel.app/`, Privacy → `/privacy`, Terms → `/terms`
 - Використовує `onClick + window.open()` замість `href` для обходу Shopify iframe CSP
+
+### Public Pages (без Shopify auth)
+- `/privacy` — Privacy Policy (повний текст, styled)
+- `/terms` — Terms of Service (повний текст, styled)
+- Доступні публічно: `https://inkbotapp.vercel.app/privacy`, `https://inkbotapp.vercel.app/terms`
 
 ### Bulk Format (textarea input)
 ```
@@ -314,6 +331,8 @@ Product Title | Product Type | Feature1, Feature2, Feature3
 2. Фази 1-4 повністю завершені, TypeScript чистий (0 помилок), build працює
 3. Deployment працює: Vercel + Neon + Shopify Partners
 4. Додаток встановлено на dev store
-5. **Наступні кроки**: тестування функціоналу в dev store, UI polish, підготовка до App Store
-6. Подивись мокапи в `інструкції, дизайн, лого, файли/` для візуального дизайну
-7. Детальний план є в `інструкції, дизайн, лого, файли/describely_implementation_plan.md`
+5. **App Store preparation**: Privacy Policy, Terms of Service, Tagline, Description — готові
+6. **Наступні кроки**: зробити screenshots (1600×900), тестування, submit to App Store
+7. Подивись мокапи в `інструкції, дизайн, лого, файли/` для візуального дизайну
+8. App Store listing матеріали: `інструкції, дизайн, лого, файли/App Store Listing.md`
+9. Чекліст публікації: `інструкції, дизайн, лого, файли/Публікація InkBot в Shopify App Store.txt`
