@@ -23,6 +23,7 @@ export const meta: MetaFunction = () => {
 export default function Landing() {
   const [isVisible, setIsVisible] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
@@ -55,7 +56,9 @@ export default function Landing() {
             <img src="/favicon.png" alt="InkBot" style={styles.logoImage} />
             <span style={styles.logoText}>InkBot</span>
           </div>
-          <div style={styles.navLinks}>
+
+          {/* Desktop Navigation */}
+          <div style={styles.navLinks} className="nav-links-desktop">
             <a href="#features" onClick={(e) => handleNavClick(e, "features")} style={styles.navLink} className="nav-link">Features</a>
             <a href="#how-it-works" onClick={(e) => handleNavClick(e, "how-it-works")} style={styles.navLink} className="nav-link">How It Works</a>
             <a href="#pricing" onClick={(e) => handleNavClick(e, "pricing")} style={styles.navLink} className="nav-link">Pricing</a>
@@ -67,6 +70,70 @@ export default function Landing() {
               Start Free
             </button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            style={styles.mobileMenuButton}
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span style={{
+              ...styles.hamburgerLine,
+              transform: mobileMenuOpen ? "rotate(45deg) translate(5px, 5px)" : "none",
+            }}></span>
+            <span style={{
+              ...styles.hamburgerLine,
+              opacity: mobileMenuOpen ? 0 : 1,
+            }}></span>
+            <span style={{
+              ...styles.hamburgerLine,
+              transform: mobileMenuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none",
+            }}></span>
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        <div
+          style={{
+            ...styles.mobileMenu,
+            maxHeight: mobileMenuOpen ? "300px" : "0",
+            opacity: mobileMenuOpen ? 1 : 0,
+            padding: mobileMenuOpen ? "20px 24px" : "0 24px",
+          }}
+          className="mobile-menu"
+        >
+          <a
+            href="#features"
+            onClick={(e) => { handleNavClick(e, "features"); setMobileMenuOpen(false); }}
+            style={styles.mobileNavLink}
+            className="mobile-nav-link"
+          >
+            Features
+          </a>
+          <a
+            href="#how-it-works"
+            onClick={(e) => { handleNavClick(e, "how-it-works"); setMobileMenuOpen(false); }}
+            style={styles.mobileNavLink}
+            className="mobile-nav-link"
+          >
+            How It Works
+          </a>
+          <a
+            href="#pricing"
+            onClick={(e) => { handleNavClick(e, "pricing"); setMobileMenuOpen(false); }}
+            style={styles.mobileNavLink}
+            className="mobile-nav-link"
+          >
+            Pricing
+          </a>
+          <button
+            onClick={() => { handleExternalLink("https://apps.shopify.com/inkbot"); setMobileMenuOpen(false); }}
+            style={styles.mobileCtaButton}
+            className="cta-btn"
+          >
+            Start Free
+          </button>
         </div>
       </nav>
 
@@ -121,17 +188,17 @@ export default function Landing() {
               <span>See How It Works</span>
             </button>
           </div>
-          <div style={styles.heroStats}>
+          <div style={styles.heroStats} className="hero-stats">
             <div style={styles.stat} className="stat">
               <span style={styles.statNumber} className="stat-number">10K+</span>
               <span style={styles.statLabel}>Descriptions Generated</span>
             </div>
-            <div style={styles.statDivider}></div>
+            <div style={styles.statDivider} className="stat-divider"></div>
             <div style={styles.stat} className="stat">
               <span style={styles.statNumber} className="stat-number">42</span>
               <span style={styles.statLabel}>Languages</span>
             </div>
-            <div style={styles.statDivider}></div>
+            <div style={styles.statDivider} className="stat-divider"></div>
             <div style={styles.stat} className="stat">
               <span style={styles.statNumber} className="stat-number">9</span>
               <span style={styles.statLabel}>Industry Niches</span>
@@ -289,7 +356,7 @@ export default function Landing() {
                   <h3 style={styles.stepTitle}>{item.title}</h3>
                   <p style={styles.stepDescription}>{item.description}</p>
                 </div>
-                {index < 2 && <div style={styles.stepArrow}>→</div>}
+                {index < 2 && <div style={styles.stepArrow} className="step-arrow">→</div>}
               </div>
             ))}
           </div>
@@ -408,8 +475,8 @@ export default function Landing() {
       {/* Footer */}
       <footer style={styles.footer}>
         <div style={styles.footerContainer}>
-          <div style={styles.footerTop}>
-            <div style={styles.footerBrand}>
+          <div style={styles.footerTop} className="footer-top">
+            <div style={styles.footerBrand} className="footer-brand">
               <div style={styles.logo} className="logo">
                 <img src="/favicon.png" alt="InkBot" style={styles.logoImage} />
                 <span style={styles.logoText}>InkBot</span>
@@ -420,7 +487,7 @@ export default function Landing() {
                 Available on Shopify App Store.
               </p>
             </div>
-            <div style={styles.footerLinks}>
+            <div style={styles.footerLinks} className="footer-links">
               <div style={styles.footerColumn}>
                 <h4 style={styles.footerHeading}>Product</h4>
                 <a href="#features" onClick={(e) => handleNavClick(e, "features")} style={styles.footerLink} className="footer-link">Features</a>
@@ -445,7 +512,7 @@ export default function Landing() {
               </div>
             </div>
           </div>
-          <div style={styles.footerBottom}>
+          <div style={styles.footerBottom} className="footer-bottom">
             <p style={styles.copyright}>© 2026 InkBot. All rights reserved.</p>
             <p style={styles.builtBy}>
               Built by{" "}
@@ -768,6 +835,88 @@ const globalStyles = `
     0% { transform: scale(1); opacity: 0.5; }
     100% { transform: scale(1.5); opacity: 0; }
   }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .nav-links-desktop {
+      display: none !important;
+    }
+
+    .mobile-menu-btn {
+      display: flex !important;
+    }
+
+    .mobile-menu {
+      display: flex !important;
+    }
+
+    .step-card {
+      max-width: 100% !important;
+    }
+
+    .pricing-card {
+      margin: 0 !important;
+    }
+
+    .pricing-card.popular {
+      transform: none !important;
+    }
+
+    .step-arrow {
+      display: none !important;
+    }
+
+    .hero-stats {
+      gap: 16px !important;
+    }
+
+    .stat-divider {
+      display: none !important;
+    }
+
+    .shopify-badge {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .footer-top {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .footer-brand {
+      max-width: 100% !important;
+    }
+
+    .footer-links {
+      justify-content: center;
+    }
+
+    .footer-bottom {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .mobile-menu-btn {
+      display: none !important;
+    }
+
+    .mobile-menu {
+      display: none !important;
+    }
+  }
+
+  /* Mobile nav link hover */
+  .mobile-nav-link {
+    transition: all 0.3s ease;
+  }
+
+  .mobile-nav-link:hover {
+    color: #a78bfa !important;
+    transform: translateX(5px);
+  }
 `;
 
 const styles: Record<string, React.CSSProperties> = {
@@ -836,6 +985,54 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: "600",
     cursor: "pointer",
     transition: "all 0.2s",
+  },
+
+  // Mobile Menu
+  mobileMenuButton: {
+    display: "none",
+    flexDirection: "column" as const,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "5px",
+    width: "40px",
+    height: "40px",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    padding: "8px",
+  },
+  hamburgerLine: {
+    width: "24px",
+    height: "2px",
+    background: "#ffffff",
+    transition: "all 0.3s ease",
+  },
+  mobileMenu: {
+    display: "none",
+    flexDirection: "column" as const,
+    gap: "16px",
+    overflow: "hidden",
+    transition: "all 0.3s ease",
+    borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+  },
+  mobileNavLink: {
+    color: "#a1a1aa",
+    textDecoration: "none",
+    fontSize: "16px",
+    fontWeight: "500",
+    padding: "8px 0",
+    display: "block",
+  },
+  mobileCtaButton: {
+    padding: "14px 24px",
+    background: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)",
+    border: "none",
+    borderRadius: "10px",
+    color: "#ffffff",
+    fontSize: "16px",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginTop: "8px",
   },
 
   // Hero Section

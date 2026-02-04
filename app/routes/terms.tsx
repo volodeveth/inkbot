@@ -1,4 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
+import { useState } from "react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -8,6 +9,8 @@ export const meta: MetaFunction = () => {
 };
 
 export default function TermsOfService() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const handleExternalLink = (url: string) => {
     window.open(url, "_blank");
   };
@@ -23,7 +26,9 @@ export default function TermsOfService() {
             <img src="/favicon.png" alt="InkBot" style={styles.logoImage} />
             <span style={styles.logoText}>InkBot</span>
           </a>
-          <div style={styles.navLinks}>
+
+          {/* Desktop Navigation */}
+          <div style={styles.navLinks} className="nav-links-desktop">
             <a href="/landing" style={styles.navLink}>Home</a>
             <a href="/privacy" style={styles.navLink}>Privacy</a>
             <button
@@ -33,6 +38,47 @@ export default function TermsOfService() {
               Install App
             </button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            style={styles.mobileMenuButton}
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <span style={{
+              ...styles.hamburgerLine,
+              transform: mobileMenuOpen ? "rotate(45deg) translate(5px, 5px)" : "none",
+            }}></span>
+            <span style={{
+              ...styles.hamburgerLine,
+              opacity: mobileMenuOpen ? 0 : 1,
+            }}></span>
+            <span style={{
+              ...styles.hamburgerLine,
+              transform: mobileMenuOpen ? "rotate(-45deg) translate(5px, -5px)" : "none",
+            }}></span>
+          </button>
+        </div>
+
+        {/* Mobile Menu */}
+        <div
+          style={{
+            ...styles.mobileMenu,
+            maxHeight: mobileMenuOpen ? "200px" : "0",
+            opacity: mobileMenuOpen ? 1 : 0,
+            padding: mobileMenuOpen ? "20px 24px" : "0 24px",
+          }}
+          className="mobile-menu"
+        >
+          <a href="/landing" style={styles.mobileNavLink}>Home</a>
+          <a href="/privacy" style={styles.mobileNavLink}>Privacy</a>
+          <button
+            onClick={() => handleExternalLink("https://apps.shopify.com/inkbot")}
+            style={styles.mobileCtaButton}
+          >
+            Install App
+          </button>
         </div>
       </nav>
 
@@ -330,6 +376,28 @@ const globalStyles = `
   section strong {
     color: #ffffff;
   }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .nav-links-desktop {
+      display: none !important;
+    }
+    .mobile-menu-btn {
+      display: flex !important;
+    }
+    .mobile-menu {
+      display: flex !important;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .mobile-menu-btn {
+      display: none !important;
+    }
+    .mobile-menu {
+      display: none !important;
+    }
+  }
 `;
 
 const styles: Record<string, React.CSSProperties> = {
@@ -394,6 +462,52 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: "14px",
     fontWeight: "600",
     cursor: "pointer",
+  },
+  mobileMenuButton: {
+    display: "none",
+    flexDirection: "column" as const,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "5px",
+    width: "40px",
+    height: "40px",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    padding: "8px",
+  },
+  hamburgerLine: {
+    width: "24px",
+    height: "2px",
+    background: "#ffffff",
+    transition: "all 0.3s ease",
+  },
+  mobileMenu: {
+    display: "none",
+    flexDirection: "column" as const,
+    gap: "16px",
+    overflow: "hidden",
+    transition: "all 0.3s ease",
+    borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+  },
+  mobileNavLink: {
+    color: "#a1a1aa",
+    textDecoration: "none",
+    fontSize: "16px",
+    fontWeight: "500",
+    padding: "8px 0",
+    display: "block",
+  },
+  mobileCtaButton: {
+    padding: "14px 24px",
+    background: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)",
+    border: "none",
+    borderRadius: "10px",
+    color: "#ffffff",
+    fontSize: "16px",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginTop: "8px",
   },
   main: {
     paddingTop: "100px",
