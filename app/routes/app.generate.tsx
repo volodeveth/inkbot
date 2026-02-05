@@ -643,6 +643,13 @@ export default function GeneratePage() {
                         setGenerateOptions((prev) => ({ ...prev, metaDescription: checked }))
                       }
                     />
+                    <Checkbox
+                      label="Keywords"
+                      checked={generateOptions.keywords}
+                      onChange={(checked) =>
+                        setGenerateOptions((prev) => ({ ...prev, keywords: checked }))
+                      }
+                    />
                   </InlineStack>
                 </BlockStack>
 
@@ -831,18 +838,20 @@ export default function GeneratePage() {
                   )}
 
                   {/* Keywords */}
-                  <BlockStack gap="200">
-                    <Text as="span" variant="bodySm" fontWeight="semibold">
-                      Suggested Keywords
-                    </Text>
-                    <InlineStack gap="200" wrap>
-                      {actionData.result.suggestedKeywords.map(
-                        (kw: string, i: number) => (
-                          <Tag key={i}>{kw}</Tag>
-                        )
-                      )}
-                    </InlineStack>
-                  </BlockStack>
+                  {actionData.generateOptions?.keywords !== false && actionData.result.suggestedKeywords?.length > 0 && (
+                    <BlockStack gap="200">
+                      <Text as="span" variant="bodySm" fontWeight="semibold">
+                        Suggested Keywords
+                      </Text>
+                      <InlineStack gap="200" wrap>
+                        {actionData.result.suggestedKeywords.map(
+                          (kw: string, i: number) => (
+                            <Tag key={i}>{kw}</Tag>
+                          )
+                        )}
+                      </InlineStack>
+                    </BlockStack>
+                  )}
 
                   <Divider />
 

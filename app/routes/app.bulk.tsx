@@ -831,6 +831,13 @@ export default function BulkPage() {
                         setGenerateOptions((prev) => ({ ...prev, metaDescription: checked }))
                       }
                     />
+                    <Checkbox
+                      label="Keywords"
+                      checked={generateOptions.keywords}
+                      onChange={(checked) =>
+                        setGenerateOptions((prev) => ({ ...prev, keywords: checked }))
+                      }
+                    />
                   </InlineStack>
                 </BlockStack>
 
@@ -1138,7 +1145,7 @@ export default function BulkPage() {
                           </Text>
                         ) : null}
 
-                        {result.suggestedKeywords?.length > 0 && (
+                        {actionData.generateOptions?.keywords !== false && result.suggestedKeywords?.length > 0 && (
                           <InlineStack gap="200" wrap>
                             {result.suggestedKeywords.map(
                               (kw: string, ki: number) => (

@@ -3,6 +3,7 @@ export interface GenerateOptions {
   description: boolean;
   metaTitle: boolean;
   metaDescription: boolean;
+  keywords: boolean;
 }
 
 export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
@@ -10,4 +11,5 @@ export const DEFAULT_GENERATE_OPTIONS: GenerateOptions = {
   description: true,
   metaTitle: true,
   metaDescription: true,
+  keywords: true,
 };
