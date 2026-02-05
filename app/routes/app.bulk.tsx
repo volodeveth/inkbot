@@ -30,6 +30,7 @@ import {
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { generateProductDescription } from "~/services/ai.server";
+import { type GenerateOptions, DEFAULT_GENERATE_OPTIONS } from "~/utils/generateOptions";
 import {
   checkUsageLimit,
   incrementUsage,
@@ -164,8 +165,19 @@ export async function action({ request }: ActionFunctionArgs) {
   // --- Apply selected results to Shopify ---
   if (actionType === "applySelected") {
     const itemsRaw = formData.get("items") as string;
+    const applyOptionsRaw = formData.get("applyOptions") as string;
+
     if (!itemsRaw) {
       return json({ error: "No items to apply.", success: false, applyResult: true });
+    }
+
+    let applyOptions = DEFAULT_GENERATE_OPTIONS;
+    if (applyOptionsRaw) {
+      try {
+        applyOptions = JSON.parse(applyOptionsRaw);
+      } catch {
+        // Use defaults
+      }
     }
 
     let items: Array<{
@@ -187,6 +199,27 @@ export async function action({ request }: ActionFunctionArgs) {
 
     for (const item of items) {
       try {
+        // Build input object with only the fields that should be applied
+        const productInput: Record<string, any> = { id: item.productId };
+
+        if (applyOptions.title && item.title) {
+          productInput.title = item.title;
+        }
+        if (applyOptions.description && item.description) {
+          productInput.descriptionHtml = item.description;
+        }
+
+        // Build SEO object only if meta fields should be applied
+        if (applyOptions.metaTitle || applyOptions.metaDescription) {
+          productInput.seo = {};
+          if (applyOptions.metaTitle && item.metaTitle) {
+            productInput.seo.title = item.metaTitle;
+          }
+          if (applyOptions.metaDescription && item.metaDescription) {
+            productInput.seo.description = item.metaDescription;
+          }
+        }
+
         const response = await admin.graphql(
           `
           mutation updateProduct($input: ProductInput!) {
@@ -203,15 +236,7 @@ export async function action({ request }: ActionFunctionArgs) {
         `,
           {
             variables: {
-              input: {
-                id: item.productId,
-                title: item.title,
-                descriptionHtml: item.description,
-                seo: {
-                  title: item.metaTitle || item.title,
-                  description: item.metaDescription || "",
-                },
-              },
+              input: productInput,
             },
           }
         );
@@ -256,6 +281,16 @@ export async function action({ request }: ActionFunctionArgs) {
   const niche = formData.get("niche") as string;
   const tone = formData.get("tone") as string;
   const language = formData.get("language") as string;
+  const generateOptionsRaw = formData.get("generateOptions") as string;
+
+  let generateOptions = DEFAULT_GENERATE_OPTIONS;
+  if (generateOptionsRaw) {
+    try {
+      generateOptions = JSON.parse(generateOptionsRaw);
+    } catch {
+      // Use defaults
+    }
+  }
 
   // Try Shopify product selection first, then fall back to textarea
   const selectedProductsRaw = formData.get("selectedProducts") as string;
@@ -348,6 +383,7 @@ export async function action({ request }: ActionFunctionArgs) {
               avoidWords: brandVoice.avoidWords || undefined,
             }
           : undefined,
+        generateOptions,
       });
 
       let generationId = "";
@@ -402,6 +438,7 @@ export async function action({ request }: ActionFunctionArgs) {
     errors,
     total: productInputs.length,
     completed: results.length,
+    generateOptions,
   });
 }
 
@@ -433,6 +470,11 @@ export default function BulkPage() {
   // Filter state
   const [selectedCollection, setSelectedCollection] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  // Generate options state
+  const [generateOptions, setGenerateOptions] = useState<GenerateOptions>({
+    ...DEFAULT_GENERATE_OPTIONS,
+  });
 
   // Manual textarea state
   const [productsText, setProductsText] = useState("");
@@ -503,6 +545,7 @@ export default function BulkPage() {
     formData.append("niche", niche);
     formData.append("tone", tone);
     formData.append("language", language);
+    formData.append("generateOptions", JSON.stringify(generateOptions));
 
     if (inputMode === "picker") {
       formData.append("selectedProducts", JSON.stringify(selectedProducts));
@@ -511,7 +554,7 @@ export default function BulkPage() {
     }
 
     submit(formData, { method: "post" });
-  }, [inputMode, selectedProducts, productsText, niche, tone, language, submit]);
+  }, [inputMode, selectedProducts, productsText, niche, tone, language, generateOptions, submit]);
 
   const handleToggleCheck = useCallback((index: number) => {
     setCheckedResults((prev) => {
@@ -565,8 +608,12 @@ export default function BulkPage() {
     const formData = new FormData();
     formData.append("_action", "applySelected");
     formData.append("items", JSON.stringify(itemsToApply));
+    // Pass the generate options so we know what to apply
+    if (actionData?.generateOptions) {
+      formData.append("applyOptions", JSON.stringify(actionData.generateOptions));
+    }
     submit(formData, { method: "post" });
-  }, [results, checkedResults, appliedResults, submit]);
+  }, [results, checkedResults, appliedResults, actionData, submit]);
 
   const handleLeaveReview = useCallback(() => {
     window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
@@ -749,6 +796,44 @@ export default function BulkPage() {
                 <Text as="h2" variant="headingMd">
                   2. Generation Settings (applied to all)
                 </Text>
+
+                {/* What to generate */}
+                <BlockStack gap="200">
+                  <Text as="span" variant="bodySm" fontWeight="semibold">
+                    What to generate
+                  </Text>
+                  <InlineStack gap="400" wrap>
+                    <Checkbox
+                      label="Title"
+                      checked={generateOptions.title}
+                      onChange={(checked) =>
+                        setGenerateOptions((prev) => ({ ...prev, title: checked }))
+                      }
+                    />
+                    <Checkbox
+                      label="Description"
+                      checked={generateOptions.description}
+                      onChange={(checked) =>
+                        setGenerateOptions((prev) => ({ ...prev, description: checked }))
+                      }
+                    />
+                    <Checkbox
+                      label="Meta Title"
+                      checked={generateOptions.metaTitle}
+                      onChange={(checked) =>
+                        setGenerateOptions((prev) => ({ ...prev, metaTitle: checked }))
+                      }
+                    />
+                    <Checkbox
+                      label="Meta Description"
+                      checked={generateOptions.metaDescription}
+                      onChange={(checked) =>
+                        setGenerateOptions((prev) => ({ ...prev, metaDescription: checked }))
+                      }
+                    />
+                  </InlineStack>
+                </BlockStack>
+
                 <InlineStack gap="400" wrap>
                   <Box minWidth="180px">
                     <Select
@@ -937,9 +1022,22 @@ export default function BulkPage() {
                     <BlockStack gap="200">
                       <p>
                         This will update {checkedCount} product
-                        {checkedCount !== 1 ? "s" : ""} in your Shopify store
-                        (title, description, and SEO meta).
+                        {checkedCount !== 1 ? "s" : ""} in your Shopify store:
                       </p>
+                      <ul style={{ margin: 0, paddingLeft: "20px" }}>
+                        {actionData.generateOptions?.title !== false && (
+                          <li>Product title</li>
+                        )}
+                        {actionData.generateOptions?.description !== false && (
+                          <li>Product description</li>
+                        )}
+                        {actionData.generateOptions?.metaTitle !== false && (
+                          <li>SEO meta title</li>
+                        )}
+                        {actionData.generateOptions?.metaDescription !== false && (
+                          <li>SEO meta description</li>
+                        )}
+                      </ul>
                       <InlineStack gap="200">
                         <Button
                           variant="primary"
@@ -1009,28 +1107,36 @@ export default function BulkPage() {
                           </InlineStack>
                         </InlineStack>
 
-                        {result.title && (
+                        {actionData.generateOptions?.title !== false && result.title && (
                           <Text as="p" variant="bodySm">
                             <strong>Title:</strong> {result.title}
                           </Text>
                         )}
 
-                        <Box
-                          padding="300"
-                          background="bg-surface-secondary"
-                          borderRadius="200"
-                        >
-                          <div
-                            dangerouslySetInnerHTML={{
-                              __html: result.description,
-                            }}
-                          />
-                        </Box>
+                        {actionData.generateOptions?.description !== false && result.description && (
+                          <Box
+                            padding="300"
+                            background="bg-surface-secondary"
+                            borderRadius="200"
+                          >
+                            <div
+                              dangerouslySetInnerHTML={{
+                                __html: result.description,
+                              }}
+                            />
+                          </Box>
+                        )}
 
-                        <Text as="p" variant="bodySm">
-                          <strong>Meta:</strong> {result.metaTitle} &mdash;{" "}
-                          {result.metaDescription}
-                        </Text>
+                        {(actionData.generateOptions?.metaTitle !== false && result.metaTitle) ||
+                         (actionData.generateOptions?.metaDescription !== false && result.metaDescription) ? (
+                          <Text as="p" variant="bodySm">
+                            <strong>Meta:</strong>{" "}
+                            {actionData.generateOptions?.metaTitle !== false && result.metaTitle}
+                            {actionData.generateOptions?.metaTitle !== false && result.metaTitle &&
+                             actionData.generateOptions?.metaDescription !== false && result.metaDescription && " — "}
+                            {actionData.generateOptions?.metaDescription !== false && result.metaDescription}
+                          </Text>
+                        ) : null}
 
                         {result.suggestedKeywords?.length > 0 && (
                           <InlineStack gap="200" wrap>

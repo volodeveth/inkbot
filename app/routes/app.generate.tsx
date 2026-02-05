@@ -26,9 +26,11 @@ import {
   Divider,
   Tag,
   Badge,
+  Checkbox,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { generateProductDescription } from "~/services/ai.server";
+import { type GenerateOptions, DEFAULT_GENERATE_OPTIONS } from "~/utils/generateOptions";
 import {
   checkUsageLimit,
   incrementUsage,
@@ -121,6 +123,16 @@ export async function action({ request }: ActionFunctionArgs) {
 
       const featuresRaw = formData.get("features") as string;
       const keywordsRaw = formData.get("keywords") as string;
+      const generateOptionsRaw = formData.get("generateOptions") as string;
+
+      let generateOptions = DEFAULT_GENERATE_OPTIONS;
+      if (generateOptionsRaw) {
+        try {
+          generateOptions = JSON.parse(generateOptionsRaw);
+        } catch {
+          // Use defaults
+        }
+      }
 
       const input = {
         productTitle: formData.get("productTitle") as string,
@@ -146,6 +158,7 @@ export async function action({ request }: ActionFunctionArgs) {
               avoidWords: brandVoice.avoidWords || undefined,
             }
           : undefined,
+        generateOptions,
       };
 
       const result = await generateProductDescription(input);
@@ -180,6 +193,7 @@ export async function action({ request }: ActionFunctionArgs) {
         result,
         generationId,
         newUsage: usage.used + 1,
+        generateOptions,
       });
     } catch (error) {
       console.error("Generation error:", error);
@@ -197,12 +211,43 @@ export async function action({ request }: ActionFunctionArgs) {
     const metaTitle = formData.get("metaTitle") as string;
     const metaDescription = formData.get("metaDescription") as string;
     const generationId = formData.get("generationId") as string;
+    const applyOptionsRaw = formData.get("applyOptions") as string;
+
+    let applyOptions = DEFAULT_GENERATE_OPTIONS;
+    if (applyOptionsRaw) {
+      try {
+        applyOptions = JSON.parse(applyOptionsRaw);
+      } catch {
+        // Use defaults
+      }
+    }
 
     if (!productId) {
       return json({ error: "No product selected to apply to.", success: false });
     }
 
     try {
+      // Build input object with only the fields that should be applied
+      const productInput: Record<string, any> = { id: productId };
+
+      if (applyOptions.title && title) {
+        productInput.title = title;
+      }
+      if (applyOptions.description && description) {
+        productInput.descriptionHtml = description;
+      }
+
+      // Build SEO object only if meta fields should be applied
+      if (applyOptions.metaTitle || applyOptions.metaDescription) {
+        productInput.seo = {};
+        if (applyOptions.metaTitle && metaTitle) {
+          productInput.seo.title = metaTitle;
+        }
+        if (applyOptions.metaDescription && metaDescription) {
+          productInput.seo.description = metaDescription;
+        }
+      }
+
       const response = await admin.graphql(
         `
         mutation updateProduct($input: ProductInput!) {
@@ -225,15 +270,7 @@ export async function action({ request }: ActionFunctionArgs) {
       `,
         {
           variables: {
-            input: {
-              id: productId,
-              title,
-              descriptionHtml: description,
-              seo: {
-                title: metaTitle || title,
-                description: metaDescription || "",
-              },
-            },
+            input: productInput,
           },
         }
       );
@@ -289,6 +326,10 @@ export default function GeneratePage() {
     tone: "professional",
     keywords: "",
     language: "en",
+  });
+
+  const [generateOptions, setGenerateOptions] = useState<GenerateOptions>({
+    ...DEFAULT_GENERATE_OPTIONS,
   });
 
   const [selectedProduct, setSelectedProduct] = useState<ShopifyProduct | null>(null);
@@ -399,9 +440,11 @@ export default function GeneratePage() {
     if (selectedProduct) {
       formData.append("productId", selectedProduct.id);
     }
+    // Add generate options
+    formData.append("generateOptions", JSON.stringify(generateOptions));
     submit(formData, { method: "post" });
     setShowApplyConfirm(false);
-  }, [formState, selectedProduct, submit]);
+  }, [formState, selectedProduct, generateOptions, submit]);
 
   const handleApplyClick = useCallback(() => {
     setShowApplyConfirm(true);
@@ -412,12 +455,16 @@ export default function GeneratePage() {
     const formData = new FormData();
     formData.append("_action", "apply");
     formData.append("productId", selectedProduct.id);
-    formData.append("title", actionData.result.title);
-    formData.append("description", actionData.result.description);
+    formData.append("title", actionData.result.title || "");
+    formData.append("description", actionData.result.description || "");
     formData.append("metaTitle", actionData.result.metaTitle || "");
     formData.append("metaDescription", actionData.result.metaDescription || "");
     if (actionData.generationId) {
       formData.append("generationId", actionData.generationId);
+    }
+    // Pass the generate options so we know what to apply
+    if (actionData.generateOptions) {
+      formData.append("applyOptions", JSON.stringify(actionData.generateOptions));
     }
     submit(formData, { method: "post" });
     setShowApplyConfirm(false);
@@ -562,6 +609,43 @@ export default function GeneratePage() {
                   3. Generation Settings
                 </Text>
 
+                {/* What to generate */}
+                <BlockStack gap="200">
+                  <Text as="span" variant="bodySm" fontWeight="semibold">
+                    What to generate
+                  </Text>
+                  <InlineStack gap="400" wrap>
+                    <Checkbox
+                      label="Title"
+                      checked={generateOptions.title}
+                      onChange={(checked) =>
+                        setGenerateOptions((prev) => ({ ...prev, title: checked }))
+                      }
+                    />
+                    <Checkbox
+                      label="Description"
+                      checked={generateOptions.description}
+                      onChange={(checked) =>
+                        setGenerateOptions((prev) => ({ ...prev, description: checked }))
+                      }
+                    />
+                    <Checkbox
+                      label="Meta Title"
+                      checked={generateOptions.metaTitle}
+                      onChange={(checked) =>
+                        setGenerateOptions((prev) => ({ ...prev, metaTitle: checked }))
+                      }
+                    />
+                    <Checkbox
+                      label="Meta Description"
+                      checked={generateOptions.metaDescription}
+                      onChange={(checked) =>
+                        setGenerateOptions((prev) => ({ ...prev, metaDescription: checked }))
+                      }
+                    />
+                  </InlineStack>
+                </BlockStack>
+
                 <InlineStack gap="400" wrap>
                   <Box minWidth="180px">
                     <Select
@@ -675,68 +759,76 @@ export default function GeneratePage() {
                   <Divider />
 
                   {/* Title */}
-                  <BlockStack gap="200">
-                    <Text as="span" variant="bodySm" fontWeight="semibold">
-                      Optimized Title
-                    </Text>
-                    <Box
-                      padding="300"
-                      background="bg-surface-secondary"
-                      borderRadius="200"
-                    >
-                      <Text as="p">{actionData.result.title}</Text>
-                    </Box>
-                  </BlockStack>
+                  {actionData.generateOptions?.title !== false && actionData.result.title && (
+                    <BlockStack gap="200">
+                      <Text as="span" variant="bodySm" fontWeight="semibold">
+                        Optimized Title
+                      </Text>
+                      <Box
+                        padding="300"
+                        background="bg-surface-secondary"
+                        borderRadius="200"
+                      >
+                        <Text as="p">{actionData.result.title}</Text>
+                      </Box>
+                    </BlockStack>
+                  )}
 
                   {/* Description */}
-                  <BlockStack gap="200">
-                    <Text as="span" variant="bodySm" fontWeight="semibold">
-                      Product Description
-                    </Text>
-                    <Box
-                      padding="300"
-                      background="bg-surface-secondary"
-                      borderRadius="200"
-                    >
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: actionData.result.description,
-                        }}
-                      />
-                    </Box>
-                  </BlockStack>
+                  {actionData.generateOptions?.description !== false && actionData.result.description && (
+                    <BlockStack gap="200">
+                      <Text as="span" variant="bodySm" fontWeight="semibold">
+                        Product Description
+                      </Text>
+                      <Box
+                        padding="300"
+                        background="bg-surface-secondary"
+                        borderRadius="200"
+                      >
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: actionData.result.description,
+                          }}
+                        />
+                      </Box>
+                    </BlockStack>
+                  )}
 
                   {/* Meta Title */}
-                  <BlockStack gap="200">
-                    <Text as="span" variant="bodySm" fontWeight="semibold">
-                      Meta Title
-                    </Text>
-                    <Box
-                      padding="200"
-                      background="bg-surface-secondary"
-                      borderRadius="200"
-                    >
-                      <Text as="p" variant="bodySm">
-                        {actionData.result.metaTitle}
+                  {actionData.generateOptions?.metaTitle !== false && actionData.result.metaTitle && (
+                    <BlockStack gap="200">
+                      <Text as="span" variant="bodySm" fontWeight="semibold">
+                        Meta Title
                       </Text>
-                    </Box>
-                  </BlockStack>
+                      <Box
+                        padding="200"
+                        background="bg-surface-secondary"
+                        borderRadius="200"
+                      >
+                        <Text as="p" variant="bodySm">
+                          {actionData.result.metaTitle}
+                        </Text>
+                      </Box>
+                    </BlockStack>
+                  )}
 
                   {/* Meta Description */}
-                  <BlockStack gap="200">
-                    <Text as="span" variant="bodySm" fontWeight="semibold">
-                      Meta Description
-                    </Text>
-                    <Box
-                      padding="200"
-                      background="bg-surface-secondary"
-                      borderRadius="200"
-                    >
-                      <Text as="p" variant="bodySm">
-                        {actionData.result.metaDescription}
+                  {actionData.generateOptions?.metaDescription !== false && actionData.result.metaDescription && (
+                    <BlockStack gap="200">
+                      <Text as="span" variant="bodySm" fontWeight="semibold">
+                        Meta Description
                       </Text>
-                    </Box>
-                  </BlockStack>
+                      <Box
+                        padding="200"
+                        background="bg-surface-secondary"
+                        borderRadius="200"
+                      >
+                        <Text as="p" variant="bodySm">
+                          {actionData.result.metaDescription}
+                        </Text>
+                      </Box>
+                    </BlockStack>
+                  )}
 
                   {/* Keywords */}
                   <BlockStack gap="200">
@@ -760,10 +852,18 @@ export default function GeneratePage() {
                       <BlockStack gap="200">
                         <p>This will update the following on your Shopify product:</p>
                         <ul style={{ margin: 0, paddingLeft: "20px" }}>
-                          <li>Product title</li>
-                          <li>Product description (HTML)</li>
-                          <li>SEO meta title</li>
-                          <li>SEO meta description</li>
+                          {actionData.generateOptions?.title !== false && actionData.result.title && (
+                            <li>Product title</li>
+                          )}
+                          {actionData.generateOptions?.description !== false && actionData.result.description && (
+                            <li>Product description (HTML)</li>
+                          )}
+                          {actionData.generateOptions?.metaTitle !== false && actionData.result.metaTitle && (
+                            <li>SEO meta title</li>
+                          )}
+                          {actionData.generateOptions?.metaDescription !== false && actionData.result.metaDescription && (
+                            <li>SEO meta description</li>
+                          )}
                         </ul>
                         <InlineStack gap="200">
                           <Button

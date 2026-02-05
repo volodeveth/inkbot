@@ -1,5 +1,9 @@
 import OpenAI from "openai";
 import { getPromptForNiche } from "./prompts.server";
+import { type GenerateOptions, DEFAULT_GENERATE_OPTIONS } from "~/utils/generateOptions";
+
+// Re-export for convenience
+export { type GenerateOptions, DEFAULT_GENERATE_OPTIONS };
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -25,6 +29,7 @@ export interface GenerateDescriptionInput {
   };
   competitorDescriptions?: string[];
   language?: string;
+  generateOptions?: GenerateOptions;
 }
 
 export interface GeneratedDescription {
@@ -174,6 +179,8 @@ RULES:
 }
 
 function buildUserPrompt(input: GenerateDescriptionInput): string {
+  const options = input.generateOptions ?? DEFAULT_GENERATE_OPTIONS;
+
   let prompt = `Create a product description for:
 
 PRODUCT: ${input.productTitle}
@@ -191,16 +198,24 @@ ${input.keywords?.length ? `TARGET KEYWORDS: ${input.keywords.join(", ")}` : ""}
 
   const languageName = getLanguageName(input.language);
 
+  // Build what to generate list
+  const generateList: string[] = [];
+  if (options.title) generateList.push("title");
+  if (options.description) generateList.push("description");
+  if (options.metaTitle) generateList.push("metaTitle");
+  if (options.metaDescription) generateList.push("metaDescription");
+
   prompt += `
 
 IMPORTANT: Write ALL content in ${languageName}.
+GENERATE ONLY: ${generateList.join(", ")}. Leave other fields as empty strings.
 
 Please respond ONLY with valid JSON in the following format (no markdown, no code blocks):
 {
-  "title": "Optimized product title in ${languageName} (max 70 chars)",
-  "description": "Full HTML product description in ${languageName} with <p>, <ul>, <li>, <strong> tags. Multiple paragraphs.",
-  "metaTitle": "SEO meta title in ${languageName} (max 60 chars)",
-  "metaDescription": "SEO meta description in ${languageName} (max 155 chars)",
+  "title": ${options.title ? `"Optimized product title in ${languageName} (max 70 chars)"` : '""'},
+  "description": ${options.description ? `"Full HTML product description in ${languageName} with <p>, <ul>, <li>, <strong> tags. Multiple paragraphs."` : '""'},
+  "metaTitle": ${options.metaTitle ? `"SEO meta title in ${languageName} (max 60 chars)"` : '""'},
+  "metaDescription": ${options.metaDescription ? `"SEO meta description in ${languageName} (max 155 chars)"` : '""'},
   "suggestedKeywords": ["keyword1 in ${languageName}", "keyword2 in ${languageName}", "keyword3", "keyword4", "keyword5"],
   "seoScore": 85
 }`;
