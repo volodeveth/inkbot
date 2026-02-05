@@ -53,22 +53,14 @@ export default function Screenshots() {
           margin-bottom: 40px;
         }
 
-        .logo-icon {
-          width: 60px;
-          height: 60px;
-          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 32px;
+        .logo-image {
+          height: 50px;
+          width: auto;
         }
 
-        .logo-text {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          font-size: 36px;
-          font-weight: 700;
-          color: #fff;
+        .logo-image-large {
+          height: 70px;
+          width: auto;
         }
 
         .headline {
@@ -205,22 +197,9 @@ export default function Screenshots() {
           margin-bottom: 16px;
         }
 
-        .sidebar-logo-icon {
-          width: 32px;
+        .sidebar-logo-image {
           height: 32px;
-          background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 16px;
-        }
-
-        .sidebar-logo-text {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          font-size: 18px;
-          font-weight: 700;
-          color: #18181b;
+          width: auto;
         }
 
         .nav-item {
@@ -649,8 +628,7 @@ export default function Screenshots() {
         <div className="screenshot-number">1 / 5</div>
         <div className="left-panel">
           <div className="logo-area">
-            <div className="logo-icon">🖋️</div>
-            <div className="logo-text">InkBot</div>
+            <img src="/logo.png" alt="InkBot" className="logo-image-large" />
           </div>
           <h2 className="headline">
             Your <span className="highlight">AI Writing</span><br />
@@ -686,8 +664,7 @@ export default function Screenshots() {
               <div className="app-layout">
                 <div className="app-sidebar">
                   <div className="sidebar-logo">
-                    <div className="sidebar-logo-icon">🖋️</div>
-                    <div className="sidebar-logo-text">InkBot</div>
+                    <img src="/logo.png" alt="InkBot" className="sidebar-logo-image" />
                   </div>
                   <div className="nav-item active"><span className="nav-icon">🏠</span> Dashboard</div>
                   <div className="nav-item"><span className="nav-icon">✨</span> Generate</div>
@@ -739,8 +716,7 @@ export default function Screenshots() {
         <div className="screenshot-number">2 / 5</div>
         <div className="left-panel">
           <div className="logo-area">
-            <div className="logo-icon">🖋️</div>
-            <div className="logo-text">InkBot</div>
+            <img src="/logo.png" alt="InkBot" className="logo-image-large" />
           </div>
           <h2 className="headline">
             Generate <span className="highlight">SEO-Optimized</span><br />
@@ -776,8 +752,7 @@ export default function Screenshots() {
               <div className="app-layout">
                 <div className="app-sidebar">
                   <div className="sidebar-logo">
-                    <div className="sidebar-logo-icon">🖋️</div>
-                    <div className="sidebar-logo-text">InkBot</div>
+                    <img src="/logo.png" alt="InkBot" className="sidebar-logo-image" />
                   </div>
                   <div className="nav-item"><span className="nav-icon">🏠</span> Dashboard</div>
                   <div className="nav-item active"><span className="nav-icon">✨</span> Generate</div>
@@ -850,8 +825,7 @@ export default function Screenshots() {
         <div className="screenshot-number">3 / 5</div>
         <div className="left-panel">
           <div className="logo-area">
-            <div className="logo-icon">🖋️</div>
-            <div className="logo-text">InkBot</div>
+            <img src="/logo.png" alt="InkBot" className="logo-image-large" />
           </div>
           <h2 className="headline">
             Process Your <span className="highlight">Entire Catalog</span><br />
@@ -887,8 +861,7 @@ export default function Screenshots() {
               <div className="app-layout">
                 <div className="app-sidebar">
                   <div className="sidebar-logo">
-                    <div className="sidebar-logo-icon">🖋️</div>
-                    <div className="sidebar-logo-text">InkBot</div>
+                    <img src="/logo.png" alt="InkBot" className="sidebar-logo-image" />
                   </div>
                   <div className="nav-item"><span className="nav-icon">🏠</span> Dashboard</div>
                   <div className="nav-item"><span className="nav-icon">✨</span> Generate</div>
@@ -972,8 +945,7 @@ export default function Screenshots() {
         <div className="screenshot-number">4 / 5</div>
         <div className="left-panel">
           <div className="logo-area">
-            <div className="logo-icon">🖋️</div>
-            <div className="logo-text">InkBot</div>
+            <img src="/logo.png" alt="InkBot" className="logo-image-large" />
           </div>
           <h2 className="headline">
             Train AI to Match<br />
@@ -1009,8 +981,7 @@ export default function Screenshots() {
               <div className="app-layout">
                 <div className="app-sidebar">
                   <div className="sidebar-logo">
-                    <div className="sidebar-logo-icon">🖋️</div>
-                    <div className="sidebar-logo-text">InkBot</div>
+                    <img src="/logo.png" alt="InkBot" className="sidebar-logo-image" />
                   </div>
                   <div className="nav-item"><span className="nav-icon">🏠</span> Dashboard</div>
                   <div className="nav-item"><span className="nav-icon">✨</span> Generate</div>
@@ -1079,8 +1050,7 @@ export default function Screenshots() {
         <div className="screenshot-number">5 / 5</div>
         <div className="left-panel">
           <div className="logo-area">
-            <div className="logo-icon">🖋️</div>
-            <div className="logo-text">InkBot</div>
+            <img src="/logo.png" alt="InkBot" className="logo-image-large" />
           </div>
           <h2 className="headline">
             Start Free,<br />
@@ -1116,8 +1086,7 @@ export default function Screenshots() {
               <div className="app-layout">
                 <div className="app-sidebar">
                   <div className="sidebar-logo">
-                    <div className="sidebar-logo-icon">🖋️</div>
-                    <div className="sidebar-logo-text">InkBot</div>
+                    <img src="/logo.png" alt="InkBot" className="sidebar-logo-image" />
                   </div>
                   <div className="nav-item"><span className="nav-icon">🏠</span> Dashboard</div>
                   <div className="nav-item"><span className="nav-icon">✨</span> Generate</div>
