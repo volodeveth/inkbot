@@ -61,7 +61,7 @@ interface BulkResult {
   metaTitle: string;
   metaDescription: string;
   seoScore: number;
-  suggestedKeywords: string[];
+  suggestedTags: string[];
   applied: boolean;
 }
 
@@ -186,6 +186,7 @@ export async function action({ request }: ActionFunctionArgs) {
       description: string;
       metaTitle: string;
       metaDescription: string;
+      tags: string[];
       generationId: string;
     }>;
     try {
@@ -220,12 +221,18 @@ export async function action({ request }: ActionFunctionArgs) {
           }
         }
 
+        // Add tags if enabled
+        if (applyOptions.tags && item.tags?.length > 0) {
+          productInput.tags = item.tags;
+        }
+
         const response = await admin.graphql(
           `
           mutation updateProduct($input: ProductInput!) {
             productUpdate(input: $input) {
               product {
                 id
+                tags
               }
               userErrors {
                 field
@@ -419,7 +426,7 @@ export async function action({ request }: ActionFunctionArgs) {
         metaTitle: result.metaTitle,
         metaDescription: result.metaDescription,
         seoScore: result.seoScore,
-        suggestedKeywords: result.suggestedKeywords || [],
+        suggestedTags: result.suggestedTags || [],
         applied: false,
       });
     } catch (error) {
@@ -600,6 +607,7 @@ export default function BulkPage() {
         description: r.description,
         metaTitle: r.metaTitle,
         metaDescription: r.metaDescription,
+        tags: r.suggestedTags || [],
         generationId: r.generationId,
       }));
 
@@ -832,10 +840,10 @@ export default function BulkPage() {
                       }
                     />
                     <Checkbox
-                      label="Keywords"
-                      checked={generateOptions.keywords}
+                      label="Tags"
+                      checked={generateOptions.tags}
                       onChange={(checked) =>
-                        setGenerateOptions((prev) => ({ ...prev, keywords: checked }))
+                        setGenerateOptions((prev) => ({ ...prev, tags: checked }))
                       }
                     />
                   </InlineStack>
@@ -1044,6 +1052,9 @@ export default function BulkPage() {
                         {actionData.generateOptions?.metaDescription !== false && (
                           <li>SEO meta description</li>
                         )}
+                        {actionData.generateOptions?.tags && (
+                          <li>Product tags (added to existing)</li>
+                        )}
                       </ul>
                       <InlineStack gap="200">
                         <Button
@@ -1145,11 +1156,11 @@ export default function BulkPage() {
                           </Text>
                         ) : null}
 
-                        {actionData.generateOptions?.keywords !== false && result.suggestedKeywords?.length > 0 && (
+                        {actionData.generateOptions?.tags && result.suggestedTags?.length > 0 && (
                           <InlineStack gap="200" wrap>
-                            {result.suggestedKeywords.map(
-                              (kw: string, ki: number) => (
-                                <Tag key={ki}>{kw}</Tag>
+                            {result.suggestedTags.map(
+                              (tag: string, ki: number) => (
+                                <Tag key={ki}>{tag}</Tag>
                               )
                             )}
                           </InlineStack>

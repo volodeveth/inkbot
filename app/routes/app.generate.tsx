@@ -210,6 +210,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const title = formData.get("title") as string;
     const metaTitle = formData.get("metaTitle") as string;
     const metaDescription = formData.get("metaDescription") as string;
+    const tagsRaw = formData.get("tags") as string;
     const generationId = formData.get("generationId") as string;
     const applyOptionsRaw = formData.get("applyOptions") as string;
 
@@ -219,6 +220,15 @@ export async function action({ request }: ActionFunctionArgs) {
         applyOptions = JSON.parse(applyOptionsRaw);
       } catch {
         // Use defaults
+      }
+    }
+
+    let tags: string[] = [];
+    if (tagsRaw) {
+      try {
+        tags = JSON.parse(tagsRaw);
+      } catch {
+        // Ignore
       }
     }
 
@@ -248,6 +258,11 @@ export async function action({ request }: ActionFunctionArgs) {
         }
       }
 
+      // Add tags if enabled
+      if (applyOptions.tags && tags.length > 0) {
+        productInput.tags = tags;
+      }
+
       const response = await admin.graphql(
         `
         mutation updateProduct($input: ProductInput!) {
@@ -256,6 +271,7 @@ export async function action({ request }: ActionFunctionArgs) {
               id
               title
               descriptionHtml
+              tags
               seo {
                 title
                 description
@@ -459,6 +475,7 @@ export default function GeneratePage() {
     formData.append("description", actionData.result.description || "");
     formData.append("metaTitle", actionData.result.metaTitle || "");
     formData.append("metaDescription", actionData.result.metaDescription || "");
+    formData.append("tags", JSON.stringify(actionData.result.suggestedTags || []));
     if (actionData.generationId) {
       formData.append("generationId", actionData.generationId);
     }
@@ -644,10 +661,10 @@ export default function GeneratePage() {
                       }
                     />
                     <Checkbox
-                      label="Keywords"
-                      checked={generateOptions.keywords}
+                      label="Tags"
+                      checked={generateOptions.tags}
                       onChange={(checked) =>
-                        setGenerateOptions((prev) => ({ ...prev, keywords: checked }))
+                        setGenerateOptions((prev) => ({ ...prev, tags: checked }))
                       }
                     />
                   </InlineStack>
@@ -837,16 +854,16 @@ export default function GeneratePage() {
                     </BlockStack>
                   )}
 
-                  {/* Keywords */}
-                  {actionData.generateOptions?.keywords !== false && actionData.result.suggestedKeywords?.length > 0 && (
+                  {/* Tags */}
+                  {actionData.generateOptions?.tags && actionData.result.suggestedTags?.length > 0 && (
                     <BlockStack gap="200">
                       <Text as="span" variant="bodySm" fontWeight="semibold">
-                        Suggested Keywords
+                        Suggested Tags
                       </Text>
                       <InlineStack gap="200" wrap>
-                        {actionData.result.suggestedKeywords.map(
-                          (kw: string, i: number) => (
-                            <Tag key={i}>{kw}</Tag>
+                        {actionData.result.suggestedTags.map(
+                          (tag: string, i: number) => (
+                            <Tag key={i}>{tag}</Tag>
                           )
                         )}
                       </InlineStack>
@@ -872,6 +889,9 @@ export default function GeneratePage() {
                           )}
                           {actionData.generateOptions?.metaDescription !== false && actionData.result.metaDescription && (
                             <li>SEO meta description</li>
+                          )}
+                          {actionData.generateOptions?.tags && actionData.result.suggestedTags?.length > 0 && (
+                            <li>Product tags (added to existing)</li>
                           )}
                         </ul>
                         <InlineStack gap="200">

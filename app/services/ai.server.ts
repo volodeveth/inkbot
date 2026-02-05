@@ -37,7 +37,7 @@ export interface GeneratedDescription {
   description: string;
   metaTitle: string;
   metaDescription: string;
-  suggestedKeywords: string[];
+  suggestedTags: string[];
   seoScore: number;
   tokensUsed: number;
   generationTime: number;
@@ -204,7 +204,7 @@ ${input.keywords?.length ? `TARGET KEYWORDS: ${input.keywords.join(", ")}` : ""}
   if (options.description) generateList.push("description");
   if (options.metaTitle) generateList.push("metaTitle");
   if (options.metaDescription) generateList.push("metaDescription");
-  if (options.keywords) generateList.push("suggestedKeywords");
+  if (options.tags) generateList.push("suggestedTags");
 
   prompt += `
 
@@ -217,7 +217,7 @@ Please respond ONLY with valid JSON in the following format (no markdown, no cod
   "description": ${options.description ? `"Full HTML product description in ${languageName} with <p>, <ul>, <li>, <strong> tags. Multiple paragraphs."` : '""'},
   "metaTitle": ${options.metaTitle ? `"SEO meta title in ${languageName} (max 60 chars)"` : '""'},
   "metaDescription": ${options.metaDescription ? `"SEO meta description in ${languageName} (max 155 chars)"` : '""'},
-  "suggestedKeywords": ${options.keywords ? `["keyword1 in ${languageName}", "keyword2 in ${languageName}", "keyword3", "keyword4", "keyword5"]` : '[]'},
+  "suggestedTags": ${options.tags ? `["tag1 in ${languageName}", "tag2", "tag3", "tag4", "tag5"]` : '[]'},
   "seoScore": 85
 }`;
 
@@ -240,7 +240,7 @@ function parseGeneratedContent(
       description: parsed.description || "",
       metaTitle: parsed.metaTitle || "",
       metaDescription: parsed.metaDescription || "",
-      suggestedKeywords: parsed.suggestedKeywords || [],
+      suggestedTags: parsed.suggestedTags || [],
       seoScore: Math.min(100, Math.max(0, parsed.seoScore || 70)),
     };
   } catch {
@@ -249,7 +249,7 @@ function parseGeneratedContent(
       description: text,
       metaTitle: "",
       metaDescription: "",
-      suggestedKeywords: [],
+      suggestedTags: [],
       seoScore: 70,
     };
   }
