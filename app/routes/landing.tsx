@@ -9,7 +9,7 @@ export const meta: MetaFunction = () => {
     { property: "og:title", content: "InkBot — AI Product Descriptions & SEO for Shopify" },
     { property: "og:description", content: "Generate unique, SEO-optimized product descriptions 10x faster. Trusted by Shopify merchants worldwide." },
     { property: "og:type", content: "website" },
-    { property: "og:url", content: "https://inkbotapp.vercel.app" },
+    { property: "og:url", content: "https://inkbot.app" },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: "InkBot — AI Product Descriptions & SEO" },
     { name: "twitter:description", content: "Generate SEO-optimized product descriptions with AI in seconds." },
