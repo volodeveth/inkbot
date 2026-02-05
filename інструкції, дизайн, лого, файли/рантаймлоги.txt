@@ -1,0 +1,581 @@
+Feb 05 13:47:19.30
+GET
+404
+www.inkbot.app
+/%23
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/%23"', error: Error: No route matches URL "/%23" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:47:19.11
+GET
+200
+www.inkbot.app
+/terms
+Feb 05 13:47:18.87
+GET
+200
+www.inkbot.app
+/privacy
+Feb 05 13:47:18.82
+GET
+404
+www.inkbot.app
+/%23pricing
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/%23pricing"', error: Error: No route matches URL "/%23pricing" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:47:18.70
+GET
+404
+www.inkbot.app
+/%23how-it-works
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/%23how-it-works"', error: Error: No route matches URL "/%23how-it-works" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:47:18.39
+GET
+404
+www.inkbot.app
+/%23features
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/%23features"', error: Error: No route matches URL "/%23features" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:47:17.17
+GET
+404
+www.inkbot.app
+/https%3A/cdn.shopify.com/
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/https%3A/cdn.shopify.com/"', error: Error: No route matches URL "/https%3A/cdn.shopify.com/" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:46:58.12
+GET
+200
+www.inkbot.app
+/landing
+Feb 05 13:46:53.94
+GET
+---
+www.inkbot.app
+/app
+2
+[shopify-app/INFO] Authenticating admin request | {shop: dvt-test-store.myshopify.com}
+Feb 05 13:46:53.77
+GET
+307
+inkbot.app
+/app
+Feb 05 13:46:52.28
+GET
+302
+www.inkbot.app
+/
+Feb 05 13:46:50.36
+GET
+307
+inkbot.app
+/
+Feb 05 13:46:43.91
+GET
+200
+www.inkbot.app
+/landing
+[shopify-api/INFO] version 11.14.1, environment Remix
+Feb 05 13:46:43.90
+GET
+200
+www.inkbot.app
+/landing
+Feb 05 13:46:40.95
+GET
+302
+www.inkbot.app
+/
+Feb 05 13:46:40.95
+GET
+302
+www.inkbot.app
+/
+Feb 05 13:46:36.72
+GET
+307
+inkbot.app
+/
+Feb 05 13:46:36.71
+GET
+307
+inkbot.app
+/
+Feb 05 13:46:32.88
+GET
+200
+www.inkbot.app
+/landing
+Feb 05 13:46:32.54
+GET
+302
+www.inkbot.app
+/
+Feb 05 13:46:32.30
+GET
+307
+inkbot.app
+/
+Feb 05 13:42:11.81
+GET
+200
+www.inkbot.app
+/landing
+Feb 05 13:42:11.57
+GET
+302
+www.inkbot.app
+/
+Feb 05 13:42:00.84
+GET
+200
+www.inkbot.app
+/app
+2
+[shopify-app/INFO] Authenticating admin request | {shop: dvt-test-store.myshopify.com}
+Feb 05 13:42:00.70
+GET
+307
+inkbot.app
+/app
+Feb 05 13:40:10.83
+GET
+200
+www.inkbot.app
+/app
+2
+[shopify-app/INFO] Authenticating admin request | {shop: dvt-test-store.myshopify.com}
+Feb 05 13:40:10.74
+GET
+307
+inkbot.app
+/app
+Feb 05 13:39:28.73
+GET
+200
+www.inkbot.app
+/app
+2
+[shopify-app/INFO] Authenticating admin request | {shop: dvt-test-store.myshopify.com}
+Feb 05 13:38:53.54
+GET
+307
+inkbot.app
+/
+Feb 05 13:38:50.90
+GET
+200
+www.inkbot.app
+/app
+2
+[shopify-app/INFO] Authenticating admin request | {shop: dvt-test-store.myshopify.com}
+Feb 05 13:38:50.75
+GET
+307
+inkbot.app
+/app
+Feb 05 13:35:04.28
+GET
+404
+www.inkbot.app
+/%23
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/%23"', error: Error: No route matches URL "/%23" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:35:04.13
+GET
+200
+www.inkbot.app
+/terms
+Feb 05 13:35:03.93
+GET
+200
+www.inkbot.app
+/privacy
+Feb 05 13:35:03.93
+GET
+404
+www.inkbot.app
+/%23pricing
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/%23pricing"', error: Error: No route matches URL "/%23pricing" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:35:03.19
+GET
+404
+www.inkbot.app
+/%23features
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/%23features"', error: Error: No route matches URL "/%23features" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:35:03.16
+GET
+404
+www.inkbot.app
+/%23how-it-works
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/%23how-it-works"', error: Error: No route matches URL "/%23how-it-works" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:35:02.47
+GET
+404
+www.inkbot.app
+/https%3A/cdn.shopify.com/
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/https%3A/cdn.shopify.com/"', error: Error: No route matches URL "/https%3A/cdn.shopify.com/" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:34:48.05
+GET
+200
+www.inkbot.app
+/landing
+Feb 05 13:34:42.56
+GET
+302
+www.inkbot.app
+/
+Feb 05 13:34:36.07
+GET
+307
+inkbot.app
+/
+Feb 05 13:34:30.44
+GET
+200
+www.inkbot.app
+/landing
+Feb 05 13:34:28.44
+GET
+200
+www.inkbot.app
+/landing
+Feb 05 13:34:22.59
+GET
+302
+www.inkbot.app
+/
+Feb 05 13:34:22.40
+GET
+302
+www.inkbot.app
+/
+Feb 05 13:34:22.28
+GET
+307
+inkbot.app
+/
+Feb 05 13:34:22.27
+GET
+307
+inkbot.app
+/
+Feb 05 13:34:22.06
+HEAD
+204
+www.inkbot.app
+/auth/login
+Feb 05 13:34:18.32
+GET
+500
+www.inkbot.app
+/auth/login
+2
+[Error: Unexpected Server Error]
+Feb 05 13:34:18.30
+GET
+500
+www.inkbot.app
+/auth/login
+Feb 05 13:34:18.18
+GET
+302
+www.inkbot.app
+/app
+Feb 05 13:34:17.94
+GET
+307
+inkbot.app
+/app
+Feb 05 13:33:12.41
+GET
+200
+www.inkbot.app
+/landing
+Feb 05 13:33:11.47
+GET
+302
+www.inkbot.app
+/
+Feb 05 13:33:10.74
+GET
+307
+inkbot.app
+/
+Feb 05 13:32:54.98
+GET
+404
+www.inkbot.app
+/.git/config
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/.git/config"', error: Error: No route matches URL "/.git/config" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:32:54.76
+GET
+307
+inkbot.app
+/.git/config
+Feb 05 13:32:42.50
+GET
+200
+www.inkbot.app
+/app
+2
+[shopify-app/INFO] Authenticating admin request | {shop: dvt-test-store.myshopify.com}
+Feb 05 13:32:42.34
+GET
+307
+inkbot.app
+/app
+Feb 05 13:32:10.87
+GET
+200
+www.inkbot.app
+/landing
+Feb 05 13:32:10.30
+GET
+302
+www.inkbot.app
+/
+[shopify-api/INFO] version 11.14.1, environment Remix
+Feb 05 13:30:21.29
+GET
+404
+www.inkbot.app
+/.git/config
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/.git/config"', error: Error: No route matches URL "/.git/config" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:30:21.02
+GET
+404
+www.inkbot.app
+/.env
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/.env"', error: Error: No route matches URL "/.env" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:30:20.79
+GET
+---
+www.inkbot.app
+/.vscode/sftp.json
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/.vscode/sftp.json"', error: Error: No route matches URL "/.vscode/sftp.json" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:30:20.53
+GET
+---
+www.inkbot.app
+/@vite/env
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/@vite/env"', error: Error: No route matches URL "/@vite/env" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:30:20.50
+GET
+307
+inkbot.app
+/@vite/env
+Feb 05 13:30:19.80
+GET
+---
+www.inkbot.app
+/landing
+Feb 05 13:30:19.54
+GET
+302
+www.inkbot.app
+/
+Feb 05 13:30:19.13
+GET
+307
+inkbot.app
+/
+Feb 05 13:30:08.95
+GET
+200
+www.inkbot.app
+/app
+3
+[shopify-app/INFO] Authenticating admin request | {shop: dvt-test-store.myshopify.com}
+Feb 05 13:30:08.65
+GET
+307
+inkbot.app
+/app
+Feb 05 13:23:21.44
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/&
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/&"', error: Error: No route matches URL "/&" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:23:21.20
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/landing
+Feb 05 13:23:21.18
+GET
+200
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/landing
+Feb 05 13:23:20.69
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/&
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/&"', error: Error: No route matches URL "/&" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:23:20.66
+GET
+404
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/&
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/&"', error: Error: No route matches URL "/&" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:23:20.49
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/&
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/&"', error: Error: No route matches URL "/&" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:23:20.44
+GET
+200
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/landing
+Feb 05 13:23:20.41
+GET
+200
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/landing
+Feb 05 13:23:20.27
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/landing
+Feb 05 13:23:20.25
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/
+Feb 05 13:23:20.20
+GET
+302
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/
+Feb 05 13:23:20.18
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/&
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/&"', error: Error: No route matches URL "/&" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:23:19.98
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/landing
+Feb 05 13:23:19.93
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/landing
+Feb 05 13:23:19.89
+GET
+200
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/landing
+Feb 05 13:23:19.66
+GET
+200
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/landing
+Feb 05 13:23:19.52
+GET
+404
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/&
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/&"', error: Error: No route matches URL "/&" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:23:19.39
+GET
+302
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/
+Feb 05 13:23:19.31
+GET
+302
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/
+[shopify-api/INFO] version 11.14.1, environment Remix
+Feb 05 13:23:19.17
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/landing
+Feb 05 13:23:18.80
+GET
+302
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/
+[shopify-api/INFO] version 11.14.1, environment Remix
+Feb 05 13:23:18.78
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/
+[shopify-api/INFO] version 11.14.1, environment Remix
+Feb 05 13:23:17.77
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/
+[shopify-api/INFO] version 11.14.1, environment Remix
+Feb 05 13:23:17.47
+GET
+302
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/
+[shopify-api/INFO] version 11.14.1, environment Remix
+Feb 05 13:23:17.45
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/
+[shopify-api/INFO] version 11.14.1, environment Remix
+Feb 05 13:23:17.29
+GET
+---
+describely-1bvsihlpl-volodeveths-projects.vercel.app
+/
+[shopify-api/INFO] version 11.14.1, environment Remix
+Feb 05 13:22:12.80
+GET
+---
+www.inkbot.app
+/.well-known/pki-validation/starfield.html
+2
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/.well-known/pki-validation/starfield.html"', error: Error: No route matches URL "/.well-known/pki-validation/starfield.html" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:22:12.71
+GET
+307
+inkbot.app
+/.well-known/pki-validation/starfield.html
+Feb 05 13:22:09.81
+GET
+---
+www.inkbot.app
+/.well-known/pki-validation/godaddy.html
+3
+ErrorResponseImpl { status: 404, statusText: 'Not Found', internal: true, data: 'Error: No route matches URL "/.well-known/pki-validation/godaddy.html"', error: Error: No route matches URL "/.well-known/pki-validation/godaddy.html" at getInternalRouterError (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:5263:59) at Object.query (/var/task/node_modules/@remix-run/router/dist/router.cjs.js:3828:19) at handleDocumentRequest (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:317:35) at requestHandler (/var/task/node_modules/@remix-run/server-runtime/dist/server.js:171:24) at Object.default [as handler] (file:///var/task/build/server/server-index.mjs:87:26) at Server.r (/opt/rust/nodejs.js:2:15580) at /opt/rust/nodejs.js:17:10082 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) at /opt/rust/nodejs.js:17:10070 at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14) }
+Feb 05 13:22:09.68
+GET
+307
+inkbot.app
+/.well-known/pki-validation/godaddy.html
+Feb 05 13:22:09.54
+GET
+307
+inkbot.app
+/.well-known/pki-validation/godaddy.html

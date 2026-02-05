@@ -11,6 +11,7 @@ import {
   TextField,
 } from "@shopify/polaris";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
+import polarisTranslations from "@shopify/polaris/locales/en.json";
 import { useState } from "react";
 
 import { login, type LoginError } from "../../shopify.server";
@@ -22,7 +23,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   return json({
     errors,
-    polarisTranslations: require("@shopify/polaris/locales/en.json"),
+    polarisTranslations,
   });
 };
 

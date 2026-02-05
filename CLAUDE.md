@@ -3,7 +3,8 @@
 ## Що це за проект
 
 **InkBot — AI Product Descriptions & SEO** — Shopify App для AI-генерації описів товарів з SEO-оптимізацією.
-Vercel URL: `https://inkbotapp.vercel.app`
+Production URL: `https://inkbot.app`
+Vercel URL: `https://inkbotapp.vercel.app` (альтернативний)
 GitHub: `https://github.com/volodeveth/inkbot` (private)
 
 Користувач обирає товар зі свого Shopify-магазину (або вводить вручну), вибирає нішу, тон та мову — і отримує готовий опис з SEO meta-тегами, оцінкою SEO та рекомендованими ключовими словами. Опис можна одразу застосувати до товару в Shopify.
@@ -29,7 +30,7 @@ GitHub: `https://github.com/volodeveth/inkbot` (private)
 ## Поточна структура проекту
 
 ```
-D:\Myapps\describely\
+D:\Myapps\InkBot\
 ├── app/
 │   ├── routes/
 │   │   ├── _index.tsx                   ✅ Root redirect → /landing (або /app з ?shop=)
@@ -160,14 +161,14 @@ D:\Myapps\describely\
 - ✅ App URLs налаштовані (redirect URLs, app URL → Vercel)
 - ✅ Environment variables налаштовані в Vercel (SHOPIFY_API_KEY, SHOPIFY_API_SECRET, SHOPIFY_APP_URL, DATABASE_URL, DIRECT_URL, SCOPES, OPENROUTER_API_KEY, RESEND_API_KEY)
 - ✅ Dev store створено і додаток встановлено — працює!
+- ✅ Custom domain підключено: `https://inkbot.app`
 
 **Потрібно зробити:**
 1. **Тестування в dev store**: перевірити генерацію описів, bulk, settings, billing flow
 2. **Додати OPENROUTER_API_KEY** з реальним ключем в Vercel (якщо ще не додано)
 3. **Seed niche templates**: викликати `seedNicheTemplates()` з `models/template.server.ts`
-4. **Custom domain**: налаштувати inkbot.app → Vercel (опціонально)
-5. **UI polish**: перевірити відповідність мокапам з папки інструкцій
-6. **App Store submission**: screenshots (3-5 шт, 1600×900)
+4. **UI polish**: перевірити відповідність мокапам з папки інструкцій
+5. **App Store submission**: screenshots (3-5 шт, 1600×900)
 
 **Готово для App Store:**
 - ✅ Privacy Policy (`/privacy`) — dark theme, matching landing
@@ -322,7 +323,12 @@ fr-af (French African), ar-na (Arabic North African), sw (Swahili), af (Afrikaan
 - `/landing` — Landing page (dark theme, hero, features, pricing, CTA, hover effects, SEO meta tags)
 - `/privacy` — Privacy Policy (dark theme, matching landing)
 - `/terms` — Terms of Service (dark theme, matching landing)
-- Доступні публічно: `https://inkbotapp.vercel.app/landing`, `/privacy`, `/terms`
+- Доступні публічно: `https://inkbot.app/landing`, `/privacy`, `/terms`
+- **Mobile Navigation**:
+  - Hamburger menu для екранів < 768px
+  - Animated icon (hamburger ↔ X transition)
+  - Mobile menu slides down з smooth transition
+  - Desktop nav links приховуються, mobile menu з'являється
 - **Landing features**:
   - Navigation з hover effects (animated underline)
   - Hero section з Shopify badge та CTA buttons
@@ -331,6 +337,7 @@ fr-af (French African), ar-na (Arabic North African), sw (Swahili), af (Afrikaan
   - Pricing grid (4 plans, matching billing page)
   - Final CTA section
   - Footer з links
+  - Responsive: stats dividers hidden on mobile, step arrows hidden, footer stacked
 - **Styling**: Dark theme (#0a0a0f base), purple/violet gradients (#8b5cf6, #6d28d9), glassmorphism, CSS animations
 - **SEO**: Open Graph, Twitter Cards meta tags для Google indexing
 
@@ -347,8 +354,19 @@ Product Title | Product Type | Feature1, Feature2, Feature3
 2. Фази 1-4 повністю завершені, TypeScript чистий (0 помилок), build працює
 3. Deployment працює: Vercel + Neon + Shopify Partners
 4. Додаток встановлено на dev store
-5. **App Store preparation**: Privacy Policy, Terms of Service, Tagline, Description — готові
+5. **App Store preparation** — готово:
+   - ✅ Privacy Policy (`/privacy`)
+   - ✅ Terms of Service (`/terms`)
+   - ✅ Landing Page (`/landing`) з mobile responsive
+   - ✅ Tagline та Full Description
+   - ✅ Screenshot captions та guidelines
 6. **Наступні кроки**: зробити screenshots (1600×900), тестування, submit to App Store
 7. Подивись мокапи в `інструкції, дизайн, лого, файли/` для візуального дизайну
 8. App Store listing матеріали: `інструкції, дизайн, лого, файли/App Store Listing.md`
 9. Чекліст публікації: `інструкції, дизайн, лого, файли/Публікація InkBot в Shopify App Store.txt`
+
+### Після деплою на Vercel
+```bash
+npx prisma db push
+```
+Це оновить default значення для `generationsLimit` (100 для FREE плану).
