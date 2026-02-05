@@ -102,3 +102,22 @@ export async function getGenerationStats(shopDomain: string) {
     appliedCount,
   };
 }
+
+export async function getGeneratedProductIds(shopDomain: string): Promise<Set<string>> {
+  const generations = await db.generation.findMany({
+    where: {
+      shop: { shopDomain },
+      productId: { not: null },
+    },
+    select: {
+      productId: true,
+    },
+    distinct: ["productId"],
+  });
+
+  return new Set(
+    generations
+      .map((g) => g.productId)
+      .filter((id): id is string => id !== null)
+  );
+}

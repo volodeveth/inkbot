@@ -11,15 +11,24 @@ import {
   Thumbnail,
   Spinner,
   Checkbox,
+  Select,
 } from "@shopify/polaris";
 import { SearchIcon, ImageIcon } from "@shopify/polaris-icons";
-import type { ShopifyProduct } from "~/types/shopify";
+import type { ShopifyProduct, ShopifyCollection } from "~/types/shopify";
+
+export type StatusFilter = "all" | "not_generated" | "generated";
 
 interface BulkProductPickerProps {
   products: ShopifyProduct[];
   selectedProducts: ShopifyProduct[];
   onToggle: (product: ShopifyProduct) => void;
   onClearAll: () => void;
+  collections?: ShopifyCollection[];
+  generatedProductIds?: Set<string>;
+  selectedCollection: string;
+  onCollectionChange: (collectionId: string) => void;
+  statusFilter: StatusFilter;
+  onStatusFilterChange: (status: StatusFilter) => void;
 }
 
 export function BulkProductPicker({
@@ -27,13 +36,28 @@ export function BulkProductPicker({
   selectedProducts,
   onToggle,
   onClearAll,
+  collections = [],
+  generatedProductIds = new Set(),
+  selectedCollection,
+  onCollectionChange,
+  statusFilter,
+  onStatusFilterChange,
 }: BulkProductPickerProps) {
   const fetcher = useFetcher<{ products: ShopifyProduct[] }>();
   const [query, setQuery] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isSearching = fetcher.state === "submitting" || fetcher.state === "loading";
-  const displayProducts = fetcher.data?.products ?? products;
+  const fetchedProducts = fetcher.data?.products ?? products;
+
+  // Apply local status filter
+  const displayProducts = fetchedProducts.filter((product) => {
+    if (statusFilter === "all") return true;
+    const isGenerated = generatedProductIds.has(product.id);
+    if (statusFilter === "generated") return isGenerated;
+    if (statusFilter === "not_generated") return !isGenerated;
+    return true;
+  });
 
   const selectedIds = new Set(selectedProducts.map((p) => p.id));
 
@@ -42,12 +66,13 @@ export function BulkProductPicker({
       clearTimeout(debounceRef.current);
     }
 
-    if (!query.trim()) return;
-
     debounceRef.current = setTimeout(() => {
       const formData = new FormData();
       formData.append("_action", "searchProducts");
       formData.append("query", query);
+      if (selectedCollection) {
+        formData.append("collectionId", selectedCollection);
+      }
       fetcher.submit(formData, { method: "post" });
     }, 300);
 
@@ -56,11 +81,19 @@ export function BulkProductPicker({
         clearTimeout(debounceRef.current);
       }
     };
-  }, [query]);
+  }, [query, selectedCollection]);
 
   const handleSearch = useCallback((value: string) => {
     setQuery(value);
   }, []);
+
+  const handleCollectionChange = useCallback((value: string) => {
+    onCollectionChange(value);
+  }, [onCollectionChange]);
+
+  const handleStatusChange = useCallback((value: string) => {
+    onStatusFilterChange(value as StatusFilter);
+  }, [onStatusFilterChange]);
 
   const statusTone = useCallback((status: string) => {
     switch (status.toUpperCase()) {
@@ -75,6 +108,20 @@ export function BulkProductPicker({
     }
   }, []);
 
+  const collectionOptions = [
+    { label: "All collections", value: "" },
+    ...collections.map((c) => ({
+      label: `${c.title} (${c.productsCount})`,
+      value: c.id,
+    })),
+  ];
+
+  const statusOptions = [
+    { label: "All products", value: "all" },
+    { label: "Not generated", value: "not_generated" },
+    { label: "Already generated", value: "generated" },
+  ];
+
   return (
     <BlockStack gap="300">
       {selectedProducts.length > 0 && (
@@ -88,16 +135,39 @@ export function BulkProductPicker({
         </InlineStack>
       )}
 
-      <TextField
-        label="Search products"
-        labelHidden
-        value={query}
-        onChange={handleSearch}
-        placeholder="Search your Shopify products..."
-        prefix={<span style={{ display: "flex" }}><SearchIcon /></span>}
-        autoComplete="off"
-        suffix={isSearching ? <Spinner size="small" /> : undefined}
-      />
+      {/* Filters row */}
+      <InlineStack gap="300" wrap>
+        <Box minWidth="200px">
+          <Select
+            label="Collection"
+            labelHidden
+            options={collectionOptions}
+            value={selectedCollection}
+            onChange={handleCollectionChange}
+          />
+        </Box>
+        <Box minWidth="160px">
+          <Select
+            label="Status"
+            labelHidden
+            options={statusOptions}
+            value={statusFilter}
+            onChange={handleStatusChange}
+          />
+        </Box>
+        <Box minWidth="200px">
+          <TextField
+            label="Search products"
+            labelHidden
+            value={query}
+            onChange={handleSearch}
+            placeholder="Search..."
+            prefix={<span style={{ display: "flex" }}><SearchIcon /></span>}
+            autoComplete="off"
+            suffix={isSearching ? <Spinner size="small" /> : undefined}
+          />
+        </Box>
+      </InlineStack>
 
       <div
         style={{
@@ -117,6 +187,7 @@ export function BulkProductPicker({
           <BlockStack>
             {displayProducts.map((product) => {
               const isSelected = selectedIds.has(product.id);
+              const isGenerated = generatedProductIds.has(product.id);
               return (
                 <Box key={product.id}>
                   <button
@@ -165,9 +236,14 @@ export function BulkProductPicker({
                         />
                       )}
                       <BlockStack gap="100">
-                        <Text as="span" fontWeight="semibold">
-                          {product.title}
-                        </Text>
+                        <InlineStack gap="200" blockAlign="center">
+                          <Text as="span" fontWeight="semibold">
+                            {product.title}
+                          </Text>
+                          {isGenerated && (
+                            <Badge tone="info">Generated</Badge>
+                          )}
+                        </InlineStack>
                         <InlineStack gap="200">
                           {product.productType && (
                             <Text as="span" variant="bodySm" tone="subdued">

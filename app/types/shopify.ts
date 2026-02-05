@@ -12,3 +12,9 @@ export interface ShopifyProduct {
   } | null;
   price: string | null;
 }
+
+export interface ShopifyCollection {
+  id: string;
+  title: string;
+  productsCount: number;
+}

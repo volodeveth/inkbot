@@ -36,12 +36,19 @@ import {
 } from "~/services/billing.server";
 import { getAllNiches } from "~/services/prompts.server";
 import { getShop, markReviewLeft } from "~/models/shop.server";
-import { createGeneration, markGenerationApplied } from "~/models/generation.server";
+import { createGeneration, markGenerationApplied, getGeneratedProductIds } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
-import { PRODUCTS_QUERY, parseProductsResponse } from "~/utils/shopify.server";
-import { BulkProductPicker } from "~/components/BulkProductPicker";
+import {
+  PRODUCTS_QUERY,
+  parseProductsResponse,
+  COLLECTIONS_QUERY,
+  parseCollectionsResponse,
+  PRODUCTS_BY_COLLECTION_QUERY,
+  parseProductsByCollectionResponse,
+} from "~/utils/shopify.server";
+import { BulkProductPicker, type StatusFilter } from "~/components/BulkProductPicker";
 import { hasPlanFeature, type PlanKey } from "~/utils/plans";
-import type { ShopifyProduct } from "~/types/shopify";
+import type { ShopifyProduct, ShopifyCollection } from "~/types/shopify";
 
 interface BulkResult {
   index: number;
@@ -75,11 +82,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
     console.error("Failed to fetch products:", error);
   }
 
+  // Fetch collections
+  let collections: ShopifyCollection[] = [];
+  try {
+    const collectionsResponse = await admin.graphql(COLLECTIONS_QUERY, {
+      variables: { first: 50 },
+    });
+    const collectionsJson = await collectionsResponse.json();
+    collections = parseCollectionsResponse(collectionsJson);
+  } catch (error) {
+    console.error("Failed to fetch collections:", error);
+  }
+
+  // Fetch generated product IDs
+  const generatedProductIdsSet = await getGeneratedProductIds(session.shop);
+  const generatedProductIds = Array.from(generatedProductIdsSet);
+
   const shop = await getShop(session.shop);
   const plan = (shop?.plan || "FREE") as PlanKey;
   const reviewLeft = shop?.reviewLeft ?? false;
 
-  return json({ usage, niches, products, brandVoice, shop: session.shop, plan, reviewLeft });
+  return json({ usage, niches, products, brandVoice, shop: session.shop, plan, reviewLeft, collections, generatedProductIds });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -90,15 +113,41 @@ export async function action({ request }: ActionFunctionArgs) {
   // --- Search products ---
   if (actionType === "searchProducts") {
     const query = (formData.get("query") as string) || "";
+    const collectionId = (formData.get("collectionId") as string) || "";
+
     try {
-      const response = await admin.graphql(PRODUCTS_QUERY, {
-        variables: {
-          first: 25,
-          query: query ? `title:*${query}*` : null,
-        },
-      });
-      const responseJson = await response.json();
-      const products = parseProductsResponse(responseJson);
+      let products: ShopifyProduct[] = [];
+
+      if (collectionId) {
+        // Fetch products from specific collection
+        const response = await admin.graphql(PRODUCTS_BY_COLLECTION_QUERY, {
+          variables: {
+            collectionId,
+            first: 25,
+          },
+        });
+        const responseJson = await response.json();
+        products = parseProductsByCollectionResponse(responseJson);
+
+        // Apply search filter locally if query provided
+        if (query) {
+          const lowerQuery = query.toLowerCase();
+          products = products.filter((p) =>
+            p.title.toLowerCase().includes(lowerQuery)
+          );
+        }
+      } else {
+        // Fetch all products with optional search
+        const response = await admin.graphql(PRODUCTS_QUERY, {
+          variables: {
+            first: 25,
+            query: query ? `title:*${query}*` : null,
+          },
+        });
+        const responseJson = await response.json();
+        products = parseProductsResponse(responseJson);
+      }
+
       return json({ products });
     } catch (error) {
       console.error("Product search error:", error);
@@ -357,11 +406,14 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function BulkPage() {
-  const { usage, niches, products, brandVoice, plan, reviewLeft } = useLoaderData<typeof loader>();
+  const { usage, niches, products, brandVoice, plan, reviewLeft, collections, generatedProductIds } = useLoaderData<typeof loader>();
   const canUseBulk = hasPlanFeature(plan as PlanKey, "bulk");
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
   const navigation = useNavigation();
+
+  // Convert array back to Set for efficient lookup
+  const generatedProductIdsSet = new Set(generatedProductIds);
 
   const isProcessing =
     navigation.state === "submitting" &&
@@ -377,6 +429,10 @@ export default function BulkPage() {
 
   // Picker state
   const [selectedProducts, setSelectedProducts] = useState<ShopifyProduct[]>([]);
+
+  // Filter state
+  const [selectedCollection, setSelectedCollection] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   // Manual textarea state
   const [productsText, setProductsText] = useState("");
@@ -643,6 +699,12 @@ export default function BulkPage() {
                     selectedProducts={selectedProducts}
                     onToggle={handleToggleProduct}
                     onClearAll={handleClearAll}
+                    collections={collections}
+                    generatedProductIds={generatedProductIdsSet}
+                    selectedCollection={selectedCollection}
+                    onCollectionChange={setSelectedCollection}
+                    statusFilter={statusFilter}
+                    onStatusFilterChange={setStatusFilter}
                   />
                 ) : (
                   <BlockStack gap="300">
