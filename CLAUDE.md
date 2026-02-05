@@ -36,8 +36,8 @@ D:\Myapps\InkBot\
 │   │   ├── _index.tsx                   ✅ Root redirect → /landing (або /app з ?shop=)
 │   │   ├── app.tsx                    ✅ Layout з навігацією (Polaris + NavMenu), глобальний футер "Built by VoloDev.eth"
 │   │   ├── app._index.tsx             ✅ Dashboard: logo, tagline, usage, stats, quick actions, recent generations, review banner
-│   │   ├── app.generate.tsx           ✅ Генерація: product input, niche/tone/language, result display, apply/copy, review banner
-│   │   ├── app.bulk.tsx               ✅ Bulk: textarea input (Title|Type|Features), batch processing, results, review banner
+│   │   ├── app.generate.tsx           ✅ Генерація: product input, niche/tone/language, generation options checkboxes, result display, apply/copy (with tags), review banner
+│   │   ├── app.bulk.tsx               ✅ Bulk: product picker з фільтрами (collection, status, search), generation options checkboxes, batch processing, results, tags support, review banner
 │   │   ├── app.settings.tsx           ✅ Brand voice: tone, style, keywords, avoid words, custom prompt, samples
 │   │   ├── app.history.tsx            ✅ Історія: фільтр по ніші, пагінація, copy, preview
 │   │   ├── app.billing.tsx            ✅ 4 плани (grid), upgrade/downgrade, FAQ
@@ -52,14 +52,16 @@ D:\Myapps\InkBot\
 │   │   ├── webhooks.tsx               ✅ Shopify webhooks (APP_UNINSTALLED, compliance)
 │   │   ├── landing.tsx                ✅ Публічна landing page (dark theme, hover effects, SEO)
 │   │   ├── privacy.tsx                ✅ Privacy Policy (dark theme, matching landing)
-│   │   └── terms.tsx                  ✅ Terms of Service (dark theme, matching landing)
+│   │   ├── terms.tsx                  ✅ Terms of Service (dark theme, matching landing)
+│   │   └── screenshots.tsx            ✅ Screenshot generator for App Store (5 blocks 1600x900px, noindex)
 │   │
 │   ├── components/
 │   │   ├── UsageCounter.tsx           ✅ Usage progress bar з планом badge (compact mode)
 │   │   ├── SeoScoreBadge.tsx          ✅ Колірний badge SEO score (green/yellow/red)
 │   │   ├── NicheSelector.tsx          ✅ Select з іконками 9 ніш
 │   │   ├── ToneSelector.tsx           ✅ Select 6 тонів
-│   │   └── GenerationCard.tsx         ✅ Повна картка результату: title, description, meta, keywords, actions
+│   │   ├── GenerationCard.tsx         ✅ Повна картка результату: title, description, meta, tags, actions
+│   │   └── BulkProductPicker.tsx      ✅ Product picker з фільтрами: collection, status (All/Not generated/Generated), search, "Generated" badge
 │   │
 │   ├── services/
 │   │   ├── ai.server.ts               ✅ DeepSeek API (via OpenRouter): generateProductDescription(), generateBulkDescriptions(), LANGUAGE_NAMES (42 мови)
@@ -70,14 +72,19 @@ D:\Myapps\InkBot\
 │   │
 │   ├── models/
 │   │   ├── shop.server.ts             ✅ getShop(), getOrCreateShop(), updateShopSettings(), updateShopPlan(), getShopByApiKeyHash(), setShopApiKey(), revokeShopApiKey(), markReviewLeft()
-│   │   ├── generation.server.ts       ✅ createGeneration(), getGenerationsByShop(), getGenerationStats(), markGenerationApplied()
+│   │   ├── generation.server.ts       ✅ createGeneration(), getGenerationsByShop(), getGenerationStats(), markGenerationApplied(), getGeneratedProductIds()
 │   │   ├── brandVoice.server.ts       ✅ getBrandVoice(), upsertBrandVoice()
 │   │   └── template.server.ts         ✅ getNicheTemplate(), getAllNicheTemplates(), seedNicheTemplates()
 │   │
 │   ├── utils/
 │   │   ├── plans.ts                   ✅ PLAN_LIMITS, PLAN_PRICES, PLAN_FEATURES (shared client+server)
+│   │   ├── generateOptions.ts         ✅ GenerateOptions interface, DEFAULT_GENERATE_OPTIONS (shared client+server)
+│   │   ├── shopify.server.ts          ✅ Shopify GraphQL queries: PRODUCTS_QUERY, COLLECTIONS_QUERY, PRODUCTS_BY_COLLECTION_QUERY, parse functions
 │   │   ├── validation.ts              ✅ Zod-схеми: generateDescriptionSchema, brandVoiceSchema, parseFormData()
 │   │   └── seo.ts                     ✅ calculateSeoScore(), stripHtml(), wordCount(), truncateForMeta()
+│   │
+│   ├── types/
+│   │   └── shopify.ts                 ✅ ShopifyProduct, ShopifyCollection, ShopifyProductsResponse interfaces
 │   │
 │   ├── db.server.ts                   ✅ Prisma Client з Neon serverless адаптером (ws)
 │   ├── env.d.ts                       ✅ TypeScript declarations для CSS ?url imports
@@ -136,13 +143,13 @@ D:\Myapps\InkBot\
 
 ### Фаза 3: Frontend Pages ✅
 - **Dashboard** — logo, tagline ("Stop writing. Start selling. AI-generated descriptions & SEO in seconds."), usage card (progress bar), stats (total, avg SEO, applied), quick actions, recent 5 generations, review banner
-- **Generate** — product input form, niche/tone/language (42 мови) selectors, brand voice indicator, result display з SEO score, copy/apply actions, review banner
-- **Bulk Generate** — multi-line textarea (Title|Type|Features format), shared settings, batch results display, review banner
+- **Generate** — product input form, niche/tone/language (42 мови) selectors, generation options checkboxes (Title/Description/Meta/Tags), brand voice indicator, result display з SEO score, copy/apply actions (with tags support), review banner
+- **Bulk Generate** — product picker з фільтрами (collection dropdown, status filter, search), generation options checkboxes, "Generated" badge для товарів з історією, batch processing з tags support, review banner
 - **Settings** — brand voice config: tone, style, target audience, keywords, avoid words, brand values, custom prompt, sample texts
 - **History** — filterable by niche, paginated (10/page), expandable cards з description preview, copy actions
 - **Billing** — 4-column plan grid з features list, current plan highlight, upgrade/downgrade/cancel, FAQ section
 - **Support** — contact form з auto-fill (shop, plan), email/subject/description, Resend API відправка, автоматичні номери тікетів (#123150+)
-- **Components** — UsageCounter, SeoScoreBadge, NicheSelector, ToneSelector, GenerationCard
+- **Components** — UsageCounter, SeoScoreBadge, NicheSelector, ToneSelector, GenerationCard, BulkProductPicker
 - **Footer** — глобальний футер "Built by VoloDev.eth" (onClick window.open для обходу Shopify iframe CSP)
 
 ### Фаза 4: API Routes ✅
@@ -185,7 +192,7 @@ D:\Myapps\InkBot\
 
 ### Build помилки на Vercel
 - `prisma: command not found` → додано `npx` prefix до всіх prisma/remix команд в package.json та vercel.json
-- `Server-only module referenced by client` → план-константи (PLAN_LIMITS/PRICES/FEATURES) винесені з `billing.server.ts` у `utils/plans.ts` (без `.server` суфіксу)
+- `Server-only module referenced by client` → план-константи (PLAN_LIMITS/PRICES/FEATURES) винесені з `billing.server.ts` у `utils/plans.ts` (без `.server` суфіксу). Аналогічно `GenerateOptions` винесено в `utils/generateOptions.ts`
 - `ShopifyError: Detected an empty appUrl` → потрібно додати env vars у Vercel + redeploy після змін
 
 ### TypeScript помилки (всі вирішені)
@@ -323,7 +330,8 @@ fr-af (French African), ar-na (Arabic North African), sw (Swahili), af (Afrikaan
 - `/landing` — Landing page (dark theme, hero, features, pricing, CTA, hover effects, SEO meta tags)
 - `/privacy` — Privacy Policy (dark theme, matching landing)
 - `/terms` — Terms of Service (dark theme, matching landing)
-- Доступні публічно: `https://inkbot.app/landing`, `/privacy`, `/terms`
+- `/screenshots` — Screenshot generator для App Store (5 блоків 1600x900px, noindex, тимчасова сторінка)
+- Доступні публічно: `https://inkbot.app/landing`, `/privacy`, `/terms`, `/screenshots`
 - **Mobile Navigation**:
   - Hamburger menu для екранів < 768px
   - Animated icon (hamburger ↔ X transition)
@@ -345,6 +353,34 @@ fr-af (French African), ar-na (Arabic North African), sw (Swahili), af (Afrikaan
 ```
 Product Title | Product Type | Feature1, Feature2, Feature3
 ```
+
+### Generation Options (checkboxes)
+Користувач може вибрати що саме генерувати перед запуском:
+- **Title** — оптимізований заголовок товару (default: ON)
+- **Description** — повний HTML опис з `<p>`, `<ul>`, `<strong>` (default: ON)
+- **Meta Title** — SEO заголовок для пошукових систем (default: ON)
+- **Meta Description** — SEO опис 155 символів (default: ON)
+- **Tags** — теги для Shopify `product.tags` (default: OFF)
+
+Tags вимкнені за замовчуванням, бо вони модифікують товар (записуються через Shopify GraphQL `productUpdate`).
+
+**Реалізація:**
+- `app/utils/generateOptions.ts` — shared interface `GenerateOptions` + `DEFAULT_GENERATE_OPTIONS`
+- AI prompt будується динамічно на основі вибраних опцій
+- Apply action зберігає теги в Shopify через `product.tags` поле
+
+### Bulk Generate Filters
+Фільтри для вибору товарів на сторінці Bulk Generate:
+- **Collection** — dropdown з усіма колекціями магазину
+- **Status** — "All products" / "Not generated" / "Already generated"
+- **Search** — пошук по назві товару (debounced 300ms)
+- **"Generated" badge** — синій badge біля товарів які вже мають генерації
+
+**Реалізація:**
+- `app/utils/shopify.server.ts` — `COLLECTIONS_QUERY`, `PRODUCTS_BY_COLLECTION_QUERY`, `parseCollectionsResponse()`
+- `app/models/generation.server.ts` — `getGeneratedProductIds()` повертає Set<string> product IDs
+- `app/types/shopify.ts` — `ShopifyCollection` interface
+- `app/components/BulkProductPicker.tsx` — UI компонент з фільтрами
 
 ---
 
