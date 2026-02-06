@@ -3,7 +3,7 @@
 ## Tagline (98 символів)
 
 ```
-AI-powered product descriptions & SEO optimization in seconds. 9 niches, 42 languages, instant results.
+AI-powered product descriptions & SEO optimization in seconds. 9 niches, 111 languages, instant results.
 ```
 
 ---
@@ -25,8 +25,8 @@ Every description comes with:
 - Meta title and description tags
 - Recommended keywords for better rankings
 
-**🌍 42 Languages Supported**
-Reach global customers with descriptions in English, Spanish, French, German, Chinese, Japanese, Ukrainian, and 35+ more languages.
+**🌍 111 Languages Supported**
+Reach global customers with descriptions in English, Spanish, French, German, Chinese, Japanese, Ukrainian, and 100+ more languages.
 
 **🏪 9 Industry Niches**
 Tailored prompts for your specific industry:

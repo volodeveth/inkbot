@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { getPromptForNiche } from "./prompts.server";
 import { type GenerateOptions, DEFAULT_GENERATE_OPTIONS } from "~/utils/generateOptions";
+import { LANGUAGE_NAMES } from "~/utils/languages";
 
 // Re-export for convenience
 export { type GenerateOptions, DEFAULT_GENERATE_OPTIONS };
@@ -79,51 +80,6 @@ export async function generateProductDescription(
     generationTime,
   };
 }
-
-const LANGUAGE_NAMES: Record<string, string> = {
-  en: "English",
-  af: "Afrikaans",
-  am: "Amharic",
-  ar: "Arabic",
-  "ar-na": "Arabic (North African)",
-  bn: "Bengali",
-  zh: "Chinese",
-  cs: "Czech",
-  da: "Danish",
-  nl: "Dutch",
-  tl: "Filipino",
-  fi: "Finnish",
-  fr: "French",
-  "fr-af": "French (African)",
-  de: "German",
-  el: "Greek",
-  ha: "Hausa",
-  he: "Hebrew",
-  hi: "Hindi",
-  hu: "Hungarian",
-  ig: "Igbo",
-  id: "Indonesian",
-  it: "Italian",
-  ja: "Japanese",
-  ko: "Korean",
-  ms: "Malay",
-  no: "Norwegian",
-  om: "Oromo",
-  pl: "Polish",
-  pt: "Portuguese",
-  ro: "Romanian",
-  sn: "Shona",
-  es: "Spanish",
-  sw: "Swahili",
-  sv: "Swedish",
-  th: "Thai",
-  tr: "Turkish",
-  uk: "Ukrainian",
-  vi: "Vietnamese",
-  xh: "Xhosa",
-  yo: "Yoruba",
-  zu: "Zulu",
-};
 
 function getLanguageName(code?: string): string {
   if (!code) return "English";

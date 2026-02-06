@@ -65,7 +65,7 @@ D:\Myapps\InkBot\
 │   │   └── BulkProductPicker.tsx      ✅ Product picker з фільтрами: collection, status (All/Not generated/Generated), search, "Generated" badge
 │   │
 │   ├── services/
-│   │   ├── ai.server.ts               ✅ DeepSeek API (via OpenRouter): generateProductDescription(), generateBulkDescriptions(), LANGUAGE_NAMES (42 мови)
+│   │   ├── ai.server.ts               ✅ DeepSeek API (via OpenRouter): generateProductDescription(), generateBulkDescriptions(), LANGUAGE_NAMES (111 мов)
 │   │   ├── prompts.server.ts          ✅ 9 ніш: NICHE_CONFIGS, getPromptForNiche(), getAllNiches()
 │   │   ├── billing.server.ts          ✅ checkUsageLimit(), incrementUsage(), createSubscription(), cancelSubscription() + auto-revoke API keys on downgrade
 │   │   ├── apiKey.server.ts           ✅ generateApiKey() (dsc_ prefix, 128-bit), hashApiKey() (SHA-256), isValidApiKeyFormat()
@@ -155,7 +155,7 @@ D:\Myapps\InkBot\
 
 ### Фаза 3: Frontend Pages ✅
 - **Dashboard** — logo, tagline ("Stop writing. Start selling. AI-generated descriptions & SEO in seconds."), usage card (progress bar), stats (total, avg SEO, applied), quick actions, recent 5 generations, review banner
-- **Generate** — product input form, niche/tone/language (42 мови) selectors, generation options checkboxes (Title/Description/Meta/Tags), brand voice indicator, result display з SEO score, copy/apply actions (with tags support), review banner
+- **Generate** — product input form, niche/tone/language (111 мов) selectors, generation options checkboxes (Title/Description/Meta/Tags), brand voice indicator, result display з SEO score, copy/apply actions (with tags support), review banner
 - **Bulk Generate** — product picker з фільтрами (collection dropdown, status filter, search), generation options checkboxes, "Generated" badge для товарів з історією, batch processing з tags support, review banner
 - **Settings** — brand voice config: tone, style, target audience, keywords, avoid words, brand values, custom prompt, sample texts
 - **History** — filterable by niche, paginated (10/page), expandable cards з description preview, copy actions
@@ -292,7 +292,7 @@ fashion, electronics, beauty, food, home, sports, jewelry, pets, general
 ### Тони
 professional, casual, luxurious, playful, technical, minimalist
 
-### Мови (42 мови)
+### Мови (111 мов)
 
 **Основні світові:**
 en (English), es (Spanish), fr (French), de (German), it (Italian), pt (Portuguese), zh (Chinese), ja (Japanese), ko (Korean)

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 export const meta: MetaFunction = () => {
   return [
     { title: "InkBot — AI Product Descriptions & SEO for Shopify | Generate in Seconds" },
-    { name: "description", content: "Generate unique, SEO-optimized product descriptions for your Shopify store with AI. 9 niches, 42 languages, instant results. Try free today!" },
+    { name: "description", content: "Generate unique, SEO-optimized product descriptions for your Shopify store with AI. 9 niches, 111 languages, instant results. Try free today!" },
     { name: "keywords", content: "AI product descriptions, Shopify app, SEO optimization, product copywriting, ecommerce AI, bulk descriptions, Shopify SEO" },
     { property: "og:title", content: "InkBot — AI Product Descriptions & SEO for Shopify" },
     { property: "og:description", content: "Generate unique, SEO-optimized product descriptions 10x faster. Trusted by Shopify merchants worldwide." },
@@ -164,7 +164,7 @@ export default function Landing() {
           <p style={styles.heroSubtitle}>
             Generate unique, SEO-optimized descriptions in your brand voice.
             <br />
-            Built for Shopify. 42 languages. 9 niches. Instant results.
+            Built for Shopify. 111 languages. 9 niches. Instant results.
           </p>
           <div style={styles.heroButtons}>
             <button
@@ -195,7 +195,7 @@ export default function Landing() {
             </div>
             <div style={styles.statDivider} className="stat-divider"></div>
             <div style={styles.stat} className="stat">
-              <span style={styles.statNumber} className="stat-number">42</span>
+              <span style={styles.statNumber} className="stat-number">111</span>
               <span style={styles.statLabel}>Languages</span>
             </div>
             <div style={styles.statDivider} className="stat-divider"></div>
@@ -295,7 +295,7 @@ export default function Landing() {
               },
               {
                 icon: "🌍",
-                title: "42 Languages",
+                title: "111 Languages",
                 description: "Reach global customers with descriptions in English, Spanish, French, German, Chinese, and 37 more.",
               },
               {
@@ -381,7 +381,7 @@ export default function Landing() {
                 price: "$0",
                 period: "/month",
                 description: "Perfect for trying out",
-                features: ["100 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Basic support"],
+                features: ["100 generations/month", "All 9 niches", "111 languages", "SEO optimization", "Basic support"],
                 cta: "Start Free",
                 popular: false,
               },
@@ -390,7 +390,7 @@ export default function Landing() {
                 price: "$9",
                 period: "/month",
                 description: "For growing stores",
-                features: ["1,000 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Brand voice settings", "Email support"],
+                features: ["1,000 generations/month", "All 9 niches", "111 languages", "SEO optimization", "Brand voice settings", "Email support"],
                 cta: "Get Started",
                 popular: false,
               },
@@ -399,7 +399,7 @@ export default function Landing() {
                 price: "$19",
                 period: "/month",
                 description: "For active sellers",
-                features: ["10,000 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Brand voice settings", "Bulk generation", "Priority support"],
+                features: ["10,000 generations/month", "All 9 niches", "111 languages", "SEO optimization", "Brand voice settings", "Bulk generation", "Priority support"],
                 cta: "Go Pro",
                 popular: true,
               },
@@ -408,7 +408,7 @@ export default function Landing() {
                 price: "$99",
                 period: "/month",
                 description: "For power users",
-                features: ["100,000 generations/month", "All 9 niches", "42 languages", "SEO optimization", "Brand voice settings", "Bulk generation", "API access", "Premium support"],
+                features: ["100,000 generations/month", "All 9 niches", "111 languages", "SEO optimization", "Brand voice settings", "Bulk generation", "API access", "Premium support"],
                 cta: "Go Elite",
                 popular: false,
               },

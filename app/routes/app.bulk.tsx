@@ -31,6 +31,7 @@ import {
 import { authenticate } from "../shopify.server";
 import { generateProductDescription } from "~/services/ai.server";
 import { type GenerateOptions, DEFAULT_GENERATE_OPTIONS } from "~/utils/generateOptions";
+import { languageOptions } from "~/utils/languages";
 import {
   checkUsageLimit,
   incrementUsage,
@@ -876,50 +877,7 @@ export default function BulkPage() {
                   <Box minWidth="180px">
                     <Select
                       label="Language"
-                      options={[
-                        { label: "English", value: "en" },
-                        { label: "Afrikaans", value: "af" },
-                        { label: "Amharic", value: "am" },
-                        { label: "Arabic", value: "ar" },
-                        { label: "Arabic (North African)", value: "ar-na" },
-                        { label: "Bengali", value: "bn" },
-                        { label: "Chinese", value: "zh" },
-                        { label: "Czech", value: "cs" },
-                        { label: "Danish", value: "da" },
-                        { label: "Dutch", value: "nl" },
-                        { label: "Filipino", value: "tl" },
-                        { label: "Finnish", value: "fi" },
-                        { label: "French", value: "fr" },
-                        { label: "French (African)", value: "fr-af" },
-                        { label: "German", value: "de" },
-                        { label: "Greek", value: "el" },
-                        { label: "Hausa", value: "ha" },
-                        { label: "Hebrew", value: "he" },
-                        { label: "Hindi", value: "hi" },
-                        { label: "Hungarian", value: "hu" },
-                        { label: "Igbo", value: "ig" },
-                        { label: "Indonesian", value: "id" },
-                        { label: "Italian", value: "it" },
-                        { label: "Japanese", value: "ja" },
-                        { label: "Korean", value: "ko" },
-                        { label: "Malay", value: "ms" },
-                        { label: "Norwegian", value: "no" },
-                        { label: "Oromo", value: "om" },
-                        { label: "Polish", value: "pl" },
-                        { label: "Portuguese", value: "pt" },
-                        { label: "Romanian", value: "ro" },
-                        { label: "Shona", value: "sn" },
-                        { label: "Spanish", value: "es" },
-                        { label: "Swahili", value: "sw" },
-                        { label: "Swedish", value: "sv" },
-                        { label: "Thai", value: "th" },
-                        { label: "Turkish", value: "tr" },
-                        { label: "Ukrainian", value: "uk" },
-                        { label: "Vietnamese", value: "vi" },
-                        { label: "Xhosa", value: "xh" },
-                        { label: "Yoruba", value: "yo" },
-                        { label: "Zulu", value: "zu" },
-                      ]}
+                      options={languageOptions}
                       value={language}
                       onChange={setLanguage}
                     />

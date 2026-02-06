@@ -280,7 +280,7 @@ export default function Screenshots() {
             </div>
             <div className="feature-item">
               <div className="feature-icon">🌍</div>
-              <span>42 languages supported</span>
+              <span>111 languages supported</span>
             </div>
             <div className="feature-item">
               <div className="feature-icon">✅</div>
