@@ -3,6 +3,11 @@
   "installCommand": "npm install",
   "framework": "remix",
   "regions": ["fra1"],
+  "functions": {
+    "build/server/index.js": {
+      "maxDuration": 60
+    }
+  },
   "env": {
     "NODE_ENV": "production"
   }
