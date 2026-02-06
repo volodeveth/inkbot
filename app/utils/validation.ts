@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { LANGUAGE_NAMES } from "~/utils/languages";
+
+const languageCodes = Object.keys(LANGUAGE_NAMES) as [string, ...string[]];
 
 export const generateDescriptionSchema = z.object({
   productTitle: z
@@ -29,12 +32,7 @@ export const generateDescriptionSchema = z.object({
   ]),
   keywords: z.string().max(500).optional(),
   language: z
-    .enum([
-      "en", "fr", "de", "es", "pt", "uk",
-      "af", "am", "ar", "ar-na", "bn", "zh", "cs", "da", "nl", "tl", "fi", "fr-af",
-      "el", "ha", "he", "hi", "hu", "ig", "id", "it", "ja", "ko", "ms", "no",
-      "om", "pl", "ro", "sn", "sw", "sv", "th", "tr", "vi", "xh", "yo", "zu",
-    ])
+    .enum(languageCodes)
     .optional()
     .default("en"),
 });
