@@ -136,7 +136,7 @@ export default function BillingPage() {
                   <Box>
                     <Text as="p" variant="bodySm" tone="subdued">Plan</Text>
                     <Badge tone={currentPlan === "FREE" ? "info" : "success"}>
-                      {currentPlan}
+                      {PLANS.find(p => p.key === currentPlan)?.name || currentPlan}
                     </Badge>
                   </Box>
                   <Box>
