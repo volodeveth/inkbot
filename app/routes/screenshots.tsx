@@ -271,7 +271,7 @@ export default function Screenshots() {
             Descriptions in Seconds
           </h2>
           <p className="subheadline">
-            Select a product, choose your niche and tone, and get professional descriptions with one click.
+            Select a product, choose your niche and tone, and get professional descriptions with SEO meta titles & descriptions in one click.
           </p>
           <div className="features-list">
             <div className="feature-item">
