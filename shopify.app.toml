@@ -1,10 +1,23 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-name = "InkBot — AI Product Descriptions & SEO"
-handle = "inkbot"
+client_id = "980b9fdec91d29abb22733c8479d7898"
+name = "InkBot"
+application_url = "https://inkbot.app/app"
+embedded = true
+
+[webhooks]
+api_version = "2025-04"
+
+  [webhooks.privacy_compliance]
+  customer_deletion_url = "https://inkbot.app/webhooks"
+  customer_data_request_url = "https://inkbot.app/webhooks"
+  shop_deletion_url = "https://inkbot.app/webhooks"
 
 [access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "read_products,write_products"
+optional_scopes = [ ]
+use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [
@@ -12,9 +25,3 @@ redirect_urls = [
   "https://inkbot.app/auth/shopify/callback",
   "https://inkbot.app/api/auth/callback"
 ]
-
-[webhooks]
-api_version = "2024-10"
-
-[pos]
-embedded = false
