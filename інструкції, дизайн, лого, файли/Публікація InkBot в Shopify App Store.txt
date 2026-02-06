@@ -1,5 +1,5 @@
 Публікація InkBot в Shopify App Store
-Останнє оновлення: 4 лютого 2025
+Останнє оновлення: 6 лютого 2026
 
 ================================================================================
 ПОТОЧНИЙ СТАТУС
@@ -13,11 +13,14 @@
 - Tagline (98 символів)
 - Full Description (markdown)
 - Категорії визначені
+- Custom domain: https://inkbot.app
+- Screenshots 1600×900 (5 шт) — згенеровані, збережені в цій папці
+- Dev store створено, додаток встановлено і працює
 
 ❌ ПОТРІБНО ЗРОБИТИ:
-- Screenshots 1600×900 (мінімум 3 шт)
+- Завантажити screenshots в Shopify Partners → App listing
+- Протестувати всі функції в dev store
 - Demo video (опціонально)
-- Купити домен inkbot.app (опціонально)
 - Submit to Shopify App Store
 
 ================================================================================
@@ -31,7 +34,7 @@
 ├─────────────┼────────────────────────────────────────────────────────────────┼─────────┤
 │ App icon    │ 1200×1200 px PNG (InkBot small logo.png)                       │   ✅    │
 ├─────────────┼────────────────────────────────────────────────────────────────┼─────────┤
-│ Screenshots │ 1600×900 px, мінімум 3 шт (desktop), показують ключові функції │   ❌    │
+│ Screenshots │ 1600×900 px, 5 шт (desktop), реальні скріншоти додатку         │   ✅    │
 ├─────────────┼────────────────────────────────────────────────────────────────┼─────────┤
 │ App name    │ InkBot — AI Product Descriptions & SEO                         │   ✅    │
 ├─────────────┼────────────────────────────────────────────────────────────────┼─────────┤
@@ -44,8 +47,8 @@
 
 1.2. Обов'язкові сторінки (публічні URL):
 
-✅ Privacy Policy — https://inkbotapp.vercel.app/privacy
-✅ Terms of Service — https://inkbotapp.vercel.app/terms
+✅ Privacy Policy — https://inkbot.app/privacy
+✅ Terms of Service — https://inkbot.app/terms
 ✅ Support contact — in-app Support page (starbowshine@gmail.com)
 
 1.3. Тестування (перед submit):
@@ -65,7 +68,7 @@ Shopify Partners → Apps → InkBot → Distribution → Shopify App Store
 1. App visibility: Public
 2. Pricing:
    - Free plan available ✅
-   - Recurring charges (STARTER $9, PRO $19, ELITE $49)
+   - Recurring charges (STARTER $9, PRO $19, ELITE $99)
 3. Categories:
    ✅ Store design → Product descriptions
    ✅ Marketing → SEO
@@ -86,66 +89,69 @@ Shopify Partners → Apps → InkBot → Distribution → Shopify App Store
 Термін review: 5-10 робочих днів (іноді до 3 тижнів)
 
 ================================================================================
-Етап 4: Screenshots Guide
+Етап 4: Screenshots (ГОТОВО ✅)
 ================================================================================
 
-Формат: 1600×900 px, PNG або JPG
+Формат: 1600×900 px, PNG
+Метод: Puppeteer headless capture з screenshots.tsx.bak сторінки
 
-Screenshot 1: Dashboard
-- Показати: logo, tagline, usage stats, recent generations
-- Caption: "Clean dashboard with usage tracking and quick actions"
+Screenshot 1 - Dashboard.png
+- Показано: logo, tagline, usage stats, recent generations, quick actions
+- Caption: "Your AI Writing Command Center"
 
-Screenshot 2: Generate Page
-- Показати: заповнена форма + згенерований результат з SEO score
-- Caption: "Generate SEO-optimized descriptions in one click"
+Screenshot 2 - Generate.png
+- Показано: заповнена форма + згенерований результат з SEO score
+- Caption: "Generate SEO-Optimized Descriptions in Seconds"
 
-Screenshot 3: Bulk Generation
-- Показати: bulk input з кількома продуктами та результати
-- Caption: "Process multiple products at once with bulk generation"
+Screenshot 3 - Bulk Generate.png
+- Показано: product picker з фільтрами, checkboxes, generation settings
+- Caption: "Process Your Entire Catalog at Once"
 
-Screenshot 4: Settings / Brand Voice
-- Показати: сторінка налаштувань brand voice
-- Caption: "Customize your brand voice for consistent descriptions"
+Screenshot 4 - Brand Voice.png
+- Показано: voice & style, keywords, custom AI instructions, sample descriptions
+- Caption: "Train AI to Match Your Brand Voice"
 
-Screenshot 5: Billing Plans (опціонально)
-- Показати: 4 плани grid
-- Caption: "Flexible plans from Free to Elite with API access"
+Screenshot 5 - Billing.png
+- Показано: 4 плани grid з features, current plan, upgrade buttons
+- Caption: "Start Free, Scale As You Grow"
 
 ================================================================================
 Готові матеріали (файли)
 ================================================================================
 
 📁 інструкції, дизайн, лого, файли/
-├── App Store Listing.md          ← Tagline + Description + Screenshot guide
-├── InkBot Big Logo.png           ← 881×427 для dashboard
-├── InkBot small logo.png         ← 1200×1200 для App Store icon
+├── App Store Listing.md                ← Tagline + Description + Screenshot guide
+├── InkBot Big Logo.png                 ← 881×427 для dashboard
+├── InkBot small logo.png               ← 1200×1200 для App Store icon
+├── Screenshot 1 - Dashboard.png        ← 1600×900 App Store screenshot
+├── Screenshot 2 - Generate.png         ← 1600×900 App Store screenshot
+├── Screenshot 3 - Bulk Generate.png    ← 1600×900 App Store screenshot
+├── Screenshot 4 - Brand Voice.png      ← 1600×900 App Store screenshot
+├── Screenshot 5 - Billing.png          ← 1600×900 App Store screenshot
 └── Публікація InkBot в Shopify App Store.txt  ← Цей файл
 
 📁 app/routes/
-├── privacy.tsx                   ← /privacy публічна сторінка
-└── terms.tsx                     ← /terms публічна сторінка
+├── privacy.tsx                         ← /privacy публічна сторінка
+├── terms.tsx                           ← /terms публічна сторінка
+└── screenshots.tsx.bak                 ← Screenshot generator (вимкнено)
 
 ================================================================================
 URLs
 ================================================================================
 
-App URL:        https://inkbotapp.vercel.app
-Privacy Policy: https://inkbotapp.vercel.app/privacy
-Terms:          https://inkbotapp.vercel.app/terms
-GitHub:         https://github.com/volodeveth/inkbot (private)
-
-Після покупки домену:
 App URL:        https://inkbot.app
 Privacy Policy: https://inkbot.app/privacy
 Terms:          https://inkbot.app/terms
+Landing:        https://inkbot.app/landing
+GitHub:         https://github.com/volodeveth/inkbot (private)
 
 ================================================================================
 Наступні кроки
 ================================================================================
 
-1. [ ] Зробити 3-5 screenshots з dev store (1600×900)
-2. [ ] Протестувати всі функції в dev store
-3. [ ] (Опціонально) Записати demo video
-4. [ ] (Опціонально) Купити домен inkbot.app
+1. [ ] Протестувати всі функції в dev store (чекліст 1.3)
+2. [ ] Завантажити 5 screenshots в Shopify Partners → App listing
+3. [ ] Заповнити App listing (tagline, description, categories)
+4. [ ] (Опціонально) Записати demo video
 5. [ ] Submit to Shopify App Store
 6. [ ] Чекати review (5-10 днів)

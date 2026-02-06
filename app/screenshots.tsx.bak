@@ -432,7 +432,7 @@ export default function Screenshots() {
               <div className="browser-url">🔒 inkbot.app/app/billing</div>
             </div>
             <div className="browser-content">
-              <img src="/screenshots/billing.jpg" alt="InkBot Billing Plans" />
+              <img src="/screenshots/billing.jpg" alt="InkBot Billing Plans" style={{ width: "132%", height: "auto", display: "block", marginLeft: "-16%", marginTop: "0" }} />
             </div>
           </div>
         </div>
