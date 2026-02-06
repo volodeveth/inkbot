@@ -49,13 +49,21 @@ export default function Screenshots() {
         .logo-area {
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 14px;
           margin-bottom: 40px;
         }
 
-        .logo-image-large {
-          height: 70px;
-          width: auto;
+        .logo-icon {
+          height: 60px;
+          width: 60px;
+          object-fit: contain;
+        }
+
+        .logo-text {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-size: 36px;
+          font-weight: 700;
+          color: #fff;
         }
 
         .headline {
@@ -169,13 +177,14 @@ export default function Screenshots() {
           flex: 1;
           overflow: hidden;
           position: relative;
+          background: #f1f1f1;
         }
 
         .browser-content img {
           width: 100%;
           height: 100%;
-          object-fit: cover;
-          object-position: top left;
+          object-fit: contain;
+          object-position: top center;
           display: block;
         }
 
@@ -209,7 +218,8 @@ export default function Screenshots() {
         <div className="screenshot-number">1 / 5</div>
         <div className="left-panel">
           <div className="logo-area">
-            <img src="/logo.png" alt="InkBot" className="logo-image-large" />
+            <img src="/favicon.png" alt="InkBot" className="logo-icon" />
+            <span className="logo-text">InkBot</span>
           </div>
           <h2 className="headline">
             Your <span className="highlight">AI Writing</span><br />
@@ -253,7 +263,8 @@ export default function Screenshots() {
         <div className="screenshot-number">2 / 5</div>
         <div className="left-panel">
           <div className="logo-area">
-            <img src="/logo.png" alt="InkBot" className="logo-image-large" />
+            <img src="/favicon.png" alt="InkBot" className="logo-icon" />
+            <span className="logo-text">InkBot</span>
           </div>
           <h2 className="headline">
             Generate <span className="highlight">SEO-Optimized</span><br />
@@ -297,7 +308,8 @@ export default function Screenshots() {
         <div className="screenshot-number">3 / 5</div>
         <div className="left-panel">
           <div className="logo-area">
-            <img src="/logo.png" alt="InkBot" className="logo-image-large" />
+            <img src="/favicon.png" alt="InkBot" className="logo-icon" />
+            <span className="logo-text">InkBot</span>
           </div>
           <h2 className="headline">
             Process Your <span className="highlight">Entire Catalog</span><br />
@@ -341,7 +353,8 @@ export default function Screenshots() {
         <div className="screenshot-number">4 / 5</div>
         <div className="left-panel">
           <div className="logo-area">
-            <img src="/logo.png" alt="InkBot" className="logo-image-large" />
+            <img src="/favicon.png" alt="InkBot" className="logo-icon" />
+            <span className="logo-text">InkBot</span>
           </div>
           <h2 className="headline">
             Train AI to Match<br />
@@ -385,7 +398,8 @@ export default function Screenshots() {
         <div className="screenshot-number">5 / 5</div>
         <div className="left-panel">
           <div className="logo-area">
-            <img src="/logo.png" alt="InkBot" className="logo-image-large" />
+            <img src="/favicon.png" alt="InkBot" className="logo-icon" />
+            <span className="logo-text">InkBot</span>
           </div>
           <h2 className="headline">
             Start Free,<br />
