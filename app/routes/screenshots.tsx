@@ -342,7 +342,7 @@ export default function Screenshots() {
               <div className="browser-url">🔒 inkbot.app/app/bulk</div>
             </div>
             <div className="browser-content">
-              <img src="/screenshots/bulk.jpg" alt="InkBot Bulk Generate" />
+              <img src="/screenshots/bulk.jpg" alt="InkBot Bulk Generate" style={{ objectFit: "cover", objectPosition: "center top" }} />
             </div>
           </div>
         </div>
