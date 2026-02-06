@@ -877,14 +877,7 @@ export default function BulkPage() {
                     <Select
                       label="Language"
                       options={[
-                        // Priority
                         { label: "English", value: "en" },
-                        { label: "French", value: "fr" },
-                        { label: "German", value: "de" },
-                        { label: "Spanish", value: "es" },
-                        { label: "Portuguese", value: "pt" },
-                        { label: "Ukrainian", value: "uk" },
-                        // Alphabetical
                         { label: "Afrikaans", value: "af" },
                         { label: "Amharic", value: "am" },
                         { label: "Arabic", value: "ar" },
@@ -896,7 +889,9 @@ export default function BulkPage() {
                         { label: "Dutch", value: "nl" },
                         { label: "Filipino", value: "tl" },
                         { label: "Finnish", value: "fi" },
+                        { label: "French", value: "fr" },
                         { label: "French (African)", value: "fr-af" },
+                        { label: "German", value: "de" },
                         { label: "Greek", value: "el" },
                         { label: "Hausa", value: "ha" },
                         { label: "Hebrew", value: "he" },
@@ -911,12 +906,15 @@ export default function BulkPage() {
                         { label: "Norwegian", value: "no" },
                         { label: "Oromo", value: "om" },
                         { label: "Polish", value: "pl" },
+                        { label: "Portuguese", value: "pt" },
                         { label: "Romanian", value: "ro" },
                         { label: "Shona", value: "sn" },
+                        { label: "Spanish", value: "es" },
                         { label: "Swahili", value: "sw" },
                         { label: "Swedish", value: "sv" },
                         { label: "Thai", value: "th" },
                         { label: "Turkish", value: "tr" },
+                        { label: "Ukrainian", value: "uk" },
                         { label: "Vietnamese", value: "vi" },
                         { label: "Xhosa", value: "xh" },
                         { label: "Yoruba", value: "yo" },

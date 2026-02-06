@@ -81,14 +81,7 @@ export async function generateProductDescription(
 }
 
 const LANGUAGE_NAMES: Record<string, string> = {
-  // Priority
   en: "English",
-  fr: "French",
-  de: "German",
-  es: "Spanish",
-  pt: "Portuguese",
-  uk: "Ukrainian",
-  // Alphabetical
   af: "Afrikaans",
   am: "Amharic",
   ar: "Arabic",
@@ -100,7 +93,9 @@ const LANGUAGE_NAMES: Record<string, string> = {
   nl: "Dutch",
   tl: "Filipino",
   fi: "Finnish",
+  fr: "French",
   "fr-af": "French (African)",
+  de: "German",
   el: "Greek",
   ha: "Hausa",
   he: "Hebrew",
@@ -115,12 +110,15 @@ const LANGUAGE_NAMES: Record<string, string> = {
   no: "Norwegian",
   om: "Oromo",
   pl: "Polish",
+  pt: "Portuguese",
   ro: "Romanian",
   sn: "Shona",
+  es: "Spanish",
   sw: "Swahili",
   sv: "Swedish",
   th: "Thai",
   tr: "Turkish",
+  uk: "Ukrainian",
   vi: "Vietnamese",
   xh: "Xhosa",
   yo: "Yoruba",
