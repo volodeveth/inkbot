@@ -5,6 +5,13 @@
 
 export type PlanKey = "FREE" | "STARTER" | "PRO" | "UNLIMITED";
 
+export const PLAN_DISPLAY_NAMES: Record<PlanKey, string> = {
+  FREE: "Free",
+  STARTER: "Starter",
+  PRO: "Pro",
+  UNLIMITED: "Elite",
+};
+
 export const PLAN_LIMITS: Record<PlanKey, number> = {
   FREE: 100,
   STARTER: 1000,

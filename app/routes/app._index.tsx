@@ -24,6 +24,7 @@ import { authenticate } from "../shopify.server";
 import { checkUsageLimit } from "~/services/billing.server";
 import { getGenerationsByShop, getGenerationStats } from "~/models/generation.server";
 import { getOrCreateShop, markReviewLeft } from "~/models/shop.server";
+import { PLAN_DISPLAY_NAMES } from "~/utils/plans";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
@@ -115,7 +116,7 @@ export default function Dashboard() {
                   {usage.used} / {usage.limit} descriptions
                 </Text>
                 <Badge tone={usage.plan === "FREE" ? "info" : "success"}>
-                  {usage.plan}
+                  {PLAN_DISPLAY_NAMES[usage.plan] || usage.plan}
                 </Badge>
               </InlineStack>
               <ProgressBar

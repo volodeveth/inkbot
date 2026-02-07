@@ -23,16 +23,10 @@ import {
 import { authenticate } from "../shopify.server";
 import { checkUsageLimit } from "~/services/billing.server";
 import db from "~/db.server";
-import type { PlanKey } from "~/utils/plans";
+import { PLAN_DISPLAY_NAMES, type PlanKey } from "~/utils/plans";
 
 const TICKET_OFFSET = 123149;
 
-const PLAN_DISPLAY_NAMES: Record<PlanKey, string> = {
-  FREE: "Free",
-  STARTER: "Starter",
-  PRO: "Pro",
-  UNLIMITED: "Elite",
-};
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);

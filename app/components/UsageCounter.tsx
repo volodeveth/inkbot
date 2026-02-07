@@ -7,6 +7,7 @@ import {
   BlockStack,
 } from "@shopify/polaris";
 import type { Plan } from "@prisma/client";
+import { PLAN_DISPLAY_NAMES } from "~/utils/plans";
 
 interface UsageCounterProps {
   used: number;
@@ -33,7 +34,7 @@ export function UsageCounter({
           {used}/{limit}
         </Text>
         <Badge tone={plan === "FREE" ? "info" : "success"}>
-          {plan}
+          {PLAN_DISPLAY_NAMES[plan] || plan}
         </Badge>
       </InlineStack>
     );
@@ -45,7 +46,7 @@ export function UsageCounter({
         <Text as="span" variant="bodyMd">
           {used} / {limit} descriptions
         </Text>
-        <Badge tone={plan === "FREE" ? "info" : "success"}>{plan}</Badge>
+        <Badge tone={plan === "FREE" ? "info" : "success"}>{PLAN_DISPLAY_NAMES[plan] || plan}</Badge>
       </InlineStack>
       <ProgressBar progress={percent} tone={tone} size="small" />
       {showUpgrade && plan === "FREE" && percent > 50 && (
