@@ -12,9 +12,10 @@ import {
   Spinner,
   Checkbox,
   Select,
+  Pagination,
 } from "@shopify/polaris";
 import { SearchIcon, ImageIcon } from "@shopify/polaris-icons";
-import type { ShopifyProduct, ShopifyCollection } from "~/types/shopify";
+import type { ShopifyProduct, ShopifyCollection, PageInfo } from "~/types/shopify";
 
 export type StatusFilter = "all" | "not_generated" | "generated";
 
@@ -23,12 +24,15 @@ interface BulkProductPickerProps {
   selectedProducts: ShopifyProduct[];
   onToggle: (product: ShopifyProduct) => void;
   onClearAll: () => void;
+  onSelectMany?: (products: ShopifyProduct[]) => void;
+  onDeselectMany?: (productIds: string[]) => void;
   collections?: ShopifyCollection[];
   generatedProductIds?: Set<string>;
   selectedCollection: string;
   onCollectionChange: (collectionId: string) => void;
   statusFilter: StatusFilter;
   onStatusFilterChange: (status: StatusFilter) => void;
+  initialPageInfo?: PageInfo;
 }
 
 export function BulkProductPicker({
@@ -36,19 +40,34 @@ export function BulkProductPicker({
   selectedProducts,
   onToggle,
   onClearAll,
+  onSelectMany,
+  onDeselectMany,
   collections = [],
   generatedProductIds = new Set(),
   selectedCollection,
   onCollectionChange,
   statusFilter,
   onStatusFilterChange,
+  initialPageInfo,
 }: BulkProductPickerProps) {
-  const fetcher = useFetcher<{ products: ShopifyProduct[] }>();
+  const fetcher = useFetcher<{ products: ShopifyProduct[]; pageInfo?: PageInfo }>();
   const [query, setQuery] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isSearching = fetcher.state === "submitting" || fetcher.state === "loading";
   const fetchedProducts = fetcher.data?.products ?? products;
+
+  // Track current page info — updated from fetcher or initial loader
+  const [currentPageInfo, setCurrentPageInfo] = useState<PageInfo>(
+    initialPageInfo ?? { hasNextPage: false, hasPreviousPage: false, endCursor: null, startCursor: null }
+  );
+
+  // Update pageInfo when fetcher returns data
+  useEffect(() => {
+    if (fetcher.data?.pageInfo) {
+      setCurrentPageInfo(fetcher.data.pageInfo);
+    }
+  }, [fetcher.data]);
 
   // Apply local status filter
   const displayProducts = fetchedProducts.filter((product) => {
@@ -61,19 +80,44 @@ export function BulkProductPicker({
 
   const selectedIds = new Set(selectedProducts.map((p) => p.id));
 
+  // "Select all on page" state
+  const allOnPageSelected = displayProducts.length > 0 && displayProducts.every((p) => selectedIds.has(p.id));
+  const someOnPageSelected = displayProducts.some((p) => selectedIds.has(p.id));
+  const selectAllChecked = allOnPageSelected;
+  const selectAllIndeterminate = someOnPageSelected && !allOnPageSelected;
+
+  const handleSelectAllOnPage = useCallback(() => {
+    if (allOnPageSelected) {
+      // Deselect all on this page
+      if (onDeselectMany) {
+        onDeselectMany(displayProducts.map((p) => p.id));
+      }
+    } else {
+      // Select all on this page
+      if (onSelectMany) {
+        onSelectMany(displayProducts);
+      }
+    }
+  }, [allOnPageSelected, displayProducts, onSelectMany, onDeselectMany]);
+
+  // Submit search/filter request (no cursor = page 1)
+  const submitSearch = useCallback((searchQuery: string, collection: string) => {
+    const formData = new FormData();
+    formData.append("_action", "searchProducts");
+    formData.append("query", searchQuery);
+    if (collection) {
+      formData.append("collectionId", collection);
+    }
+    fetcher.submit(formData, { method: "post" });
+  }, [fetcher]);
+
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
 
     debounceRef.current = setTimeout(() => {
-      const formData = new FormData();
-      formData.append("_action", "searchProducts");
-      formData.append("query", query);
-      if (selectedCollection) {
-        formData.append("collectionId", selectedCollection);
-      }
-      fetcher.submit(formData, { method: "post" });
+      submitSearch(query, selectedCollection);
     }, 300);
 
     return () => {
@@ -94,6 +138,35 @@ export function BulkProductPicker({
   const handleStatusChange = useCallback((value: string) => {
     onStatusFilterChange(value as StatusFilter);
   }, [onStatusFilterChange]);
+
+  // Pagination handlers
+  const handleNextPage = useCallback(() => {
+    if (!currentPageInfo.endCursor) return;
+    const formData = new FormData();
+    formData.append("_action", "searchProducts");
+    formData.append("query", query);
+    if (selectedCollection) {
+      formData.append("collectionId", selectedCollection);
+    }
+    formData.append("after", currentPageInfo.endCursor);
+    formData.append("direction", "forward");
+    fetcher.submit(formData, { method: "post" });
+  }, [currentPageInfo.endCursor, query, selectedCollection, fetcher]);
+
+  const handlePreviousPage = useCallback(() => {
+    if (!currentPageInfo.startCursor) return;
+    const formData = new FormData();
+    formData.append("_action", "searchProducts");
+    formData.append("query", query);
+    if (selectedCollection) {
+      formData.append("collectionId", selectedCollection);
+    }
+    formData.append("before", currentPageInfo.startCursor);
+    formData.append("direction", "backward");
+    fetcher.submit(formData, { method: "post" });
+  }, [currentPageInfo.startCursor, query, selectedCollection, fetcher]);
+
+  const showPagination = currentPageInfo.hasNextPage || currentPageInfo.hasPreviousPage;
 
   const statusTone = useCallback((status: string) => {
     switch (status.toUpperCase()) {
@@ -168,6 +241,17 @@ export function BulkProductPicker({
           />
         </Box>
       </InlineStack>
+
+      {/* Select all on page */}
+      {displayProducts.length > 0 && onSelectMany && onDeselectMany && (
+        <Box paddingInlineStart="300">
+          <Checkbox
+            label={`Select all ${displayProducts.length} on this page`}
+            checked={selectAllIndeterminate ? "indeterminate" : selectAllChecked}
+            onChange={handleSelectAllOnPage}
+          />
+        </Box>
+      )}
 
       <div
         style={{
@@ -268,6 +352,18 @@ export function BulkProductPicker({
           </BlockStack>
         )}
       </div>
+
+      {/* Pagination */}
+      {showPagination && (
+        <InlineStack align="center">
+          <Pagination
+            hasPrevious={currentPageInfo.hasPreviousPage}
+            onPrevious={handlePreviousPage}
+            hasNext={currentPageInfo.hasNextPage}
+            onNext={handleNextPage}
+          />
+        </InlineStack>
+      )}
     </BlockStack>
   );
 }

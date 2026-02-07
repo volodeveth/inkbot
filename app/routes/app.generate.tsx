@@ -46,9 +46,9 @@ import {
   parseFormData,
 } from "~/utils/validation";
 import { stripHtml } from "~/utils/seo";
-import { PRODUCTS_QUERY, parseProductsResponse } from "~/utils/shopify.server";
+import { PRODUCTS_QUERY, parseProductsPageResponse } from "~/utils/shopify.server";
 import { ProductPicker } from "~/components/ProductPicker";
-import type { ShopifyProduct } from "~/types/shopify";
+import type { ShopifyProduct, PageInfo } from "~/types/shopify";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session, admin } = await authenticate.admin(request);
@@ -58,12 +58,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const brandVoice = await getBrandVoice(session.shop);
 
   let products: ShopifyProduct[] = [];
+  let initialPageInfo: PageInfo = { hasNextPage: false, hasPreviousPage: false, endCursor: null, startCursor: null };
   try {
     const response = await admin.graphql(PRODUCTS_QUERY, {
       variables: { first: 25 },
     });
     const responseJson = await response.json();
-    products = parseProductsResponse(responseJson);
+    const parsed = parseProductsPageResponse(responseJson);
+    products = parsed.products;
+    initialPageInfo = parsed.pageInfo;
   } catch (error) {
     console.error("Failed to fetch products:", error);
   }
@@ -73,7 +76,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const stats = await getGenerationStats(session.shop);
   const hasGenerations = stats.totalGenerations > 0;
 
-  return json({ usage, niches, brandVoice, shop: session.shop, products, reviewBannerState, hasGenerations });
+  return json({ usage, niches, brandVoice, shop: session.shop, products, reviewBannerState, hasGenerations, initialPageInfo });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -84,19 +87,32 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (actionType === "searchProducts") {
     const query = (formData.get("query") as string) || "";
+    const after = (formData.get("after") as string) || undefined;
+    const before = (formData.get("before") as string) || undefined;
+    const direction = (formData.get("direction") as string) || "forward";
+
+    const paginationVars: Record<string, any> = {};
+    if (direction === "backward" && before) {
+      paginationVars.last = 25;
+      paginationVars.before = before;
+    } else {
+      paginationVars.first = 25;
+      if (after) paginationVars.after = after;
+    }
+
     try {
       const response = await admin.graphql(PRODUCTS_QUERY, {
         variables: {
-          first: 25,
+          ...paginationVars,
           query: query ? `title:*${query}*` : null,
         },
       });
       const responseJson = await response.json();
-      const products = parseProductsResponse(responseJson);
-      return json({ products });
+      const parsed = parseProductsPageResponse(responseJson);
+      return json({ products: parsed.products, pageInfo: parsed.pageInfo });
     } catch (error) {
       console.error("Product search error:", error);
-      return json({ products: [] });
+      return json({ products: [], pageInfo: { hasNextPage: false, hasPreviousPage: false, endCursor: null, startCursor: null } });
     }
   }
 
@@ -329,7 +345,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function GeneratePage() {
-  const { usage, niches, brandVoice, products, reviewBannerState, hasGenerations } = useLoaderData<typeof loader>();
+  const { usage, niches, brandVoice, products, reviewBannerState, hasGenerations, initialPageInfo } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
   const navigation = useNavigation();
@@ -559,6 +575,7 @@ export default function GeneratePage() {
                   selectedProduct={selectedProduct}
                   onSelect={handleProductSelect}
                   onClear={handleProductClear}
+                  initialPageInfo={initialPageInfo}
                 />
               </BlockStack>
             </Card>

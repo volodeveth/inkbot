@@ -10,15 +10,17 @@ import {
   Box,
   Thumbnail,
   Spinner,
+  Pagination,
 } from "@shopify/polaris";
 import { SearchIcon, ImageIcon } from "@shopify/polaris-icons";
-import type { ShopifyProduct } from "~/types/shopify";
+import type { ShopifyProduct, PageInfo } from "~/types/shopify";
 
 interface ProductPickerProps {
   products: ShopifyProduct[];
   selectedProduct: ShopifyProduct | null;
   onSelect: (product: ShopifyProduct) => void;
   onClear: () => void;
+  initialPageInfo?: PageInfo;
 }
 
 export function ProductPicker({
@@ -26,13 +28,26 @@ export function ProductPicker({
   selectedProduct,
   onSelect,
   onClear,
+  initialPageInfo,
 }: ProductPickerProps) {
-  const fetcher = useFetcher<{ products: ShopifyProduct[] }>();
+  const fetcher = useFetcher<{ products: ShopifyProduct[]; pageInfo?: PageInfo }>();
   const [query, setQuery] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isSearching = fetcher.state === "submitting" || fetcher.state === "loading";
   const displayProducts = fetcher.data?.products ?? products;
+
+  // Track current page info
+  const [currentPageInfo, setCurrentPageInfo] = useState<PageInfo>(
+    initialPageInfo ?? { hasNextPage: false, hasPreviousPage: false, endCursor: null, startCursor: null }
+  );
+
+  // Update pageInfo when fetcher returns data
+  useEffect(() => {
+    if (fetcher.data?.pageInfo) {
+      setCurrentPageInfo(fetcher.data.pageInfo);
+    }
+  }, [fetcher.data]);
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -58,6 +73,29 @@ export function ProductPicker({
   const handleSearch = useCallback((value: string) => {
     setQuery(value);
   }, []);
+
+  // Pagination handlers
+  const handleNextPage = useCallback(() => {
+    if (!currentPageInfo.endCursor) return;
+    const formData = new FormData();
+    formData.append("_action", "searchProducts");
+    formData.append("query", query);
+    formData.append("after", currentPageInfo.endCursor);
+    formData.append("direction", "forward");
+    fetcher.submit(formData, { method: "post" });
+  }, [currentPageInfo.endCursor, query, fetcher]);
+
+  const handlePreviousPage = useCallback(() => {
+    if (!currentPageInfo.startCursor) return;
+    const formData = new FormData();
+    formData.append("_action", "searchProducts");
+    formData.append("query", query);
+    formData.append("before", currentPageInfo.startCursor);
+    formData.append("direction", "backward");
+    fetcher.submit(formData, { method: "post" });
+  }, [currentPageInfo.startCursor, query, fetcher]);
+
+  const showPagination = currentPageInfo.hasNextPage || currentPageInfo.hasPreviousPage;
 
   const statusTone = useCallback((status: string) => {
     switch (status.toUpperCase()) {
@@ -210,6 +248,18 @@ export function ProductPicker({
           </BlockStack>
         )}
       </div>
+
+      {/* Pagination */}
+      {showPagination && (
+        <InlineStack align="center">
+          <Pagination
+            hasPrevious={currentPageInfo.hasPreviousPage}
+            onPrevious={handlePreviousPage}
+            hasNext={currentPageInfo.hasNextPage}
+            onNext={handleNextPage}
+          />
+        </InlineStack>
+      )}
 
       <Text as="p" variant="bodySm" tone="subdued">
         Or enter product details manually below

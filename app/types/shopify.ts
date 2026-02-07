@@ -18,3 +18,10 @@ export interface ShopifyCollection {
   title: string;
   productsCount: number;
 }
+
+export interface PageInfo {
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  endCursor: string | null;
+  startCursor: string | null;
+}

@@ -42,15 +42,15 @@ import { createGeneration, markGenerationApplied, getGeneratedProductIds } from 
 import { getBrandVoice } from "~/models/brandVoice.server";
 import {
   PRODUCTS_QUERY,
-  parseProductsResponse,
+  parseProductsPageResponse,
   COLLECTIONS_QUERY,
   parseCollectionsResponse,
   PRODUCTS_BY_COLLECTION_QUERY,
-  parseProductsByCollectionResponse,
+  parseProductsByCollectionPageResponse,
 } from "~/utils/shopify.server";
 import { BulkProductPicker, type StatusFilter } from "~/components/BulkProductPicker";
 import { hasPlanFeature, type PlanKey } from "~/utils/plans";
-import type { ShopifyProduct, ShopifyCollection } from "~/types/shopify";
+import type { ShopifyProduct, ShopifyCollection, PageInfo } from "~/types/shopify";
 
 interface BulkResult {
   index: number;
@@ -74,12 +74,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const brandVoice = await getBrandVoice(session.shop);
 
   let products: ShopifyProduct[] = [];
+  let initialPageInfo: PageInfo = { hasNextPage: false, hasPreviousPage: false, endCursor: null, startCursor: null };
   try {
     const response = await admin.graphql(PRODUCTS_QUERY, {
       variables: { first: 25 },
     });
     const responseJson = await response.json();
-    products = parseProductsResponse(responseJson);
+    const parsed = parseProductsPageResponse(responseJson);
+    products = parsed.products;
+    initialPageInfo = parsed.pageInfo;
   } catch (error) {
     console.error("Failed to fetch products:", error);
   }
@@ -105,7 +108,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const reviewBannerState = shop?.reviewBannerState ?? "pending";
   const hasGenerations = generatedProductIdsSet.size > 0;
 
-  return json({ usage, niches, products, brandVoice, shop: session.shop, plan, reviewBannerState, hasGenerations, collections, generatedProductIds });
+  return json({ usage, niches, products, brandVoice, shop: session.shop, plan, reviewBannerState, hasGenerations, collections, generatedProductIds, initialPageInfo });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -117,20 +120,36 @@ export async function action({ request }: ActionFunctionArgs) {
   if (actionType === "searchProducts") {
     const query = (formData.get("query") as string) || "";
     const collectionId = (formData.get("collectionId") as string) || "";
+    const after = (formData.get("after") as string) || undefined;
+    const before = (formData.get("before") as string) || undefined;
+    const direction = (formData.get("direction") as string) || "forward";
+
+    // Build pagination variables
+    const paginationVars: Record<string, any> = {};
+    if (direction === "backward" && before) {
+      paginationVars.last = 25;
+      paginationVars.before = before;
+    } else {
+      paginationVars.first = 25;
+      if (after) paginationVars.after = after;
+    }
 
     try {
       let products: ShopifyProduct[] = [];
+      let pageInfo: PageInfo = { hasNextPage: false, hasPreviousPage: false, endCursor: null, startCursor: null };
 
       if (collectionId) {
         // Fetch products from specific collection
         const response = await admin.graphql(PRODUCTS_BY_COLLECTION_QUERY, {
           variables: {
             collectionId,
-            first: 25,
+            ...paginationVars,
           },
         });
         const responseJson = await response.json();
-        products = parseProductsByCollectionResponse(responseJson);
+        const parsed = parseProductsByCollectionPageResponse(responseJson);
+        products = parsed.products;
+        pageInfo = parsed.pageInfo;
 
         // Apply search filter locally if query provided
         if (query) {
@@ -143,18 +162,20 @@ export async function action({ request }: ActionFunctionArgs) {
         // Fetch all products with optional search
         const response = await admin.graphql(PRODUCTS_QUERY, {
           variables: {
-            first: 25,
+            ...paginationVars,
             query: query ? `title:*${query}*` : null,
           },
         });
         const responseJson = await response.json();
-        products = parseProductsResponse(responseJson);
+        const parsed = parseProductsPageResponse(responseJson);
+        products = parsed.products;
+        pageInfo = parsed.pageInfo;
       }
 
-      return json({ products });
+      return json({ products, pageInfo });
     } catch (error) {
       console.error("Product search error:", error);
-      return json({ products: [] });
+      return json({ products: [], pageInfo: { hasNextPage: false, hasPreviousPage: false, endCursor: null, startCursor: null } });
     }
   }
 
@@ -457,7 +478,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function BulkPage() {
-  const { usage, niches, products, brandVoice, plan, reviewBannerState, hasGenerations, collections, generatedProductIds } = useLoaderData<typeof loader>();
+  const { usage, niches, products, brandVoice, plan, reviewBannerState, hasGenerations, collections, generatedProductIds, initialPageInfo } = useLoaderData<typeof loader>();
   const canUseBulk = hasPlanFeature(plan as PlanKey, "bulk");
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
@@ -551,6 +572,19 @@ export default function BulkPage() {
 
   const handleClearAll = useCallback(() => {
     setSelectedProducts([]);
+  }, []);
+
+  const handleSelectMany = useCallback((productsToAdd: ShopifyProduct[]) => {
+    setSelectedProducts((prev) => {
+      const existingIds = new Set(prev.map((p) => p.id));
+      const newProducts = productsToAdd.filter((p) => !existingIds.has(p.id));
+      return [...prev, ...newProducts];
+    });
+  }, []);
+
+  const handleDeselectMany = useCallback((productIds: string[]) => {
+    const idsToRemove = new Set(productIds);
+    setSelectedProducts((prev) => prev.filter((p) => !idsToRemove.has(p.id)));
   }, []);
 
   const handleGenerate = useCallback(() => {
@@ -797,12 +831,15 @@ export default function BulkPage() {
                     selectedProducts={selectedProducts}
                     onToggle={handleToggleProduct}
                     onClearAll={handleClearAll}
+                    onSelectMany={handleSelectMany}
+                    onDeselectMany={handleDeselectMany}
                     collections={collections}
                     generatedProductIds={generatedProductIdsSet}
                     selectedCollection={selectedCollection}
                     onCollectionChange={setSelectedCollection}
                     statusFilter={statusFilter}
                     onStatusFilterChange={setStatusFilter}
+                    initialPageInfo={initialPageInfo}
                   />
                 ) : (
                   <BlockStack gap="300">
