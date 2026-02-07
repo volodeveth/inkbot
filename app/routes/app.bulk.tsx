@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   json,
   type ActionFunctionArgs,
@@ -9,6 +9,7 @@ import {
   useActionData,
   useSubmit,
   useNavigation,
+  useBlocker,
 } from "@remix-run/react";
 import {
   Page,
@@ -27,6 +28,7 @@ import {
   Divider,
   Checkbox,
   Tag,
+  Modal,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { generateProductDescription } from "~/services/ai.server";
@@ -495,6 +497,22 @@ export default function BulkPage() {
   const isApplying =
     navigation.state === "submitting" &&
     navigation.formData?.get("_action") === "applySelected";
+
+  // Block navigation while generating
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isProcessing && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  // Block browser refresh/close while generating
+  useEffect(() => {
+    if (!isProcessing) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isProcessing]);
 
   // Input mode toggle
   const [inputMode, setInputMode] = useState<"picker" | "manual">("picker");
@@ -1217,6 +1235,31 @@ export default function BulkPage() {
           </BlockStack>
         </Layout.Section>
       </Layout>
+
+      {blocker.state === "blocked" && (
+        <Modal
+          open
+          onClose={() => blocker.reset()}
+          title="Generation in progress"
+          primaryAction={{
+            content: "Stay on page",
+            onAction: () => blocker.reset(),
+          }}
+          secondaryActions={[
+            {
+              content: "Leave anyway",
+              destructive: true,
+              onAction: () => blocker.proceed(),
+            },
+          ]}
+        >
+          <Modal.Section>
+            <Text as="p">
+              Descriptions are still being generated. If you leave now, the process will stop and incomplete results will be lost.
+            </Text>
+          </Modal.Section>
+        </Modal>
+      )}
     </Page>
   );
 }
