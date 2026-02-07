@@ -7,6 +7,7 @@ import {
   TextField,
   Button,
   Badge,
+  Banner,
   Box,
   Thumbnail,
   Spinner,
@@ -33,6 +34,7 @@ interface BulkProductPickerProps {
   statusFilter: StatusFilter;
   onStatusFilterChange: (status: StatusFilter) => void;
   initialPageInfo?: PageInfo;
+  maxSelection?: number;
 }
 
 export function BulkProductPicker({
@@ -49,6 +51,7 @@ export function BulkProductPicker({
   statusFilter,
   onStatusFilterChange,
   initialPageInfo,
+  maxSelection,
 }: BulkProductPickerProps) {
   const fetcher = useFetcher<{ products: ShopifyProduct[]; pageInfo?: PageInfo }>();
   const [query, setQuery] = useState("");
@@ -200,12 +203,18 @@ export function BulkProductPicker({
       {selectedProducts.length > 0 && (
         <InlineStack align="space-between" blockAlign="center">
           <Text as="span" variant="bodySm" fontWeight="semibold">
-            {selectedProducts.length} product{selectedProducts.length !== 1 ? "s" : ""} selected
+            {selectedProducts.length}{maxSelection ? `/${maxSelection}` : ""} product{selectedProducts.length !== 1 ? "s" : ""} selected
           </Text>
           <Button variant="plain" onClick={onClearAll}>
             Clear all
           </Button>
         </InlineStack>
+      )}
+
+      {maxSelection && selectedProducts.length >= maxSelection && (
+        <Banner tone="warning">
+          <p>Maximum {maxSelection} products per batch. Deselect some to add others.</p>
+        </Banner>
       )}
 
       {/* Filters row */}

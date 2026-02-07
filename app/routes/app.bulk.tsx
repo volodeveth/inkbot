@@ -560,11 +560,16 @@ export default function BulkPage() {
       ? selectedProducts.length
       : productsText.split("\n").filter((l) => l.trim()).length;
 
+  const MAX_BULK_SELECTION = 25;
+
   const handleToggleProduct = useCallback((product: ShopifyProduct) => {
     setSelectedProducts((prev) => {
       const exists = prev.find((p) => p.id === product.id);
       if (exists) {
         return prev.filter((p) => p.id !== product.id);
+      }
+      if (prev.length >= MAX_BULK_SELECTION) {
+        return prev;
       }
       return [...prev, product];
     });
@@ -578,7 +583,9 @@ export default function BulkPage() {
     setSelectedProducts((prev) => {
       const existingIds = new Set(prev.map((p) => p.id));
       const newProducts = productsToAdd.filter((p) => !existingIds.has(p.id));
-      return [...prev, ...newProducts];
+      const slotsAvailable = MAX_BULK_SELECTION - prev.length;
+      if (slotsAvailable <= 0) return prev;
+      return [...prev, ...newProducts.slice(0, slotsAvailable)];
     });
   }, []);
 
@@ -840,6 +847,7 @@ export default function BulkPage() {
                     statusFilter={statusFilter}
                     onStatusFilterChange={setStatusFilter}
                     initialPageInfo={initialPageInfo}
+                    maxSelection={MAX_BULK_SELECTION}
                   />
                 ) : (
                   <BlockStack gap="300">
