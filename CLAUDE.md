@@ -65,7 +65,7 @@ D:\Myapps\InkBot\
 │   │   └── BulkProductPicker.tsx      ✅ Product picker з фільтрами: collection, status (All/Not generated/Generated), search, "Generated" badge
 │   │
 │   ├── services/
-│   │   ├── ai.server.ts               ✅ DeepSeek API (via OpenRouter): generateProductDescription(), generateBulkDescriptions(), LANGUAGE_NAMES (111 мов)
+│   │   ├── ai.server.ts               ✅ DeepSeek API (via OpenRouter): generateProductDescription(), generateBulkDescriptions() (imports LANGUAGE_NAMES from utils/languages)
 │   │   ├── prompts.server.ts          ✅ 9 ніш: NICHE_CONFIGS, getPromptForNiche(), getAllNiches()
 │   │   ├── billing.server.ts          ✅ checkUsageLimit(), incrementUsage(), createSubscription(), cancelSubscription() + auto-revoke API keys on downgrade
 │   │   ├── apiKey.server.ts           ✅ generateApiKey() (dsc_ prefix, 128-bit), hashApiKey() (SHA-256), isValidApiKeyFormat()
@@ -80,8 +80,9 @@ D:\Myapps\InkBot\
 │   ├── utils/
 │   │   ├── plans.ts                   ✅ PLAN_LIMITS, PLAN_PRICES, PLAN_FEATURES (shared client+server)
 │   │   ├── generateOptions.ts         ✅ GenerateOptions interface, DEFAULT_GENERATE_OPTIONS (shared client+server)
+│   │   ├── languages.ts               ✅ LANGUAGE_NAMES (111 мов), languageOptions (shared client+server, single source of truth)
 │   │   ├── shopify.server.ts          ✅ Shopify GraphQL queries: PRODUCTS_QUERY, COLLECTIONS_QUERY, PRODUCTS_BY_COLLECTION_QUERY, parse functions
-│   │   ├── validation.ts              ✅ Zod-схеми: generateDescriptionSchema, brandVoiceSchema, parseFormData()
+│   │   ├── validation.ts              ✅ Zod-схеми: generateDescriptionSchema (language enum from languages.ts), brandVoiceSchema, parseFormData()
 │   │   └── seo.ts                     ✅ calculateSeoScore(), stripHtml(), wordCount(), truncateForMeta()
 │   │
 │   ├── types/
@@ -124,8 +125,8 @@ D:\Myapps\InkBot\
 ├── package.json                       ✅
 ├── tsconfig.json                      ✅
 ├── vite.config.ts                     ✅ Remix + Vite, HMR config
-├── shopify.app.toml                   ✅ scopes: read_products, write_products
-├── vercel.json                        ✅ region: fra1, build command з npx prisma generate
+├── shopify.app.toml                   ✅ scopes: read_products, write_products, api_version: 2024-10, embedded: true
+├── vercel.json                        ✅ region: fra1, build command з npx prisma generate, Fluid Compute enabled (300s max duration)
 ├── .env                               ✅ Реальні ключі налаштовані (локально)
 ├── .gitignore                         ✅
 └── CLAUDE.md                          ← Цей файл
@@ -294,19 +295,25 @@ professional, casual, luxurious, playful, technical, minimalist
 
 ### Мови (111 мов)
 
+Визначені в єдиному файлі `app/utils/languages.ts` (shared client+server, single source of truth).
+Імпортується в: `ai.server.ts` (LANGUAGE_NAMES для промптів), `app.generate.tsx` та `app.bulk.tsx` (languageOptions для Select), `validation.ts` (Zod enum).
+
 **Основні світові:**
-en (English), es (Spanish), fr (French), de (German), it (Italian), pt (Portuguese), zh (Chinese), ja (Japanese), ko (Korean)
+en (English), es (Spanish), fr (French), de (German), it (Italian), pt-BR (Portuguese Brazil), pt-PT (Portuguese Portugal), zh (Chinese Simplified), zh-TW (Chinese Traditional), ja (Japanese), ko (Korean)
 
 **Європейський регіон:**
-uk (Ukrainian), pl (Polish), nl (Dutch), sv (Swedish), da (Danish), no (Norwegian), fi (Finnish), cs (Czech), hu (Hungarian), ro (Romanian), el (Greek), tr (Turkish)
+uk (Ukrainian), pl (Polish), nl (Dutch), sv (Swedish), da (Danish), no/nb/nn (Norwegian), fi (Finnish), cs (Czech), hu (Hungarian), ro (Romanian), el (Greek), tr (Turkish), sq (Albanian), hy (Armenian), az (Azerbaijani), eu (Basque), be (Belarusian), bs (Bosnian), bg (Bulgarian), ca (Catalan), hr (Croatian), et (Estonian), gl (Galician), ka (Georgian), is (Icelandic), ga (Irish), lv (Latvian), lt (Lithuanian), lb (Luxembourgish), mk (Macedonian), mt (Maltese), sr (Serbian), sk (Slovak), sl (Slovenian), cy (Welsh)
 
 **Азійський та Близькосхідний регіон:**
-ar (Arabic), hi (Hindi), th (Thai), vi (Vietnamese), id (Indonesian), ms (Malay), bn (Bengali), he (Hebrew), tl (Filipino)
+ar (Arabic), ar-na (Arabic North African), hi (Hindi), th (Thai), vi (Vietnamese), id (Indonesian), ms (Malay), bn (Bengali), he (Hebrew), tl (Filipino), fa (Persian), ku (Kurdish), ps (Pashto), uz (Uzbek), kk (Kazakh), ky (Kyrgyz), tk (Turkmen), tg (Tajik), mn (Mongolian), ur (Urdu), pa (Punjabi), gu (Gujarati), mr (Marathi), ta (Tamil), te (Telugu), kn (Kannada), ml (Malayalam), si (Sinhala), ne (Nepali), my (Burmese), km (Khmer), lo (Lao)
 
 **Африканський регіон:**
-fr-af (French African), ar-na (Arabic North African), sw (Swahili), af (Afrikaans), am (Amharic), yo (Yoruba), zu (Zulu), xh (Xhosa), ha (Hausa), ig (Igbo), om (Oromo), sn (Shona)
+fr-af (French African), sw (Swahili), af (Afrikaans), am (Amharic), yo (Yoruba), zu (Zulu), xh (Xhosa), ha (Hausa), ig (Igbo), om (Oromo), sn (Shona), rw (Kinyarwanda), so (Somali), mg (Malagasy), ny (Chichewa), ti (Tigrinya), ln (Lingala), wo (Wolof), ff (Fula), st (Sesotho), tn (Setswana)
 
-Мова задається через `LANGUAGE_NAMES` map в `ai.server.ts` (код → повна назва). Порядок у селекторі: пріоритетна група (en, es, fr, de, it, pt, zh, ja, ko) першою, потім решта алфавітно. Prompt містить потрійне підсилення мовної вимоги (system prompt CRITICAL LANGUAGE REQUIREMENT + rule #8 + user prompt IMPORTANT).
+**Інші:**
+eo (Esperanto), la (Latin), haw (Hawaiian), mi (Maori), sm (Samoan), jv (Javanese), su (Sundanese), ceb (Cebuano), ht (Haitian Creole)
+
+Порядок у селекторі: English першою, потім решта алфавітно за label. Prompt містить потрійне підсилення мовної вимоги (system prompt CRITICAL LANGUAGE REQUIREMENT + rule #8 + user prompt IMPORTANT). Legacy `pt` код залишено як fallback.
 
 ### Review Banner
 - Перманентний банер "Enjoying InkBot?" на Dashboard, Generate та Bulk сторінках
