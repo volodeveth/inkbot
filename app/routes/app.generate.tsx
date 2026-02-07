@@ -39,7 +39,7 @@ import {
   incrementUsage,
 } from "~/services/billing.server";
 import { getAllNiches } from "~/services/prompts.server";
-import { getShop, markReviewClicked, dismissReviewBanner } from "~/models/shop.server";
+import { getShop, markReviewClicked, dismissReviewBanner, snoozeReviewBanner, isReviewBannerVisible, getEffectiveBannerState } from "~/models/shop.server";
 import { getGenerationStats } from "~/models/generation.server";
 import { createGeneration, markGenerationApplied } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
@@ -74,11 +74,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   const shop = await getShop(session.shop);
-  const reviewBannerState = shop?.reviewBannerState ?? "pending";
+  const rawBannerState = shop?.reviewBannerState ?? "pending";
+  const reviewBannerState = getEffectiveBannerState(rawBannerState);
+  const reviewBannerVisible = isReviewBannerVisible(rawBannerState);
   const stats = await getGenerationStats(session.shop);
   const hasGenerations = stats.totalGenerations > 0;
 
-  return json({ usage, niches, brandVoice, shop: session.shop, products, reviewBannerState, hasGenerations, initialPageInfo });
+  return json({ usage, niches, brandVoice, shop: session.shop, products, reviewBannerState, reviewBannerVisible, hasGenerations, initialPageInfo });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -123,9 +125,14 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ reviewBannerState: "clicked" });
   }
 
-  if (actionType === "dismissReview") {
+  if (actionType === "confirmReview") {
     await dismissReviewBanner(session.shop);
-    return json({ reviewBannerState: "dismissed" });
+    return json({ reviewBannerState: "dismissed", reviewBannerVisible: false });
+  }
+
+  if (actionType === "snoozeReview") {
+    await snoozeReviewBanner(session.shop);
+    return json({ reviewBannerState: "snoozed", reviewBannerVisible: false });
   }
 
   if (actionType === "generate") {
@@ -347,7 +354,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function GeneratePage() {
-  const { usage, niches, brandVoice, products, reviewBannerState, hasGenerations, initialPageInfo } = useLoaderData<typeof loader>();
+  const { usage, niches, brandVoice, products, reviewBannerState, reviewBannerVisible, hasGenerations, initialPageInfo } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
   const navigation = useNavigation();
@@ -483,7 +490,8 @@ export default function GeneratePage() {
   }, [selectedProduct, actionData, submit]);
 
   const currentBannerState = actionData?.reviewBannerState || reviewBannerState;
-  const showReviewBanner = hasGenerations && currentBannerState !== "dismissed";
+  const isBannerVisible = actionData?.reviewBannerVisible ?? reviewBannerVisible;
+  const showReviewBanner = hasGenerations && isBannerVisible;
 
   const handleLeaveReview = useCallback(() => {
     window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
@@ -496,9 +504,15 @@ export default function GeneratePage() {
     window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
   }, []);
 
-  const handleDismissReview = useCallback(() => {
+  const handleConfirmReview = useCallback(() => {
     const formData = new FormData();
-    formData.append("_action", "dismissReview");
+    formData.append("_action", "confirmReview");
+    submit(formData, { method: "post" });
+  }, [submit]);
+
+  const handleSnoozeReview = useCallback(() => {
+    const formData = new FormData();
+    formData.append("_action", "snoozeReview");
     submit(formData, { method: "post" });
   }, [submit]);
 
@@ -537,11 +551,11 @@ export default function GeneratePage() {
                 tone="success"
                 action={{
                   content: "I left a review",
-                  onAction: handleDismissReview,
+                  onAction: handleConfirmReview,
                 }}
                 secondaryAction={{
                   content: "No thanks, dismiss",
-                  onAction: handleDismissReview,
+                  onAction: handleSnoozeReview,
                 }}
               >
                 <BlockStack gap="200">

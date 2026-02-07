@@ -85,6 +85,31 @@ export async function dismissReviewBanner(shopDomain: string) {
   });
 }
 
+export async function snoozeReviewBanner(shopDomain: string) {
+  const snoozeUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  return db.shop.update({
+    where: { shopDomain },
+    data: { reviewBannerState: `snoozed:${snoozeUntil}` },
+  });
+}
+
+export function isReviewBannerVisible(state: string): boolean {
+  if (state === "dismissed") return false;
+  if (state.startsWith("snoozed:")) {
+    const snoozedUntil = new Date(state.slice(8));
+    return Date.now() >= snoozedUntil.getTime();
+  }
+  return true;
+}
+
+export function getEffectiveBannerState(state: string): string {
+  if (state.startsWith("snoozed:")) {
+    const snoozedUntil = new Date(state.slice(8));
+    return Date.now() >= snoozedUntil.getTime() ? "pending" : "snoozed";
+  }
+  return state;
+}
+
 export async function revokeShopApiKey(shopDomain: string) {
   return db.shop.update({
     where: { shopDomain },

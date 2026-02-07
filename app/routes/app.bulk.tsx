@@ -39,7 +39,7 @@ import {
   incrementUsage,
 } from "~/services/billing.server";
 import { getAllNiches } from "~/services/prompts.server";
-import { getShop, markReviewClicked, dismissReviewBanner } from "~/models/shop.server";
+import { getShop, markReviewClicked, dismissReviewBanner, snoozeReviewBanner, isReviewBannerVisible, getEffectiveBannerState } from "~/models/shop.server";
 import { createGeneration, markGenerationApplied, getGeneratedProductIds } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
 import {
@@ -107,10 +107,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const shop = await getShop(session.shop);
   const plan = (shop?.plan || "FREE") as PlanKey;
-  const reviewBannerState = shop?.reviewBannerState ?? "pending";
+  const rawBannerState = shop?.reviewBannerState ?? "pending";
+  const reviewBannerState = getEffectiveBannerState(rawBannerState);
+  const reviewBannerVisible = isReviewBannerVisible(rawBannerState);
   const hasGenerations = generatedProductIdsSet.size > 0;
 
-  return json({ usage, niches, products, brandVoice, shop: session.shop, plan, reviewBannerState, hasGenerations, collections, generatedProductIds, initialPageInfo });
+  return json({ usage, niches, products, brandVoice, shop: session.shop, plan, reviewBannerState, reviewBannerVisible, hasGenerations, collections, generatedProductIds, initialPageInfo });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -187,9 +189,14 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ reviewBannerState: "clicked" });
   }
 
-  if (actionType === "dismissReview") {
+  if (actionType === "confirmReview") {
     await dismissReviewBanner(session.shop);
-    return json({ reviewBannerState: "dismissed" });
+    return json({ reviewBannerState: "dismissed", reviewBannerVisible: false });
+  }
+
+  if (actionType === "snoozeReview") {
+    await snoozeReviewBanner(session.shop);
+    return json({ reviewBannerState: "snoozed", reviewBannerVisible: false });
   }
 
   // --- Apply selected results to Shopify ---
@@ -480,7 +487,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function BulkPage() {
-  const { usage, niches, products, brandVoice, plan, reviewBannerState, hasGenerations, collections, generatedProductIds, initialPageInfo } = useLoaderData<typeof loader>();
+  const { usage, niches, products, brandVoice, plan, reviewBannerState, reviewBannerVisible, hasGenerations, collections, generatedProductIds, initialPageInfo } = useLoaderData<typeof loader>();
   const canUseBulk = hasPlanFeature(plan as PlanKey, "bulk");
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
@@ -691,7 +698,8 @@ export default function BulkPage() {
   }, [results, checkedResults, appliedResults, actionData, submit]);
 
   const currentBannerState = actionData?.reviewBannerState || reviewBannerState;
-  const showReviewBanner = hasGenerations && currentBannerState !== "dismissed";
+  const isBannerVisible = actionData?.reviewBannerVisible ?? reviewBannerVisible;
+  const showReviewBanner = hasGenerations && isBannerVisible;
 
   const handleLeaveReview = useCallback(() => {
     window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
@@ -704,9 +712,15 @@ export default function BulkPage() {
     window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
   }, []);
 
-  const handleDismissReview = useCallback(() => {
+  const handleConfirmReview = useCallback(() => {
     const formData = new FormData();
-    formData.append("_action", "dismissReview");
+    formData.append("_action", "confirmReview");
+    submit(formData, { method: "post" });
+  }, [submit]);
+
+  const handleSnoozeReview = useCallback(() => {
+    const formData = new FormData();
+    formData.append("_action", "snoozeReview");
     submit(formData, { method: "post" });
   }, [submit]);
 
@@ -760,11 +774,11 @@ export default function BulkPage() {
                 tone="success"
                 action={{
                   content: "I left a review",
-                  onAction: handleDismissReview,
+                  onAction: handleConfirmReview,
                 }}
                 secondaryAction={{
                   content: "No thanks, dismiss",
-                  onAction: handleDismissReview,
+                  onAction: handleSnoozeReview,
                 }}
               >
                 <BlockStack gap="200">

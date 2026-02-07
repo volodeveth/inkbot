@@ -23,7 +23,7 @@ import {
 import { authenticate } from "../shopify.server";
 import { checkUsageLimit } from "~/services/billing.server";
 import { getGenerationsByShop, getGenerationStats } from "~/models/generation.server";
-import { getOrCreateShop, markReviewClicked, dismissReviewBanner } from "~/models/shop.server";
+import { getOrCreateShop, markReviewClicked, dismissReviewBanner, snoozeReviewBanner, isReviewBannerVisible, getEffectiveBannerState } from "~/models/shop.server";
 import { PLAN_DISPLAY_NAMES } from "~/utils/plans";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -35,7 +35,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const usage = await checkUsageLimit(session.shop);
   const recentGenerations = await getGenerationsByShop(session.shop, { take: 5 });
   const stats = await getGenerationStats(session.shop);
-  const reviewBannerState = shop.reviewBannerState;
+  const rawBannerState = shop.reviewBannerState;
+  const reviewBannerState = getEffectiveBannerState(rawBannerState);
+  const reviewBannerVisible = isReviewBannerVisible(rawBannerState);
   const hasGenerations = stats.totalGenerations > 0;
 
   return json({
@@ -44,6 +46,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     recentGenerations,
     stats,
     reviewBannerState,
+    reviewBannerVisible,
     hasGenerations,
   });
 }
@@ -59,21 +62,27 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ reviewBannerState: "clicked" });
   }
 
-  if (actionType === "dismissReview") {
+  if (actionType === "confirmReview") {
     await dismissReviewBanner(session.shop);
-    return json({ reviewBannerState: "dismissed" });
+    return json({ reviewBannerState: "dismissed", reviewBannerVisible: false });
+  }
+
+  if (actionType === "snoozeReview") {
+    await snoozeReviewBanner(session.shop);
+    return json({ reviewBannerState: "snoozed", reviewBannerVisible: false });
   }
 
   return json({});
 }
 
 export default function Dashboard() {
-  const { usage, recentGenerations, stats, reviewBannerState, hasGenerations } = useLoaderData<typeof loader>();
+  const { usage, recentGenerations, stats, reviewBannerState, reviewBannerVisible, hasGenerations } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
 
   const currentBannerState = actionData?.reviewBannerState || reviewBannerState;
-  const showReviewBanner = hasGenerations && currentBannerState !== "dismissed";
+  const isBannerVisible = actionData?.reviewBannerVisible ?? reviewBannerVisible;
+  const showReviewBanner = hasGenerations && isBannerVisible;
 
   const handleLeaveReview = useCallback(() => {
     window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
@@ -86,9 +95,15 @@ export default function Dashboard() {
     window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
   }, []);
 
-  const handleDismissReview = useCallback(() => {
+  const handleConfirmReview = useCallback(() => {
     const formData = new FormData();
-    formData.append("_action", "dismissReview");
+    formData.append("_action", "confirmReview");
+    submit(formData, { method: "post" });
+  }, [submit]);
+
+  const handleSnoozeReview = useCallback(() => {
+    const formData = new FormData();
+    formData.append("_action", "snoozeReview");
     submit(formData, { method: "post" });
   }, [submit]);
 
@@ -130,11 +145,11 @@ export default function Dashboard() {
             tone="success"
             action={{
               content: "I left a review",
-              onAction: handleDismissReview,
+              onAction: handleConfirmReview,
             }}
             secondaryAction={{
               content: "No thanks, dismiss",
-              onAction: handleDismissReview,
+              onAction: handleSnoozeReview,
             }}
           >
             <BlockStack gap="200">
