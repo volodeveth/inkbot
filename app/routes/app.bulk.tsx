@@ -640,6 +640,10 @@ export default function BulkPage() {
     submit(formData, { method: "post" });
   }, [submit]);
 
+  const handleOpenReviewPage = useCallback(() => {
+    window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
+  }, []);
+
   const handleDismissReview = useCallback(() => {
     const formData = new FormData();
     formData.append("_action", "dismissReview");
@@ -703,7 +707,14 @@ export default function BulkPage() {
                   onAction: handleDismissReview,
                 }}
               >
-                <p>Did you have a chance to leave a review? Either way, thanks for using InkBot!</p>
+                <BlockStack gap="200">
+                  <p>Did you have a chance to leave a review? Either way, thanks for using InkBot!</p>
+                  <InlineStack>
+                    <Button variant="plain" onClick={handleOpenReviewPage}>
+                      Take me back to the review page
+                    </Button>
+                  </InlineStack>
+                </BlockStack>
               </Banner>
             )}
 
