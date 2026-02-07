@@ -63,6 +63,14 @@ export default function App() {
         >
           Terms
         </a>
+        <span style={{ margin: "0 8px", color: "#8c9196" }}>•</span>
+        <a
+          href="#"
+          onClick={(e) => { e.preventDefault(); window.open("/faq", "_blank"); }}
+          style={{ color: "#5c6ac4", textDecoration: "none", cursor: "pointer" }}
+        >
+          FAQ
+        </a>
       </div>
     </AppProvider>
   );
