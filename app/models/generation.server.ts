@@ -50,6 +50,7 @@ export async function getGenerationsByShop(
     skip?: number;
     niche?: string;
     status?: GenerationStatus;
+    search?: string;
   }
 ) {
   return db.generation.findMany({
@@ -57,6 +58,7 @@ export async function getGenerationsByShop(
       shop: { shopDomain },
       ...(options?.niche ? { niche: options.niche } : {}),
       ...(options?.status ? { status: options.status } : {}),
+      ...(options?.search ? { productTitle: { contains: options.search, mode: "insensitive" as const } } : {}),
     },
     orderBy: { createdAt: "desc" },
     take: options?.take || 20,

@@ -14,8 +14,10 @@ import {
   EmptyState,
   Pagination,
   Banner,
+  TextField,
 } from "@shopify/polaris";
-import { useState, useCallback } from "react";
+import { SearchIcon } from "@shopify/polaris-icons";
+import { useState, useCallback, useRef } from "react";
 import { authenticate } from "../shopify.server";
 import { getGenerationsByShop } from "~/models/generation.server";
 import { getShop } from "~/models/shop.server";
@@ -28,6 +30,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
 
   const niche = url.searchParams.get("niche") || undefined;
+  const search = url.searchParams.get("search") || undefined;
   const page = parseInt(url.searchParams.get("page") || "1", 10);
   const skip = (page - 1) * PAGE_SIZE;
 
@@ -38,6 +41,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     take: PAGE_SIZE + 1, // fetch one extra to check if there's a next page
     skip,
     niche: niche === "all" ? undefined : niche,
+    search: search || undefined,
   });
 
   const hasNextPage = generations.length > PAGE_SIZE;
@@ -49,17 +53,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
     hasNextPage,
     hasPreviousPage: page > 1,
     currentNiche: niche || "all",
+    currentSearch: search || "",
     plan,
   });
 }
 
 export default function HistoryPage() {
-  const { generations, page, hasNextPage, hasPreviousPage, currentNiche, plan } =
+  const { generations, page, hasNextPage, hasPreviousPage, currentNiche, currentSearch, plan } =
     useLoaderData<typeof loader>();
   const canUseHistory = hasPlanFeature(plan as PlanKey, "history");
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [searchValue, setSearchValue] = useState(currentSearch);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleNicheChange = useCallback(
     (value: string) => {
@@ -67,6 +74,26 @@ export default function HistoryPage() {
       params.set("niche", value);
       params.set("page", "1");
       setSearchParams(params);
+    },
+    [searchParams, setSearchParams]
+  );
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchValue(value);
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      debounceRef.current = setTimeout(() => {
+        const params = new URLSearchParams(searchParams);
+        if (value) {
+          params.set("search", value);
+        } else {
+          params.delete("search");
+        }
+        params.set("page", "1");
+        setSearchParams(params);
+      }, 300);
     },
     [searchParams, setSearchParams]
   );
@@ -123,6 +150,19 @@ export default function HistoryPage() {
             {/* Filter */}
             <Card>
               <InlineStack gap="400" blockAlign="end">
+                <Box minWidth="250px">
+                  <TextField
+                    label="Search by title"
+                    labelHidden
+                    value={searchValue}
+                    onChange={handleSearchChange}
+                    placeholder="Search by product title..."
+                    prefix={<span style={{ display: "flex" }}><SearchIcon /></span>}
+                    autoComplete="off"
+                    clearButton
+                    onClearButtonClick={() => handleSearchChange("")}
+                  />
+                </Box>
                 <Box minWidth="200px">
                   <Select
                     label="Filter by niche"
@@ -142,9 +182,11 @@ export default function HistoryPage() {
                   image=""
                 >
                   <p>
-                    {currentNiche !== "all"
-                      ? `No descriptions generated for this niche yet.`
-                      : `You haven't generated any descriptions yet.`}
+                    {currentSearch
+                      ? `No descriptions found matching "${currentSearch}".`
+                      : currentNiche !== "all"
+                        ? `No descriptions generated for this niche yet.`
+                        : `You haven't generated any descriptions yet.`}
                   </p>
                   <Button url="/app/generate">Generate your first</Button>
                 </EmptyState>
