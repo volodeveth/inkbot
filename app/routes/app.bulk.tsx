@@ -546,7 +546,7 @@ export default function BulkPage() {
   const results: BulkResult[] = actionData?.results || [];
   const hasResults = actionData?.success && results.length > 0 && !actionData?.applyResult;
 
-  // Initialize checked set when results change
+  // Initialize checked set and clear picker when results change
   const [lastResultsKey, setLastResultsKey] = useState("");
   const resultsKey = results.map((r: BulkResult) => r.generationId).join(",");
   if (hasResults && resultsKey !== lastResultsKey) {
@@ -555,6 +555,7 @@ export default function BulkPage() {
     setAppliedResults(new Set());
     setLastResultsKey(resultsKey);
     setShowApplyConfirm(false);
+    setSelectedProducts([]);
   }
 
   // Handle apply result
