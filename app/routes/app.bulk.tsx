@@ -37,7 +37,7 @@ import {
   incrementUsage,
 } from "~/services/billing.server";
 import { getAllNiches } from "~/services/prompts.server";
-import { getShop, markReviewLeft } from "~/models/shop.server";
+import { getShop, markReviewClicked, dismissReviewBanner } from "~/models/shop.server";
 import { createGeneration, markGenerationApplied, getGeneratedProductIds } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
 import {
@@ -102,9 +102,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const shop = await getShop(session.shop);
   const plan = (shop?.plan || "FREE") as PlanKey;
-  const reviewLeft = shop?.reviewLeft ?? false;
+  const reviewBannerState = shop?.reviewBannerState ?? "pending";
+  const hasGenerations = generatedProductIdsSet.size > 0;
 
-  return json({ usage, niches, products, brandVoice, shop: session.shop, plan, reviewLeft, collections, generatedProductIds });
+  return json({ usage, niches, products, brandVoice, shop: session.shop, plan, reviewBannerState, hasGenerations, collections, generatedProductIds });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -157,10 +158,15 @@ export async function action({ request }: ActionFunctionArgs) {
     }
   }
 
-  // --- Leave review ---
-  if (actionType === "leaveReview") {
-    await markReviewLeft(session.shop);
-    return json({ reviewLeft: true });
+  // --- Review banner ---
+  if (actionType === "reviewClick") {
+    await markReviewClicked(session.shop);
+    return json({ reviewBannerState: "clicked" });
+  }
+
+  if (actionType === "dismissReview") {
+    await dismissReviewBanner(session.shop);
+    return json({ reviewBannerState: "dismissed" });
   }
 
   // --- Apply selected results to Shopify ---
@@ -451,7 +457,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function BulkPage() {
-  const { usage, niches, products, brandVoice, plan, reviewLeft, collections, generatedProductIds } = useLoaderData<typeof loader>();
+  const { usage, niches, products, brandVoice, plan, reviewBannerState, hasGenerations, collections, generatedProductIds } = useLoaderData<typeof loader>();
   const canUseBulk = hasPlanFeature(plan as PlanKey, "bulk");
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
@@ -624,10 +630,19 @@ export default function BulkPage() {
     submit(formData, { method: "post" });
   }, [results, checkedResults, appliedResults, actionData, submit]);
 
+  const currentBannerState = actionData?.reviewBannerState || reviewBannerState;
+  const showReviewBanner = hasGenerations && currentBannerState !== "dismissed";
+
   const handleLeaveReview = useCallback(() => {
     window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
     const formData = new FormData();
-    formData.append("_action", "leaveReview");
+    formData.append("_action", "reviewClick");
+    submit(formData, { method: "post" });
+  }, [submit]);
+
+  const handleDismissReview = useCallback(() => {
+    const formData = new FormData();
+    formData.append("_action", "dismissReview");
     submit(formData, { method: "post" });
   }, [submit]);
 
@@ -663,7 +678,7 @@ export default function BulkPage() {
         <Layout.Section>
           <BlockStack gap="500">
             {/* Review Banner */}
-            {!reviewLeft && !actionData?.reviewLeft && (
+            {showReviewBanner && currentBannerState === "pending" && (
               <Banner
                 title="Enjoying InkBot?"
                 tone="info"
@@ -673,6 +688,22 @@ export default function BulkPage() {
                 }}
               >
                 <p>If you're finding InkBot helpful, a quick review would mean a lot.</p>
+              </Banner>
+            )}
+            {showReviewBanner && currentBannerState === "clicked" && (
+              <Banner
+                title="Thank you!"
+                tone="success"
+                action={{
+                  content: "I left a review",
+                  onAction: handleDismissReview,
+                }}
+                secondaryAction={{
+                  content: "No thanks, dismiss",
+                  onAction: handleDismissReview,
+                }}
+              >
+                <p>Did you have a chance to leave a review? Either way, thanks for using InkBot!</p>
               </Banner>
             )}
 

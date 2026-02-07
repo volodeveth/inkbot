@@ -71,10 +71,17 @@ export async function setShopApiKey(
   });
 }
 
-export async function markReviewLeft(shopDomain: string) {
+export async function markReviewClicked(shopDomain: string) {
   return db.shop.update({
     where: { shopDomain },
-    data: { reviewLeft: true },
+    data: { reviewBannerState: "clicked" },
+  });
+}
+
+export async function dismissReviewBanner(shopDomain: string) {
+  return db.shop.update({
+    where: { shopDomain },
+    data: { reviewBannerState: "dismissed" },
   });
 }
 

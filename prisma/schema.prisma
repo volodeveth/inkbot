@@ -39,8 +39,8 @@ model Shop {
   apiKeyPrefix     String?           // "dsc_xxxx" for display
   apiKeyCreatedAt  DateTime?
 
-  // Review tracking
-  reviewLeft       Boolean   @default(false)
+  // Review banner tracking: "pending" | "clicked" | "dismissed"
+  reviewBannerState String   @default("pending")
 
   // Subscription
   plan             Plan     @default(FREE)

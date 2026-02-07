@@ -23,7 +23,7 @@ import {
 import { authenticate } from "../shopify.server";
 import { checkUsageLimit } from "~/services/billing.server";
 import { getGenerationsByShop, getGenerationStats } from "~/models/generation.server";
-import { getOrCreateShop, markReviewLeft } from "~/models/shop.server";
+import { getOrCreateShop, markReviewClicked, dismissReviewBanner } from "~/models/shop.server";
 import { PLAN_DISPLAY_NAMES } from "~/utils/plans";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -35,14 +35,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const usage = await checkUsageLimit(session.shop);
   const recentGenerations = await getGenerationsByShop(session.shop, { take: 5 });
   const stats = await getGenerationStats(session.shop);
-  const reviewLeft = shop.reviewLeft;
+  const reviewBannerState = shop.reviewBannerState;
+  const hasGenerations = stats.totalGenerations > 0;
 
   return json({
     shop: session.shop,
     usage,
     recentGenerations,
     stats,
-    reviewLeft,
+    reviewBannerState,
+    hasGenerations,
   });
 }
 
@@ -50,23 +52,39 @@ export async function action({ request }: ActionFunctionArgs) {
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();
 
-  if (formData.get("_action") === "leaveReview") {
-    await markReviewLeft(session.shop);
-    return json({ reviewLeft: true });
+  const actionType = formData.get("_action");
+
+  if (actionType === "reviewClick") {
+    await markReviewClicked(session.shop);
+    return json({ reviewBannerState: "clicked" });
+  }
+
+  if (actionType === "dismissReview") {
+    await dismissReviewBanner(session.shop);
+    return json({ reviewBannerState: "dismissed" });
   }
 
   return json({});
 }
 
 export default function Dashboard() {
-  const { usage, recentGenerations, stats, reviewLeft } = useLoaderData<typeof loader>();
+  const { usage, recentGenerations, stats, reviewBannerState, hasGenerations } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
+
+  const currentBannerState = actionData?.reviewBannerState || reviewBannerState;
+  const showReviewBanner = hasGenerations && currentBannerState !== "dismissed";
 
   const handleLeaveReview = useCallback(() => {
     window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
     const formData = new FormData();
-    formData.append("_action", "leaveReview");
+    formData.append("_action", "reviewClick");
+    submit(formData, { method: "post" });
+  }, [submit]);
+
+  const handleDismissReview = useCallback(() => {
+    const formData = new FormData();
+    formData.append("_action", "dismissReview");
     submit(formData, { method: "post" });
   }, [submit]);
 
@@ -90,7 +108,7 @@ export default function Dashboard() {
         </Box>
 
         {/* Review Banner */}
-        {!reviewLeft && !actionData?.reviewLeft && (
+        {showReviewBanner && currentBannerState === "pending" && (
           <Banner
             title="Enjoying InkBot?"
             tone="info"
@@ -100,6 +118,22 @@ export default function Dashboard() {
             }}
           >
             <p>If you're finding InkBot helpful, a quick review would mean a lot.</p>
+          </Banner>
+        )}
+        {showReviewBanner && currentBannerState === "clicked" && (
+          <Banner
+            title="Thank you!"
+            tone="success"
+            action={{
+              content: "I left a review",
+              onAction: handleDismissReview,
+            }}
+            secondaryAction={{
+              content: "No thanks, dismiss",
+              onAction: handleDismissReview,
+            }}
+          >
+            <p>Did you have a chance to leave a review? Either way, thanks for using InkBot!</p>
           </Banner>
         )}
 

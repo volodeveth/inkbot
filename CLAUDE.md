@@ -95,7 +95,7 @@ D:\Myapps\InkBot\
 │   └── shopify.server.ts             ✅ Shopify auth config (API v2024-10, Prisma session storage)
 │
 ├── prisma/
-│   └── schema.prisma                  ✅ 6 моделей: Session, Shop (+ apiKeyHash, apiKeyPrefix, apiKeyCreatedAt, reviewLeft), BrandVoice, Generation, NicheTemplate, SupportTicket (autoincrement ID)
+│   └── schema.prisma                  ✅ 6 моделей: Session, Shop (+ apiKeyHash, apiKeyPrefix, apiKeyCreatedAt, reviewBannerState), BrandVoice, Generation, NicheTemplate, SupportTicket (autoincrement ID)
 │                                         2 enum: Plan (FREE/STARTER/PRO/UNLIMITED), GenerationStatus
 │
 ├── public/
@@ -316,12 +316,15 @@ eo (Esperanto), la (Latin), haw (Hawaiian), mi (Maori), sm (Samoan), jv (Javanes
 Порядок у селекторі: English першою, потім решта алфавітно за label. Prompt містить потрійне підсилення мовної вимоги (system prompt CRITICAL LANGUAGE REQUIREMENT + rule #8 + user prompt IMPORTANT). Legacy `pt` код залишено як fallback.
 
 ### Review Banner
-- Перманентний банер "Enjoying InkBot?" на Dashboard, Generate та Bulk сторінках
-- Показується доки `shop.reviewLeft === false`
-- Кнопка "Leave a Review" → deep link `https://admin.shopify.com/store/{store}/oauth/install?client_id={appId}` через `window.open()` + встановлює `reviewLeft = true` через action `leaveReview`
-- Без кнопки dismiss — тільки "Leave a Review"
-- Поле `reviewLeft Boolean @default(false)` на моделі Shop
-- Функція `markReviewLeft(shopDomain)` в `shop.server.ts`
+- Банер на Dashboard, Generate та Bulk сторінках
+- **З'являється тільки після першої генерації** (single або bulk)
+- Поле `reviewBannerState String @default("pending")` на моделі Shop
+- 3 стани:
+  - `"pending"` — банер "Enjoying InkBot?" з кнопкою "Leave a Review" (показується якщо є хоча б 1 генерація)
+  - `"clicked"` — банер "Thank you!" з двома кнопками: "I left a review" та "No thanks, dismiss" (після кліку на "Leave a Review", який відкриває `apps.shopify.com/inkbot/reviews` у новій вкладці)
+  - `"dismissed"` — банер приховано назавжди (після кліку на будь-яку з двох кнопок)
+- Функції в `shop.server.ts`: `markReviewClicked(shopDomain)`, `dismissReviewBanner(shopDomain)`
+- Перевірка наявності генерацій: `getGenerationStats()` (Dashboard, Generate) або `getGeneratedProductIds()` (Bulk)
 
 ### Support Page (`app.support.tsx`)
 - Контактна форма з полями: Shop (disabled, auto-fill), Plan (disabled, auto-fill), Email, Subject, Description

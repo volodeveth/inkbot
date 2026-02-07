@@ -37,7 +37,8 @@ import {
   incrementUsage,
 } from "~/services/billing.server";
 import { getAllNiches } from "~/services/prompts.server";
-import { getShop, markReviewLeft } from "~/models/shop.server";
+import { getShop, markReviewClicked, dismissReviewBanner } from "~/models/shop.server";
+import { getGenerationStats } from "~/models/generation.server";
 import { createGeneration, markGenerationApplied } from "~/models/generation.server";
 import { getBrandVoice } from "~/models/brandVoice.server";
 import {
@@ -68,9 +69,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   const shop = await getShop(session.shop);
-  const reviewLeft = shop?.reviewLeft ?? false;
+  const reviewBannerState = shop?.reviewBannerState ?? "pending";
+  const stats = await getGenerationStats(session.shop);
+  const hasGenerations = stats.totalGenerations > 0;
 
-  return json({ usage, niches, brandVoice, shop: session.shop, products, reviewLeft });
+  return json({ usage, niches, brandVoice, shop: session.shop, products, reviewBannerState, hasGenerations });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -97,9 +100,14 @@ export async function action({ request }: ActionFunctionArgs) {
     }
   }
 
-  if (actionType === "leaveReview") {
-    await markReviewLeft(session.shop);
-    return json({ reviewLeft: true });
+  if (actionType === "reviewClick") {
+    await markReviewClicked(session.shop);
+    return json({ reviewBannerState: "clicked" });
+  }
+
+  if (actionType === "dismissReview") {
+    await dismissReviewBanner(session.shop);
+    return json({ reviewBannerState: "dismissed" });
   }
 
   if (actionType === "generate") {
@@ -321,7 +329,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function GeneratePage() {
-  const { usage, niches, brandVoice, products, reviewLeft } = useLoaderData<typeof loader>();
+  const { usage, niches, brandVoice, products, reviewBannerState, hasGenerations } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as any;
   const submit = useSubmit();
   const navigation = useNavigation();
@@ -441,10 +449,19 @@ export default function GeneratePage() {
     setShowApplyConfirm(false);
   }, [selectedProduct, actionData, submit]);
 
+  const currentBannerState = actionData?.reviewBannerState || reviewBannerState;
+  const showReviewBanner = hasGenerations && currentBannerState !== "dismissed";
+
   const handleLeaveReview = useCallback(() => {
     window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
     const formData = new FormData();
-    formData.append("_action", "leaveReview");
+    formData.append("_action", "reviewClick");
+    submit(formData, { method: "post" });
+  }, [submit]);
+
+  const handleDismissReview = useCallback(() => {
+    const formData = new FormData();
+    formData.append("_action", "dismissReview");
     submit(formData, { method: "post" });
   }, [submit]);
 
@@ -465,7 +482,7 @@ export default function GeneratePage() {
         <Layout.Section>
           <BlockStack gap="500">
             {/* Review Banner */}
-            {!reviewLeft && !actionData?.reviewLeft && (
+            {showReviewBanner && currentBannerState === "pending" && (
               <Banner
                 title="Enjoying InkBot?"
                 tone="info"
@@ -475,6 +492,22 @@ export default function GeneratePage() {
                 }}
               >
                 <p>If you're finding InkBot helpful, a quick review would mean a lot.</p>
+              </Banner>
+            )}
+            {showReviewBanner && currentBannerState === "clicked" && (
+              <Banner
+                title="Thank you!"
+                tone="success"
+                action={{
+                  content: "I left a review",
+                  onAction: handleDismissReview,
+                }}
+                secondaryAction={{
+                  content: "No thanks, dismiss",
+                  onAction: handleDismissReview,
+                }}
+              >
+                <p>Did you have a chance to leave a review? Either way, thanks for using InkBot!</p>
               </Banner>
             )}
 
