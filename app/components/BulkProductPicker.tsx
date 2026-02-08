@@ -309,12 +309,14 @@ export function BulkProductPicker({
                     }}
                   >
                     <InlineStack gap="300" blockAlign="center">
-                      <Checkbox
-                        label=""
-                        labelHidden
-                        checked={isSelected}
-                        onChange={() => onToggle(product)}
-                      />
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          label=""
+                          labelHidden
+                          checked={isSelected}
+                          onChange={() => onToggle(product)}
+                        />
+                      </div>
                       {product.featuredImage ? (
                         <Thumbnail
                           source={product.featuredImage.url}
