@@ -445,7 +445,7 @@ export default function Guide() {
             </div>
             <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, overflow: "hidden", background: "#000" }}>
               <iframe
-                src="https://player.vimeo.com/video/1163043360?badge=0&autopause=0&player_id=0&app_id=58479"
+                src="https://player.vimeo.com/video/1163050174?badge=0&autopause=0&player_id=0&app_id=58479"
                 style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
                 allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
                 title="InkBot Tutorial"
