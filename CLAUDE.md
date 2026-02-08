@@ -51,6 +51,7 @@ D:\Myapps\InkBot\
 │   │   ├── auth.login/route.tsx       ✅ Сторінка логіну
 │   │   ├── webhooks.tsx               ✅ Shopify webhooks (APP_UNINSTALLED, compliance)
 │   │   ├── landing.tsx                ✅ Публічна landing page (dark theme, hover effects, SEO)
+│   │   ├── guide.tsx                  ✅ Публічна tutorial page (10 steps, dark theme, Vimeo video, mock UIs + screenshots, scroll animations)
 │   │   ├── privacy.tsx                ✅ Privacy Policy (dark theme, matching landing)
 │   │   ├── terms.tsx                  ✅ Terms of Service (dark theme, matching landing)
 │   │
@@ -351,10 +352,11 @@ eo (Esperanto), la (Latin), haw (Hawaiian), mi (Maori), sm (Samoan), jv (Javanes
 
 ### Public Pages (без Shopify auth)
 - `/landing` — Landing page (dark theme, hero, features, pricing, CTA, hover effects, SEO meta tags)
+- `/guide` — Tutorial/Guide page (dark theme, 10 step-by-step sections, Vimeo video embed, mock UIs + screenshots, scroll animations)
 - `/privacy` — Privacy Policy (dark theme, matching landing)
 - `/terms` — Terms of Service (dark theme, matching landing)
 - `/screenshots` — Screenshot generator для App Store (вимкнено, файл `app/screenshots.tsx.bak`; для повернення — перемістити в `app/routes/screenshots.tsx`)
-- Доступні публічно: `https://inkbot.app/landing`, `/privacy`, `/terms`
+- Доступні публічно: `https://inkbot.app/landing`, `/guide`, `/privacy`, `/terms`
 - **Mobile Navigation**:
   - Hamburger menu для екранів < 768px
   - Animated icon (hamburger ↔ X transition)
@@ -371,6 +373,26 @@ eo (Esperanto), la (Latin), haw (Hawaiian), mi (Maori), sm (Samoan), jv (Javanes
   - Responsive: stats dividers hidden on mobile, step arrows hidden, footer stacked
 - **Styling**: Dark theme (#0a0a0f base), purple/violet gradients (#8b5cf6, #6d28d9), glassmorphism, CSS animations
 - **SEO**: Open Graph, Twitter Cards meta tags для Google indexing
+
+### Guide Page (`guide.tsx`)
+- Публічна tutorial сторінка `/guide` (без Shopify auth)
+- **Hero**: "Step-by-Step Guide" tag, "Get Started with InkBot" title, Vimeo video embed (https://vimeo.com/1163043360) у browser frame
+- **10 кроків** з alternating layout (odd: text left / visual right, even: visual left / text right):
+  1. Install from Shopify App Store — mock UI (app card з "Add app" button)
+  2. Authorize the App — mock UI (OAuth permissions screen)
+  3. Dashboard Overview — screenshot `/screenshots/dashboard.jpg`
+  4. Generate Your First Description — screenshot `/screenshots/generate.jpg`
+  5. Apply Description to Shopify — mock UI (green success state з 5 fields)
+  6. Bulk Generate — screenshot `/screenshots/bulk.jpg`
+  7. Configure Brand Voice — screenshot `/screenshots/brand-voice.jpg`
+  8. View Generation History — mock UI (history list з niche badges, SEO scores)
+  9. Upgrade Your Plan — screenshot `/screenshots/billing.jpg`
+  10. API Access (Elite Plan) — mock UI (API key + terminal з curl example)
+- **Timeline**: вертикальна лінія по центру з numbered step badges
+- **Scroll animations**: IntersectionObserver → fadeInUp при появі у viewport
+- **Mobile**: stacked layout (visual → text), timeline hidden, responsive at 768px
+- **Nav + Footer**: matching landing.tsx design (links to /landing, /landing#features, /landing#pricing)
+- Dark theme (#0a0a0f base), purple accents (#8b5cf6), browser frame mockups
 
 ### Bulk Format (textarea input)
 ```
