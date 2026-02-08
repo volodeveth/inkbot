@@ -86,117 +86,87 @@ export async function getOrCreateShop(
   return shop;
 }
 
-export async function createSubscription(
+/**
+ * Sync the current plan from Shopify's Managed Pricing.
+ * Queries activeSubscriptions and maps to our Plan enum by price.
+ */
+export async function syncPlanFromShopify(
   shopDomain: string,
-  plan: Plan,
   admin: any
-): Promise<string> {
-  if (plan === "FREE") {
-    await db.shop.update({
-      where: { shopDomain },
-      data: {
-        plan: "FREE",
-        generationsLimit: PLAN_LIMITS.FREE,
-        subscriptionId: null,
-        subscriptionStatus: null,
-        apiKeyHash: null,
-        apiKeyPrefix: null,
-        apiKeyCreatedAt: null,
-      },
-    });
-    return "";
-  }
-
-  const isTest = process.env.SHOPIFY_BILLING_TEST === "true";
-
+): Promise<{ plan: Plan; subscriptionId: string | null; subscriptionStatus: string | null }> {
   const response = await admin.graphql(
-    `
-    mutation createSubscription($name: String!, $price: Decimal!, $returnUrl: URL!, $test: Boolean) {
-      appSubscriptionCreate(
-        name: $name,
-        returnUrl: $returnUrl,
-        test: $test,
-        lineItems: [
-          {
-            plan: {
-              appRecurringPricingDetails: {
-                price: { amount: $price, currencyCode: USD }
-                interval: EVERY_30_DAYS
+    `query {
+      currentAppInstallation {
+        activeSubscriptions {
+          id
+          name
+          status
+          lineItems {
+            plan {
+              pricingDetails {
+                ... on AppRecurringPricing {
+                  price {
+                    amount
+                    currencyCode
+                  }
+                }
               }
             }
           }
-        ]
-      ) {
-        appSubscription {
-          id
-        }
-        confirmationUrl
-        userErrors {
-          field
-          message
         }
       }
-    }
-  `,
-    {
-      variables: {
-        name: `InkBot ${plan} Plan`,
-        price: PLAN_PRICES[plan],
-        returnUrl: `${process.env.SHOPIFY_APP_URL}/app/billing/confirm`,
-        test: isTest ? true : null,
-      },
-    }
+    }`
   );
 
   const data = await response.json();
+  const subscriptions =
+    data.data?.currentAppInstallation?.activeSubscriptions || [];
 
-  if (data.data?.appSubscriptionCreate?.userErrors?.length) {
-    throw new Error(
-      data.data.appSubscriptionCreate.userErrors[0].message
+  let plan: Plan = "FREE";
+  let subscriptionId: string | null = null;
+  let subscriptionStatus: string | null = null;
+
+  if (subscriptions.length > 0) {
+    const active = subscriptions[0];
+    subscriptionId = active.id;
+    subscriptionStatus = active.status;
+
+    const price = parseFloat(
+      active.lineItems?.[0]?.plan?.pricingDetails?.price?.amount || "0"
     );
+
+    if (price >= 99) plan = "UNLIMITED";
+    else if (price >= 19) plan = "PRO";
+    else if (price >= 9) plan = "STARTER";
   }
 
-  const subscriptionId = data.data.appSubscriptionCreate.appSubscription.id;
+  // Sync to database
+  const updateData: any = {
+    plan,
+    generationsLimit: PLAN_LIMITS[plan],
+    subscriptionId,
+    subscriptionStatus,
+  };
 
-  // Save subscription ID
+  // If downgraded from UNLIMITED, revoke API keys
+  if (plan !== "UNLIMITED") {
+    updateData.apiKeyHash = null;
+    updateData.apiKeyPrefix = null;
+    updateData.apiKeyCreatedAt = null;
+  }
+
   await db.shop.update({
     where: { shopDomain },
-    data: {
-      plan,
-      generationsLimit: PLAN_LIMITS[plan],
-      subscriptionId,
-      subscriptionStatus: "PENDING",
-    },
+    data: updateData,
   });
 
-  return data.data.appSubscriptionCreate.confirmationUrl;
+  return { plan, subscriptionId, subscriptionStatus };
 }
 
-export async function confirmSubscription(
-  shopDomain: string,
-  chargeId: string
-): Promise<void> {
-  await db.shop.update({
-    where: { shopDomain },
-    data: {
-      subscriptionStatus: "ACTIVE",
-    },
-  });
-}
-
-export async function cancelSubscription(
-  shopDomain: string
-): Promise<void> {
-  await db.shop.update({
-    where: { shopDomain },
-    data: {
-      plan: "FREE",
-      generationsLimit: PLAN_LIMITS.FREE,
-      subscriptionId: null,
-      subscriptionStatus: null,
-      apiKeyHash: null,
-      apiKeyPrefix: null,
-      apiKeyCreatedAt: null,
-    },
-  });
+/**
+ * Get the Shopify admin URL where merchants can manage their app subscription.
+ */
+export function getManagedPricingUrl(shopDomain: string): string {
+  const storeHandle = shopDomain.replace(".myshopify.com", "");
+  return `https://admin.shopify.com/store/${storeHandle}/charges`;
 }
