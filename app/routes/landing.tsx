@@ -148,6 +148,16 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section style={styles.hero}>
+        {/* Background Video */}
+        <div style={styles.heroBgVideo} className="hero-bg-video">
+          <iframe
+            src="https://player.vimeo.com/video/1163066777?background=1&autoplay=1&loop=1&muted=1&app_id=58479"
+            style={styles.heroBgIframe}
+            allow="autoplay; fullscreen"
+            title="Background"
+          ></iframe>
+        </div>
+        <div style={styles.heroBgOverlay}></div>
         <div style={styles.heroGlow}></div>
         <div style={styles.heroGlow2}></div>
         <div style={{
@@ -1094,6 +1104,36 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: "column" as const,
     alignItems: "center",
     overflow: "hidden",
+  },
+  heroBgVideo: {
+    position: "absolute" as const,
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    zIndex: 0,
+  },
+  heroBgIframe: {
+    position: "absolute" as const,
+    top: "50%",
+    left: "50%",
+    width: "177.78vh",
+    height: "100vh",
+    minWidth: "100%",
+    minHeight: "100%",
+    transform: "translate(-50%, -50%)",
+    border: "none",
+    pointerEvents: "none" as const,
+  },
+  heroBgOverlay: {
+    position: "absolute" as const,
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    background: "rgba(10, 10, 15, 0.75)",
+    zIndex: 0,
   },
   heroGlow: {
     position: "absolute" as const,
