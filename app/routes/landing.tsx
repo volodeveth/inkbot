@@ -494,6 +494,7 @@ export default function Landing() {
                 <a href="#pricing" onClick={(e) => handleNavClick(e, "pricing")} style={styles.footerLink} className="footer-link">Pricing</a>
                 <a href="#how-it-works" onClick={(e) => handleNavClick(e, "how-it-works")} style={styles.footerLink} className="footer-link">How It Works</a>
                 <a href="/faq" style={styles.footerLink} className="footer-link">FAQ</a>
+                <a href="/guide" style={styles.footerLink} className="footer-link">Guide</a>
               </div>
               <div style={styles.footerColumn}>
                 <h4 style={styles.footerHeading}>Legal</h4>

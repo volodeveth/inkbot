@@ -307,6 +307,7 @@ export default function TermsOfService() {
           <p style={styles.copyright}>© 2026 InkBot. All rights reserved.</p>
           <div style={styles.footerLinks}>
             <a href="/landing" style={styles.footerLink}>Home</a>
+            <a href="/guide" style={styles.footerLink}>Guide</a>
             <a href="/privacy" style={styles.footerLink}>Privacy</a>
             <a
               href="#"
