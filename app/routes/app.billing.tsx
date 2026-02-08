@@ -22,7 +22,7 @@ import {
   syncPlanFromShopify,
   getManagedPricingUrl,
 } from "~/services/billing.server";
-import { PLAN_PRICES, PLAN_LIMITS, PLAN_FEATURES, PLAN_SLUGS, type PlanKey } from "~/utils/plans";
+import { PLAN_PRICES, PLAN_LIMITS, PLAN_FEATURES, type PlanKey } from "~/utils/plans";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session, admin } = await authenticate.admin(request);
@@ -54,9 +54,8 @@ export default function BillingPage() {
 
   const isLoading = navigation.state === "loading";
 
-  const handleChangePlan = (planKey: PlanKey) => {
-    const url = `${pricingBaseUrl}/${PLAN_SLUGS[planKey]}`;
-    window.open(url, "_top");
+  const handleChangePlan = () => {
+    window.open(pricingBaseUrl, "_top");
   };
 
   return (
@@ -162,7 +161,7 @@ export default function BillingPage() {
                         ) : (
                           <Button
                             variant={popular ? "primary" : undefined}
-                            onClick={() => handleChangePlan(key)}
+                            onClick={handleChangePlan}
                             loading={isLoading}
                           >
                             {PLAN_PRICES[key] > PLAN_PRICES[currentPlan]
