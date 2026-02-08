@@ -168,5 +168,5 @@ export async function syncPlanFromShopify(
  */
 export function getManagedPricingUrl(shopDomain: string): string {
   const storeHandle = shopDomain.replace(".myshopify.com", "");
-  return `https://admin.shopify.com/store/${storeHandle}/charges`;
+  return `https://admin.shopify.com/store/${storeHandle}/charges/inkbot/pricing_plans`;
 }
