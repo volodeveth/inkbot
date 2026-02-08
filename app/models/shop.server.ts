@@ -86,7 +86,7 @@ export async function dismissReviewBanner(shopDomain: string) {
 }
 
 export async function snoozeReviewBanner(shopDomain: string) {
-  const snoozeUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const snoozeUntil = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
   return db.shop.update({
     where: { shopDomain },
     data: { reviewBannerState: `snoozed:${snoozeUntil}` },

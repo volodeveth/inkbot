@@ -541,10 +541,7 @@ export default function GeneratePage() {
                   content: "Leave a Review",
                   onAction: handleLeaveReview,
                 }}
-                secondaryAction={{
-                  content: "No thanks",
-                  onAction: handleSnoozeReview,
-                }}
+                onDismiss={handleSnoozeReview}
               >
                 <p>If you're finding InkBot helpful, a quick review would mean a lot.</p>
               </Banner>
