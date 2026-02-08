@@ -62,6 +62,7 @@ export default function Landing() {
             <a href="#features" onClick={(e) => handleNavClick(e, "features")} style={styles.navLink} className="nav-link">Features</a>
             <a href="#how-it-works" onClick={(e) => handleNavClick(e, "how-it-works")} style={styles.navLink} className="nav-link">How It Works</a>
             <a href="#pricing" onClick={(e) => handleNavClick(e, "pricing")} style={styles.navLink} className="nav-link">Pricing</a>
+            <a href="/guide" style={styles.navLink} className="nav-link">Guide</a>
             <button
               onClick={() => handleExternalLink("https://apps.shopify.com/inkbot")}
               style={styles.ctaButton}
@@ -126,6 +127,14 @@ export default function Landing() {
             className="mobile-nav-link"
           >
             Pricing
+          </a>
+          <a
+            href="/guide"
+            onClick={() => setMobileMenuOpen(false)}
+            style={styles.mobileNavLink}
+            className="mobile-nav-link"
+          >
+            Guide
           </a>
           <button
             onClick={() => { handleExternalLink("https://apps.shopify.com/inkbot"); setMobileMenuOpen(false); }}
@@ -360,6 +369,25 @@ export default function Landing() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Guide CTA */}
+      <section style={styles.guideCta}>
+        <div style={styles.guideCtaContainer} className="guide-cta-card">
+          <div style={styles.guideCtaContent}>
+            <div style={styles.guideCtaIcon}>📖</div>
+            <div>
+              <h3 style={styles.guideCtaTitle}>New to InkBot?</h3>
+              <p style={styles.guideCtaText}>Follow our step-by-step guide to set up your store and generate your first AI description in minutes.</p>
+            </div>
+          </div>
+          <a href="/guide" style={styles.guideCtaButton} className="guide-cta-btn">
+            Read the Guide
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
         </div>
       </section>
 
@@ -836,6 +864,26 @@ const globalStyles = `
   @keyframes ripple {
     0% { transform: scale(1); opacity: 0.5; }
     100% { transform: scale(1.5); opacity: 0; }
+  }
+
+  /* Guide CTA */
+  .guide-cta-card {
+    transition: all 0.4s ease;
+  }
+
+  .guide-cta-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(139, 92, 246, 0.5) !important;
+    box-shadow: 0 20px 50px rgba(139, 92, 246, 0.2) !important;
+  }
+
+  .guide-cta-btn {
+    transition: all 0.3s ease;
+  }
+
+  .guide-cta-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5) !important;
   }
 
   /* Mobile Responsive */
@@ -1405,6 +1453,63 @@ const styles: Record<string, React.CSSProperties> = {
     top: "20px",
     fontSize: "24px",
     color: "#3f3f46",
+  },
+
+  // Guide CTA
+  guideCta: {
+    padding: "0 24px 80px",
+  },
+  guideCtaContainer: {
+    maxWidth: "900px",
+    margin: "0 auto",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "24px",
+    padding: "32px 40px",
+    background: "linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(59, 130, 246, 0.06) 100%)",
+    border: "1px solid rgba(139, 92, 246, 0.2)",
+    borderRadius: "20px",
+    flexWrap: "wrap" as const,
+  },
+  guideCtaContent: {
+    display: "flex",
+    alignItems: "center",
+    gap: "20px",
+    flex: 1,
+    minWidth: "0",
+  },
+  guideCtaIcon: {
+    fontSize: "36px",
+    flexShrink: 0,
+  },
+  guideCtaTitle: {
+    fontSize: "20px",
+    fontWeight: "700",
+    color: "#ffffff",
+    marginBottom: "4px",
+  },
+  guideCtaText: {
+    fontSize: "15px",
+    color: "#a1a1aa",
+    lineHeight: "1.5",
+  },
+  guideCtaButton: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "14px 28px",
+    background: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)",
+    border: "none",
+    borderRadius: "12px",
+    color: "#ffffff",
+    fontSize: "15px",
+    fontWeight: "600",
+    textDecoration: "none",
+    cursor: "pointer",
+    boxShadow: "0 4px 15px rgba(139, 92, 246, 0.3)",
+    flexShrink: 0,
+    whiteSpace: "nowrap" as const,
   },
 
   // Pricing
