@@ -114,7 +114,7 @@ export default function ApiDocs() {
             >
               <p>
                 The InkBot API is available exclusively on the Elite
-                plan ($49/month). Upgrade to integrate AI-powered product
+                plan ($99/month). Upgrade to integrate AI-powered product
                 descriptions directly into your workflow.
               </p>
             </Banner>
