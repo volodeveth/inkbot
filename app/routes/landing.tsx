@@ -1132,7 +1132,7 @@ const styles: Record<string, React.CSSProperties> = {
     left: 0,
     width: "100%",
     height: "100%",
-    background: "rgba(10, 10, 15, 0.75)",
+    background: "rgba(10, 10, 15, 0.85)",
     zIndex: 0,
   },
   heroGlow: {
