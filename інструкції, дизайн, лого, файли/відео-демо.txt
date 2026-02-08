@@ -1,0 +1,8 @@
+ Це обов'язкове поле для submission. Потрібно записати відео-демо 3-8 хвилин, яке показує:
+
+  1. Встановлення додатку (Install flow)                                                                                                                                                                             2. Dashboard — огляд
+  3. Generate — вибір продукту, niche/tone/language, генерація, Apply                                                                                                                                                4. Bulk Generate — вибір кількох продуктів, batch generation
+  5. Brand Voice Settings
+  6. Billing — зміна плану
+
+  Можна записати через OBS Studio (безкоштовно) або Loom (безкоштовно до 5 хв) — скрінкаст з dev store. Завантажити на YouTube (unlisted) і вставити посилання.

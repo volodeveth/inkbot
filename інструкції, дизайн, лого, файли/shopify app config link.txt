@@ -1,0 +1,66 @@
+Your environment has been set up for using Node.js 22.18.0 (x64) and npm.
+
+C:\Users\User>d:
+
+D:\>cd cd D:\Myapps\InkBot
+The filename, directory name, or volume label syntax is incorrect.
+
+D:\>cd cd D:\Myapps\InkBot
+The filename, directory name, or volume label syntax is incorrect.
+
+D:\>cd D:\Myapps\InkBot
+
+D:\Myapps\InkBot>shopify app config link
+?  Which organization is this work for?
+√  VoloDev.eth
+
+?  Create this project as a new app on Shopify?
+√  No, connect it to an existing app
+
+?  Which existing app is this for?
+√  InkBot
+
+╭─ success ────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  shopify.app.toml is now linked to "InkBot" on Shopify                       │
+│                                                                              │
+│  Using shopify.app.toml as your default config.                              │
+│                                                                              │
+│  Next steps                                                                  │
+│    • Make updates to shopify.app.toml in your local project                  │
+│    • To upload your config, run `shopify app deploy`                         │
+│                                                                              │
+│  Reference                                                                   │
+│    • App configuration [1]                                                   │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+[1] https://shopify.dev/docs/apps/tools/cli/configuration
+
+
+D:\Myapps\InkBot>shopify app deploy
+╭─ info ───────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  Using .env for default values:                                              │
+│                                                                              │
+│    • Org:             VoloDev.eth                                            │
+│    • App:             InkBot                                                 │
+│                                                                              │
+│   You can pass `--reset` to your command to reset your app configuration.    │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+?  Release a new version of InkBot?
+√  Yes, release this new version
+
+
+Releasing a new app version as part of InkBot
+
+
+╭─ success ────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│  New version released to users.                                              │
+│                                                                              │
+│  inkbot-3 [1]                                                                │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+[1] https://dev.shopify.com/dashboard/192526395/apps/319680282625/versions/853705687041

@@ -1,0 +1,545 @@
+ Configuration → прокрути вниз до секції Compliance webhooks де в меню шопіфай партнерс це можна знайти
+
+Для того щоб знайти секцію Compliance webhooks у кабінеті Shopify Partners, вам потрібно виконати наступні кроки:
+
+Увійдіть у свій акаунт Shopify Partners.
+
+У лівому бічному меню виберіть розділ Apps.
+
+Натисніть на назву конкретного додатка, для якого ви хочете налаштувати вебхуки.
+
+У меню самого додатка (знову ж таки зліва) перейдіть у розділ Configuration.
+
+Прокрутіть сторінку вниз до самого кінця. Секція Compliance webhooks зазвичай знаходиться під налаштуваннями App Proxy або POS attributes.
+
+Що саме там потрібно налаштувати?
+У цій секції ви знайдете три обов'язкові поля для URL-адрес (так звані Mandatory Webhooks), які необхідні для відповідності вимогам GDPR:
+
+Customers data request endpoint: Викликається, коли покупець запитує свої дані у магазину.
+
+Customers data erasure endpoint: Викликається, коли покупець просить видалити його дані.
+
+Shop data erasure endpoint: Викликається через 48 годин після того, як мерчант видаляє ваш додаток зі свого магазину.
+
+Важливо: Навіть якщо ваш додаток не збирає персональні дані, ви все одно повинні вказати робочі URL-адреси, які повертають HTTP-статус 200 OK.
+
+Чи потрібно вам допомогти з кодом для обробки цих вебхуків на Django або FastAPI?
+
+
+
+Search
+
+
+
+
+
+Notifications
+
+2
+
+VoloDev.eth
+
+Volodymyr Dorosh
+
+
+
+Home
+
+
+
+Stores
+
+
+
+Sales
+
+
+
+App distribution
+
+All apps
+
+App ads
+
+
+
+Catalogs
+
+
+
+Themes
+
+
+
+Shopify POS
+
+Resources
+
+
+
+Partner docs
+
+
+
+Product docs
+
+
+
+Support
+
+Admin
+
+
+
+Payouts
+
+
+
+Team
+
+
+
+Settings
+
+App distribution
+
+Visit your Dev Dashboard for app building and monitoring
+
+Your performance metrics, logs, and configuration have moved to your Dev Dashboard. Your App Store Listing and business analytics will remain in your Partner Dashboard.
+
+
+
+
+
+Submit
+
+
+
+Search for apps
+
+
+
+AppInstallsListing statusRatingEarningsInkBotPublic app
+
+1
+
+Attention
+
+
+
+Draft
+
+No rating
+
+
+
+-$0.00 USD
+
+View on Dev Dashboard
+
+
+
+showcase-gallery0
+
+-No rating
+
+
+
+-$0.00 USD
+
+View on Dev Dashboard
+
+
+
+Learn more about building Shopify apps
+
+У 2026 році Shopify завершив перехід на новий інтерфейс Dev Dashboard, тому шлях до налаштувань дещо змінився. На скріншоті, який ви надіслали, видно, що Shopify тепер пропонує керувати конфігурацією саме там.
+
+Ось як знайти розділ Compliance webhooks у новому інтерфейсі:
+
+1. Перехід до Dev Dashboard
+На вашому скріншоті біля назви додатка (наприклад, InkBot) є кнопка View on Dev Dashboard. Натисніть її.
+
+Або перейдіть прямо за посиланням: dev.shopify.com.
+
+2. Шлях усередині Dev Dashboard
+Коли ви відкриєте свій додаток у Dev Dashboard:
+
+У лівому бічному меню виберіть вкладку Configuration (Конфігурація).
+
+На сторінці, що відкриється, ви побачите загальні налаштування (App URL, Allowed redirection URLS тощо).
+
+Прокрутіть сторінку до самого низу. Секція Compliance webhooks (або іноді вона називається Mandatory webhooks) знаходиться в нижній частині цієї сторінки.
+
+⚠️ Важливий нюанс 2026 року
+Якщо ви використовуєте Shopify CLI для розробки додатка, Shopify зараз наполегливо рекомендує прописувати ці вебхуки прямо у файлі конфігурації вашого проєкту — shopify.app.toml.
+
+Якщо ви не бачите полів для введення URL у вебінтерфейсі, додайте їх у файл ось так:
+
+Ini, TOML
+[webhooks]
+api_version = "2026-01"
+
+[[webhooks.subscriptions]]
+topics = [ "customers/data_request" ]
+uri = "https://your-domain.com/webhooks/compliance/customer-data"
+
+[[webhooks.subscriptions]]
+topics = [ "customers/redact" ]
+uri = "https://your-domain.com/webhooks/compliance/customer-redact"
+
+[[webhooks.subscriptions]]
+topics = [ "shop/redact" ]
+uri = "https://your-domain.com/webhooks/compliance/shop-redact"
+Після цього запустіть команду: shopify app deploy
+
+Це автоматично оновить налаштування в панелі Partners.
+
+Чи вдалося вам знайти цю секцію в Dev Dashboard, чи спробуємо налаштувати через TOML файл?
+
+
+
+
+
+VoloDev.eth
+
+
+
+Apps
+
+InkBot
+
+Home
+
+Versions
+
+Monitoring
+
+Logs
+
+Settings
+
+
+
+Dev stores
+
+
+
+Catalogs
+
+InkBot
+
+API health
+
+
+
+OK
+
+No calls with breaking changes detected in the last 14 days
+
+
+
+
+
+7 days
+
+Webhook errors
+
+No data
+
+Removed subscriptions
+
+No data
+
+Function error rate
+
+No data
+
+Activity
+
+February 5, 2026
+
+inkbot-2 released • 12:08 pm
+
+inkbot-1 released • 12:03 pm
+
+View all versions
+
+Installs
+
+Install app
+
+
+
+1
+
+
+
+Distribution
+
+Manage Shopify App Store listing
+
+
+
+Versions
+
+New version
+
+Update your configuration by creating a new version.
+
+inkbot-2
+
+Active
+
+
+
+Preview app with Shopify CLI
+
+Docs
+
+
+
+$
+
+shopify app dev
+
+На вашому скріншоті видно новий інтерфейс Dev Dashboard. У цій версії Shopify змінив підхід: тепер ви не можете просто змінити URL-адресу в поточному інтерфейсі "на льоту". Будь-які зміни в конфігурації (включаючи вебхуки) тепер робляться через Versions (Версії).
+
+Ось де саме це лежить:
+
+Спосіб 1: Через браузер (Dev Dashboard)
+У лівому меню натисніть на вкладку Settings (вона під "Logs").
+
+Якщо там немає окремого підрозділу Webhooks, натисніть на кнопку New version (права частина екрана).
+
+Відкриється редактор конфігурації нової версії. Прокрутіть сторінку вниз — саме там з'явиться секція Compliance webhooks (або Mandatory webhooks).
+
+Після введення URL-адрес вам потрібно буде натиснути Release, щоб ця версія конфігурації стала активною.
+
+Спосіб 2: Найшвидший (через термінал)
+Оскільки під назвою вашого додатка InkBot ви бачите підказку shopify app dev, це означає, що ваш додаток синхронізовано з локальним кодом. В такому випадку найкраще зробити так:
+
+Відкрийте ваш проєкт у VS Code (або іншому редакторі).
+
+Знайдіть файл shopify.app.toml.
+
+Додайте (або відредагуйте) блок [webhooks]. Це виглядатиме приблизно так:
+
+Ini, TOML
+[webhooks]
+api_version = "2026-01"
+
+  [[webhooks.subscriptions]]
+  topics = [ "customers/data_request" ]
+  uri = "/api/webhooks/customers_data_request"
+
+  [[webhooks.subscriptions]]
+  topics = [ "customers/redact" ]
+  uri = "/api/webhooks/customers_redact"
+
+  [[webhooks.subscriptions]]
+  topics = [ "shop/redact" ]
+  uri = "/api/webhooks/shop_redact"
+Збережіть файл і в терміналі запустіть: shopify app deploy
+
+Після завершення деплою в Dev Dashboard автоматично з'явиться нова версія (наприклад, inkbot-3), де ці вебхуки вже будуть прописані.
+
+Порада: Якщо ви розробляєте на Python (Django/FastAPI), переконайтеся, що ваші ендпоінти готові приймати POST-запити від Shopify, бо він перевірить їхню валідність при спробі збереження.
+
+Бажаєте, я допоможу підготувати структуру shopify.app.toml саме під ваш стек?
+
+Back to versions list page
+
+Create a version
+
+Release
+
+Based oninkbot-2
+
+Active
+
+Start using Shopify CLI
+
+Docs
+
+
+
+To get access to all configuration and extensions, create a new local project and connect to this app
+
+$
+
+shopify app config link
+
+
+
+App name
+
+6 / 30
+
+Access
+
+
+
+Some scopes require Shopify permission before you can include them in a version. Request access 
+
+Scopes
+
+Docs
+
+
+
+Select scopesThese scopes are required to provide your app functionality. Enter scopes as a comma-separated list
+
+Optional scopes
+
+Select scopesEnter scopes as a comma-separated list
+
+Use legacy install flow
+
+Docs
+
+
+
+Redirect URLs
+
+Enter redirect URLs as a comma-separated list
+
+URLs
+
+App URL
+
+
+
+Embed app in Shopify admin
+
+Preferences URL (optional)
+
+Webhooks API Version
+
+2025-04
+
+ 2025-07
+
+ 2025-10
+
+ 2026-01
+
+
+
+
+
+POS
+
+
+
+App proxy
+
+Release
+
+На скріншоті, який ви надіслали (це сторінка створення нової версії), ви майже на місці.
+
+У новому інтерфейсі 2026 року секція Compliance webhooks з'являється у формі лише після того, як ви вкажете Webhooks API Version.
+
+Що потрібно зробити прямо зараз:
+Виберіть версію API: У блоці Webhooks API Version натисніть на актуальну версію (наприклад, 2026-01).
+
+Прокрутіть нижче: Як тільки ви виберете версію, під цим блоком (і над кнопкою "Release") мають розгорнутися додаткові поля для введення URL:
+
+Customer data request
+
+Customer data erasure
+
+Shop data erasure
+
+Введіть URL: Вставте посилання на ваші обробники (вони повинні починатися з https://).
+
+Натисніть Release: Після цього зміни збережуться і створиться нова активна версія додатка (inkbot-3).
+
+Чому краще зробити через shopify.app.toml?
+На вашому скріншоті є синій блок з написом: shopify app config link
+
+Shopify тепер працює за принципом Configuration as Code. Якщо ви зараз введете дані вручну через цей інтерфейс, а потім випадково запустите shopify app deploy зі свого комп'ютера (де у файлі .toml ці поля порожні), ваші налаштування в панелі знову затруться.
+
+Мій висновок: Якщо ви хочете просто швидко "закрити" це питання в браузері — вибирайте версію API і крутіть вниз. Але якщо ви плануєте далі деплоїти код через термінал, краще один раз додати ці лінки у файл shopify.app.toml у вашому проєкті.
+
+Вам допомогти з правильними назвами полів для файлу конфігурації?
+
+вибрав але не зявилося Webhooks API Version
+
+2025-04
+
+ 2025-07
+
+ 2025-10
+
+ 2026-01
+
+
+
+
+
+POS
+
+Embed app in Shopify POS
+
+
+
+App proxy
+
+Subpath prefix
+
+apps
+
+ a
+
+ community
+
+ tools
+
+
+
+Subpath
+
+Proxy URL
+
+Release
+
+Це справді дивно, але в новому інтерфейсі Dev Dashboard 2026 року Shopify іноді «ховає» ці поля, якщо вони вже мають бути описані у вашому коді.
+
+Якщо після вибору версії API (наприклад, 2026-01) поля не з’явилися між Webhooks API Version та POS, це означає одну з двох речей:
+
+Баг інтерфейсу: Спробуйте просто оновити сторінку (F5) після вибору версії.
+
+Перехід на файлову конфігурацію: Shopify повністю перевів ваш застосунок на керування через CLI. У такому разі інтерфейс блокує ручне введення, щоб уникнути конфліктів з вашим файлом shopify.app.toml.
+
+Як це вирішити гарантовано (через CLI):
+Оскільки ви розробник, найвизначеніший шлях — додати їх у код. Виконайте ці кроки:
+
+Відкрийте термінал у папці вашого проєкту.
+
+Введіть команду (вона є на вашому скріншоті), щоб синхронізувати налаштування:
+
+Bash
+shopify app config link
+Відкрийте файл shopify.app.toml, який з'явиться або оновиться в корені проєкту.
+
+Додайте секцію [webhooks.compliance] (у версії 2026 року вона виглядає саме так):
+
+Ini, TOML
+[webhooks]
+api_version = "2026-01"
+
+  [webhooks.compliance]
+  customer_deletion_url = "https://your-domain.com/webhooks/customers/redact"
+  customer_data_request_url = "https://your-domain.com/webhooks/customers/data_request"
+  shop_deletion_url = "https://your-domain.com/webhooks/shop/redact"
+Збережіть файл і відправте конфігурацію в Shopify:
+
+Bash
+shopify app deploy
+Чому це краще?
+Після виконання deploy Shopify автоматично створить нову версію (inkbot-3) і ви побачите ці URL-адреси вже заповненими в інтерфейсі (але в режимі "лише для читання").
+
+Порада: Якщо ви не хочете зараз возитися з CLI, спробуйте в браузері натиснути Cancel, повернутися до списку версій і ще раз натиснути New version, але цього разу не вибирайте "Based on inkbot-2", а спробуйте створити чисту конфігурацію (якщо інтерфейс дозволяє).
+
+Чи хочете, щоб я підказав, як перевірити, чи проходять ці вебхуки через ваш сервер?

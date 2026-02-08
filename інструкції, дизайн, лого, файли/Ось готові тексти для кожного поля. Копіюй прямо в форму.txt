@@ -1,0 +1,115 @@
+Ось готові тексти для кожного поля. Копіюй прямо в форму:
+
+  ---
+  App introduction (0/100)
+
+  InkBot generates SEO-optimized product descriptions using AI. Save hours of writing and improve your store's search
+  rankings instantly.                                                                                                     (98 символів)
+                                                                                                                          ---
+  App details (0/500)
+
+  InkBot helps merchants create high-quality product descriptions without manual writing. Select a product from your
+  store, choose an industry niche and writing tone, and receive a complete description with meta tags and SEO score in
+  seconds. The app supports 111 languages for global selling. Brand voice settings let you train the AI to match your
+  unique style with custom keywords, target audience, and sample texts. Bulk generation processes multiple products at
+  once, saving time for large catalogs. All generations are saved in history for easy reuse.
+  (~490 символів)
+
+  ---
+  Features (3-5, кожна до 80 символів)
+
+  Feature 1:
+  AI product descriptions with SEO meta tags, score, and keyword suggestions
+
+  Feature 2:
+  Bulk generation for processing multiple products at once
+
+  Feature 3:
+  Brand voice customization to match your unique store identity
+
+  Feature 4:
+  111 languages supported for global stores
+
+  Feature 5:
+  One-click apply descriptions directly to your Shopify products
+
+  ---
+  Integrations
+
+  OpenRouter
+  (AI провайдер, єдина зовнішня інтеграція крім Shopify)
+
+  ---
+  Support
+
+  - Preferred support channel: Email
+  - Support email: starbowshine@gmail.com
+  - Support portal URL: https://inkbot.app/app/support
+
+  ---
+  Resources
+
+  - Privacy policy URL: https://inkbot.app/privacy
+  - Developer website: https://volodeveth.vercel.app
+
+  ---
+  App card subtitle (0/62)
+
+  AI product descriptions and SEO optimization in 111 languages
+  (62 символів)
+
+  ---
+  App store search terms (до 5)
+
+  1. product descriptions
+  2. SEO optimization
+  3. AI copywriting
+  4. bulk descriptions
+  5. product content
+
+  ---
+  Web search content (SEO)
+
+  Title tag (0/60):
+  InkBot - AI Product Descriptions & SEO for Shopify Stores
+
+  Meta description (0/160):
+  Generate SEO-optimized product descriptions with AI. 111 languages, 9 industry niches, bulk generation, brand voice
+  customization. Free plan with 100 descriptions per month.
+
+  ---
+  Install requirements
+
+  - Sales channel: "My app doesn't require the Shopify Online Store or Shopify POS"
+  - Geographic requirements: нічого не вибирай (працює глобально)
+
+  ---
+  App testing information
+
+  - Test account: позначай "My app doesn't require an account to use it" (автентифікація через Shopify OAuth, окремого
+  логіну немає)
+
+  Testing instructions:
+  To test this app:
+  1. Install the app on a development store
+  2. Open the app from Shopify admin sidebar
+  3. Go to Generate page, enter any product title (e.g. "Premium Wireless Headphones")
+  4. Select a niche (e.g. Electronics), tone (e.g. Professional), and language
+  5. Click Generate and wait for the AI description with SEO score
+  6. Try Bulk Generate to process multiple products from your catalog
+  7. Visit Settings to configure Brand Voice preferences
+  8. Check History to see all past generations
+
+  ---
+  Pricing details
+
+  Плани мають підтягнутись автоматично з Shopify Billing API. Якщо потрібно вручну:
+  - Pricing URL: https://inkbot.app/landing (секція pricing)
+
+✻ Cooked for 54s
+
+  1 tasks (0 done, 1 open) · ctrl+t to hide tasks
+  □ Analyze Remix/Vite instability after shared languages.ts module
+
+● How is Claude doing this session? (optional)
+  1: Bad    2: Fine   3: Good   0: Dismiss
