@@ -22,7 +22,7 @@ import {
   syncPlanFromShopify,
   getManagedPricingUrl,
 } from "~/services/billing.server";
-import { PLAN_PRICES, PLAN_LIMITS, PLAN_FEATURES, type PlanKey } from "~/utils/plans";
+import { PLAN_PRICES, PLAN_LIMITS, PLAN_FEATURES, PLAN_SLUGS, type PlanKey } from "~/utils/plans";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session, admin } = await authenticate.admin(request);
@@ -30,13 +30,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // Sync plan from Shopify's Managed Pricing
   const { plan, subscriptionStatus } = await syncPlanFromShopify(session.shop, admin);
   const usage = await checkUsageLimit(session.shop);
-  const pricingUrl = getManagedPricingUrl(session.shop);
+  const pricingBaseUrl = getManagedPricingUrl(session.shop);
 
   return json({
     usage,
     currentPlan: plan,
     subscriptionStatus,
-    pricingUrl,
+    pricingBaseUrl,
   });
 }
 
@@ -48,14 +48,15 @@ const PLANS: { key: PlanKey; name: string; popular?: boolean }[] = [
 ];
 
 export default function BillingPage() {
-  const { usage, currentPlan, subscriptionStatus, pricingUrl } =
+  const { usage, currentPlan, subscriptionStatus, pricingBaseUrl } =
     useLoaderData<typeof loader>();
   const navigation = useNavigation();
 
   const isLoading = navigation.state === "loading";
 
-  const handleChangePlan = () => {
-    window.open(pricingUrl, "_top");
+  const handleChangePlan = (planKey: PlanKey) => {
+    const url = `${pricingBaseUrl}/${PLAN_SLUGS[planKey]}`;
+    window.open(url, "_top");
   };
 
   return (
@@ -161,7 +162,7 @@ export default function BillingPage() {
                         ) : (
                           <Button
                             variant={popular ? "primary" : undefined}
-                            onClick={handleChangePlan}
+                            onClick={() => handleChangePlan(key)}
                             loading={isLoading}
                           >
                             {PLAN_PRICES[key] > PLAN_PRICES[currentPlan]

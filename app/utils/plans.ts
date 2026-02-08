@@ -26,6 +26,13 @@ export const PLAN_PRICES: Record<PlanKey, number> = {
   UNLIMITED: 99,
 };
 
+export const PLAN_SLUGS: Record<PlanKey, string> = {
+  FREE: "free",
+  STARTER: "starter",
+  PRO: "pro",
+  UNLIMITED: "unlimited",
+};
+
 export const PLAN_FEATURES: Record<PlanKey, string[]> = {
   FREE: [
     "100 descriptions/month",

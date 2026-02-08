@@ -166,7 +166,8 @@ export async function syncPlanFromShopify(
 /**
  * Get the Shopify admin URL where merchants can manage their app subscription.
  */
-export function getManagedPricingUrl(shopDomain: string): string {
+export function getManagedPricingUrl(shopDomain: string, planSlug?: string): string {
   const storeHandle = shopDomain.replace(".myshopify.com", "");
-  return `https://admin.shopify.com/store/${storeHandle}/charges/inkbot/pricing_plans`;
+  const base = `https://admin.shopify.com/store/${storeHandle}/charges/inkbot/pricing_plans`;
+  return planSlug ? `${base}/${planSlug}` : base;
 }
