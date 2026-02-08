@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import {
   json,
   type ActionFunctionArgs,
@@ -82,7 +82,8 @@ export default function Dashboard() {
 
   const currentBannerState = actionData?.reviewBannerState || reviewBannerState;
   const isBannerVisible = actionData?.reviewBannerVisible ?? reviewBannerVisible;
-  const showReviewBanner = hasGenerations && isBannerVisible;
+  const [snoozedLocally, setSnoozedLocally] = useState(false);
+  const showReviewBanner = hasGenerations && isBannerVisible && !snoozedLocally;
 
   const handleLeaveReview = useCallback(() => {
     window.open("https://apps.shopify.com/inkbot/reviews#modal-show=WriteReviewModal", "_blank");
@@ -102,6 +103,7 @@ export default function Dashboard() {
   }, [submit]);
 
   const handleSnoozeReview = useCallback(() => {
+    setSnoozedLocally(true);
     const formData = new FormData();
     formData.append("_action", "snoozeReview");
     submit(formData, { method: "post" });
