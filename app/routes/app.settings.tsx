@@ -10,10 +10,9 @@ import {
   Button,
   Banner,
   Text,
-  InlineStack,
-  Divider,
 } from "@shopify/polaris";
-import { useState } from "react";
+import { SaveBar } from "@shopify/app-bridge-react";
+import { useState, useCallback, useEffect } from "react";
 import { authenticate } from "../shopify.server";
 import { getShop } from "~/models/shop.server";
 import { upsertBrandVoice } from "~/models/brandVoice.server";
@@ -87,7 +86,7 @@ export default function SettingsPage() {
 
   const isSaving = navigation.state === "submitting";
 
-  const [formState, setFormState] = useState({
+  const initialState = {
     tone: brandVoice?.tone || "professional",
     style: brandVoice?.style || "balanced",
     customPrompt: brandVoice?.customPrompt || "",
@@ -96,19 +95,39 @@ export default function SettingsPage() {
     avoidWords: brandVoice?.avoidWords?.join(", ") || "",
     brandValues: brandVoice?.brandValues?.join(", ") || "",
     sampleTexts: brandVoice?.sampleTexts?.join("\n---\n") || "",
-  });
+  };
+
+  const [formState, setFormState] = useState(initialState);
+  const [savedState, setSavedState] = useState(initialState);
+
+  const isDirty = JSON.stringify(formState) !== JSON.stringify(savedState);
+
+  useEffect(() => {
+    if (isDirty) {
+      shopify.saveBar.show("settings-save-bar");
+    } else {
+      shopify.saveBar.hide("settings-save-bar");
+    }
+  }, [isDirty]);
 
   const updateField = (field: string) => (value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     const formData = new FormData();
     Object.entries(formState).forEach(([key, value]) => {
       formData.append(key, value);
     });
     submit(formData, { method: "post" });
-  };
+    setSavedState(formState);
+    shopify.saveBar.hide("settings-save-bar");
+  }, [formState, submit]);
+
+  const handleDiscard = useCallback(() => {
+    setFormState(savedState);
+    shopify.saveBar.hide("settings-save-bar");
+  }, [savedState]);
 
   return (
     <Page
@@ -315,19 +334,20 @@ export default function SettingsPage() {
               </Card>
             )}
 
-            {/* Save */}
-            <InlineStack align="end">
-              <Button
-                variant="primary"
-                onClick={handleSave}
-                loading={isSaving}
-              >
-                Save Settings
-              </Button>
-            </InlineStack>
           </BlockStack>
         </Layout.Section>
       </Layout>
+
+      {isDirty && (
+        <SaveBar id="settings-save-bar">
+          <button variant="primary" onClick={handleSave} disabled={isSaving}>
+            Save
+          </button>
+          <button onClick={handleDiscard} disabled={isSaving}>
+            Discard
+          </button>
+        </SaveBar>
+      )}
     </Page>
   );
 }

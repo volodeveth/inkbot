@@ -13,15 +13,39 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   switch (topic) {
     case "APP_UNINSTALLED":
-      if (session) {
-        await db.session.deleteMany({ where: { shop } });
+      // Clean up sessions
+      await db.session.deleteMany({ where: { shop } });
+
+      // Revoke API key and reset subscription state (keep data for potential reinstall)
+      const uninstalledShop = await db.shop.findUnique({
+        where: { shopDomain: shop },
+      });
+      if (uninstalledShop) {
+        await db.shop.update({
+          where: { shopDomain: shop },
+          data: {
+            apiKeyHash: null,
+            apiKeyPrefix: null,
+            apiKeyCreatedAt: null,
+            subscriptionId: null,
+            subscriptionStatus: null,
+          },
+        });
       }
       break;
 
     case "CUSTOMERS_DATA_REQUEST":
     case "CUSTOMERS_REDACT":
+      // InkBot does not store end-customer personal data.
+      // Product data is associated with the shop, not individual customers.
+      break;
+
     case "SHOP_REDACT":
-      // Mandatory compliance webhooks
+      // Store permanently deleted — delete ALL associated data (GDPR compliance).
+      // BrandVoice and Generation records cascade-delete via onDelete: Cascade on Shop.
+      await db.supportTicket.deleteMany({ where: { shopDomain: shop } });
+      await db.session.deleteMany({ where: { shop } });
+      await db.shop.deleteMany({ where: { shopDomain: shop } });
       break;
 
     default:
