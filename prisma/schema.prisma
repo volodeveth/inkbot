@@ -127,6 +127,9 @@ model Generation {
   generationTime  Int              @default(0)
 
   createdAt       DateTime         @default(now())
+
+  @@index([shopId])
+  @@index([shopId, status])
 }
 
 enum GenerationStatus {

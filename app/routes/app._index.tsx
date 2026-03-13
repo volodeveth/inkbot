@@ -21,7 +21,7 @@ import {
   InlineGrid,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
-import { checkUsageLimit } from "~/services/billing.server";
+import { checkUsageLimitFromShop } from "~/services/billing.server";
 import { getGenerationsByShop, getGenerationStats } from "~/models/generation.server";
 import { getOrCreateShop, markReviewClicked, dismissReviewBanner, snoozeReviewBanner, isReviewBannerVisible, getEffectiveBannerState } from "~/models/shop.server";
 import { PLAN_DISPLAY_NAMES } from "~/utils/plans";
@@ -29,12 +29,13 @@ import { PLAN_DISPLAY_NAMES } from "~/utils/plans";
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
 
-  // Ensure shop exists in our DB
   const shop = await getOrCreateShop(session.shop, session.accessToken ?? "");
 
-  const usage = await checkUsageLimit(session.shop);
-  const recentGenerations = await getGenerationsByShop(session.shop, { take: 5 });
-  const stats = await getGenerationStats(session.shop);
+  const [usage, recentGenerations, stats] = await Promise.all([
+    checkUsageLimitFromShop(shop),
+    getGenerationsByShop(session.shop, { take: 5 }),
+    getGenerationStats(session.shop),
+  ]);
   const rawBannerState = shop.reviewBannerState;
   const reviewBannerState = getEffectiveBannerState(rawBannerState);
   const reviewBannerVisible = isReviewBannerVisible(rawBannerState);

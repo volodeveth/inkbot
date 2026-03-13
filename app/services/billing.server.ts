@@ -20,7 +20,15 @@ export async function checkUsageLimit(shopDomain: string): Promise<UsageInfo> {
     return { allowed: true, used: 0, limit: PLAN_LIMITS.FREE, plan: "FREE" };
   }
 
-  // Check if we need to reset monthly counter
+  return checkUsageLimitFromShop(shop);
+}
+
+export async function checkUsageLimitFromShop(shop: {
+  shopDomain: string;
+  plan: Plan;
+  generationsUsed: number;
+  resetDate: Date;
+}): Promise<UsageInfo> {
   const now = new Date();
   const resetDate = new Date(shop.resetDate);
 
@@ -28,13 +36,9 @@ export async function checkUsageLimit(shopDomain: string): Promise<UsageInfo> {
     now.getMonth() !== resetDate.getMonth() ||
     now.getFullYear() !== resetDate.getFullYear()
   ) {
-    // Reset counter for new month
     await db.shop.update({
-      where: { shopDomain },
-      data: {
-        generationsUsed: 0,
-        resetDate: now,
-      },
+      where: { shopDomain: shop.shopDomain },
+      data: { generationsUsed: 0, resetDate: now },
     });
     return {
       allowed: true,
@@ -45,10 +49,8 @@ export async function checkUsageLimit(shopDomain: string): Promise<UsageInfo> {
   }
 
   const limit = PLAN_LIMITS[shop.plan];
-  const allowed = shop.generationsUsed < limit;
-
   return {
-    allowed,
+    allowed: shop.generationsUsed < limit,
     used: shop.generationsUsed,
     limit,
     plan: shop.plan,

@@ -83,20 +83,16 @@ export async function markGenerationApplied(id: string) {
 }
 
 export async function getGenerationStats(shopDomain: string) {
-  const stats = await db.generation.aggregate({
-    where: {
-      shop: { shopDomain },
-    },
-    _count: true,
-    _avg: { seoScore: true },
-  });
-
-  const appliedCount = await db.generation.count({
-    where: {
-      shop: { shopDomain },
-      status: "APPLIED",
-    },
-  });
+  const [stats, appliedCount] = await Promise.all([
+    db.generation.aggregate({
+      where: { shop: { shopDomain } },
+      _count: true,
+      _avg: { seoScore: true },
+    }),
+    db.generation.count({
+      where: { shop: { shopDomain }, status: "APPLIED" },
+    }),
+  ]);
 
   return {
     totalGenerations: stats._count,
