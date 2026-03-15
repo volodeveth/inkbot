@@ -121,6 +121,7 @@ export default function Dashboard() {
             <img
               src="/logo.png"
               alt="InkBot"
+              fetchPriority="high"
               style={{ height: "72px", maxWidth: "320px", objectFit: "contain", display: "block" }}
             />
             <Text as="p" variant="bodyLg" tone="subdued">

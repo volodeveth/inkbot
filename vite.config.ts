@@ -56,6 +56,6 @@ export default defineConfig({
     tsconfigPaths(),
   ],
   build: {
-    assetsInlineLimit: 0,
+    assetsInlineLimit: 8192,
   },
 });

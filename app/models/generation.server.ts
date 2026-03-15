@@ -83,21 +83,22 @@ export async function markGenerationApplied(id: string) {
 }
 
 export async function getGenerationStats(shopDomain: string) {
-  const [stats, appliedCount] = await Promise.all([
-    db.generation.aggregate({
-      where: { shop: { shopDomain } },
-      _count: true,
-      _avg: { seoScore: true },
-    }),
-    db.generation.count({
-      where: { shop: { shopDomain }, status: "APPLIED" },
-    }),
-  ]);
+  const [row] = await db.$queryRaw<
+    [{ total: bigint; avgseo: number | null; applied: bigint }]
+  >`
+    SELECT
+      COUNT(*)::bigint AS total,
+      AVG("seoScore") AS avgseo,
+      COUNT(*) FILTER (WHERE status = 'APPLIED')::bigint AS applied
+    FROM "Generation" g
+    JOIN "Shop" s ON g."shopId" = s.id
+    WHERE s."shopDomain" = ${shopDomain}
+  `;
 
   return {
-    totalGenerations: stats._count,
-    avgSeoScore: Math.round(stats._avg.seoScore || 0),
-    appliedCount,
+    totalGenerations: Number(row.total),
+    avgSeoScore: Math.round(row.avgseo || 0),
+    appliedCount: Number(row.applied),
   };
 }
 

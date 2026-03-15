@@ -2,8 +2,14 @@
   "buildCommand": "npx prisma generate && npx remix vite:build",
   "installCommand": "npm install",
   "framework": "remix",
-  "regions": ["fra1"],
+  "regions": ["iad1"],
   "env": {
     "NODE_ENV": "production"
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/ping",
+      "schedule": "*/5 * * * *"
+    }
+  ]
 }

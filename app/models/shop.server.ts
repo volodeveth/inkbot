@@ -13,10 +13,10 @@ export async function getOrCreateShop(
   shopDomain: string,
   accessToken: string
 ) {
-  return db.shop.upsert({
-    where: { shopDomain },
-    update: { accessToken },
-    create: {
+  const existing = await db.shop.findUnique({ where: { shopDomain } });
+  if (existing) return existing;
+  return db.shop.create({
+    data: {
       shopDomain,
       accessToken,
       plan: "FREE",
